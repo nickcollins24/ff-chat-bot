@@ -130,7 +130,7 @@ public class GroupMeListener implements ChatBotListener {
                     bot.processResponse(r);
                 }
             } catch(Exception e){
-                // do nothing
+                //do nothing
             }
 
             return Listener.super.onText(webSocket, data, last);
