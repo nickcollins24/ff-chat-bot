@@ -25,6 +25,7 @@ public class GroupMeListener implements ChatBotListener {
     private static final String GROUP_ID = "43518373";
     private static final String USER_ID = "27277860";
     private static final String ACCESS_TOKEN = "QXpw652wlQUrMRUvWO6YHk57EP2dSPzqlS5biTwe";
+    private static final String BOT_KEYWORD = "@testbot";
 
     public GroupMeListener(GroupMeBot bot){
         this.bot = bot;
@@ -135,9 +136,10 @@ public class GroupMeListener implements ChatBotListener {
                 //then send to bot for processing
                 ChatResponse.Subject subject = r.getData().getSubject();
 
-                if(subject.getGroupId().equals(GROUP_ID) && subject.getSenderType().equals("user")){
+                if(subject.getGroupId().equals(GROUP_ID) && subject.getSenderType().equals("user")
+                  && subject.getText().startsWith(BOT_KEYWORD)){
                     String fromUser = subject.getName();
-                    String text = subject.getText();
+                    String text = subject.getText().replace(BOT_KEYWORD, "").trim();
                     String[] attachments = subject.getAttachments();
 
                     bot.processResponse(fromUser, text, attachments);
