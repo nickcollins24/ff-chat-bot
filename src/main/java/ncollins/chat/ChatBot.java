@@ -1,8 +1,6 @@
 package ncollins.chat;
 
-import ncollins.model.chat.ChatResponse;
-
 public interface ChatBot {
-    void sendMessage(String text, String[] imageUrl);
-    void processResponse(ChatResponse response);
+    void sendMessage(String fromUser, String text, String[] imageUrl);
+    void processResponse(String fromUser, String text, String[] imageUrl);
 }

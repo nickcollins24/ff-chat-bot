@@ -106,28 +106,41 @@ public class GroupMeListener implements ChatBotListener {
 
     private class WebSocketListener implements Listener {
         @Override
+        public void onOpen(WebSocket webSocket){
+            System.out.println("WebSocket connection opened.");
+            Listener.super.onOpen(webSocket);
+        }
+
+        @Override
         public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-            System.out.println("onClose");
+            System.out.println("WebSocket connection closed.");
             return Listener.super.onClose(webSocket, statusCode, reason);
         }
 
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
-            System.out.println("Error occurred" + error.getMessage());
+            System.out.println("WebSocket error occurred:" + error.getMessage());
             Listener.super.onError(webSocket, error);
         }
 
         @Override
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+            System.out.println("onText: " + data);
+
             try {
                 JsonArray jsonArray = new JsonParser().parse(data.toString()).getAsJsonArray();
                 ChatResponse r = gson.fromJson(jsonArray.get(0), ChatResponse.class);
 
                 //if message was created by a user (not bot) in the required group,
                 //then send to bot for processing
-                if(r.getData().getSubject().getGroupId().equals(GROUP_ID) &&
-                    r.getData().getSubject().getSenderType().equals("user")){
-                    bot.processResponse(r);
+                ChatResponse.Subject subject = r.getData().getSubject();
+
+                if(subject.getGroupId().equals(GROUP_ID) && subject.getSenderType().equals("user")){
+                    String fromUser = subject.getName();
+                    String text = subject.getText();
+                    String[] attachments = subject.getAttachments();
+
+                    bot.processResponse(fromUser, text, attachments);
                 }
             } catch(Exception e){
                 //do nothing

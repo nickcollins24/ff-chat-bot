@@ -19,13 +19,12 @@ public class GroupMeBot implements ChatBot {
     }
 
     @Override
-    public void processResponse(ChatResponse response) {
-        sendMessage(response.getData().getSubject().getText(),
-                response.getData().getSubject().getAttachments());
+    public void processResponse(String fromUser, String text, String[] imageUrls) {
+        sendMessage(fromUser, text, imageUrls);
     }
 
     @Override
-    public void sendMessage(String text, String[] imageUrls) {
+    public void sendMessage(String fromUser, String text, String[] imageUrls) {
         String attachments = buildAttachmentsPayload(imageUrls);
         String payload = "{" +
                 "\"bot_id\": \"" + BOT_ID + "\"," +
