@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import ncollins.chat.ChatBotListener;
 import ncollins.model.chat.ChatResponse;
 
@@ -12,24 +13,20 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
-import java.net.http.WebSocket.Listener;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CompletionStage;
 
 public class GroupMeListener implements ChatBotListener {
     private GroupMeBot bot;
     private HttpClient client;
-    private Gson gson;
-    private static final String HTTPS_PROTOCOL = "https://";
-    private static final String WSS_PROTOCOL = "wss://";
-    private static final String GROUP_ME_URL = "push.groupme.com/faye";
-    private static final String GROUP_ID = "43518373";
-    private static final String USER_ID = "27277860";
-    private static final String ACCESS_TOKEN = "QXpw652wlQUrMRUvWO6YHk57EP2dSPzqlS5biTwe";
+    private String accessToken;
+    private static final String HTTPS_GROUP_ME_URL = "https://push.groupme.com/faye";
+    private static final String WSS_GROUP_ME_URL = "wss://push.groupme.com/faye";
 
-    public GroupMeListener(GroupMeBot bot){
+    public GroupMeListener(String accessToken, GroupMeBot bot){
+        this.accessToken = accessToken;
         this.bot = bot;
         this.client = HttpClient.newHttpClient();
-        this.gson = new Gson();
     }
 
     @Override
@@ -54,10 +51,10 @@ public class GroupMeListener implements ChatBotListener {
     private void subscribeUser(String clientId){
         String payload = "{\"channel\": \"/meta/subscribe\"," +
                 "\"clientId\": \"" + clientId + "\"," +
-                "\"subscription\": \"/user/" + USER_ID + "\"," +
+                "\"subscription\": \"/user/" + bot.getBotUserId() + "\"," +
                 "\"id\": \"2\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
+                "\"access_token\": \"" + accessToken + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -66,10 +63,10 @@ public class GroupMeListener implements ChatBotListener {
     private void subscribeGroup(String clientId){
         String payload = "{\"channel\": \"/meta/subscribe\"," +
                 "\"clientId\": \"" + clientId + "\"," +
-                "\"subscription\": \"/group/" + GROUP_ID + "\"," +
+                "\"subscription\": \"/group/" + bot.getBotGroupId() + "\"," +
                 "\"id\": \"3\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
+                "\"access_token\": \"" + accessToken + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -82,13 +79,14 @@ public class GroupMeListener implements ChatBotListener {
                 "\"id\": \"4\"}";
 
         WebSocket.Builder webSocketBuilder = client.newWebSocketBuilder();
-        WebSocket webSocket = webSocketBuilder.buildAsync(URI.create(WSS_PROTOCOL + GROUP_ME_URL), new WebSocketListener()).join();
+        WebSocket webSocket =
+                webSocketBuilder.buildAsync(URI.create(WSS_GROUP_ME_URL), new GroupMeSocketListener(bot)).join();
         webSocket.sendText(payload, true);
     }
 
     private HttpResponse<String> buildGroupMeHttpRequestAndSend(String payload) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(HTTPS_PROTOCOL + GROUP_ME_URL))
+                .uri(URI.create(HTTPS_GROUP_ME_URL))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
@@ -104,50 +102,88 @@ public class GroupMeListener implements ChatBotListener {
         return null;
     }
 
-    private class WebSocketListener implements Listener {
-        @Override
-        public void onOpen(WebSocket webSocket){
-            System.out.println("WebSocket connection opened.");
-            Listener.super.onOpen(webSocket);
-        }
+    public class GroupMeSocketListener implements WebSocket.Listener {
+        private GroupMeBot bot;
+        private Gson gson;
 
-        @Override
-        public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-            System.out.println("WebSocket connection closed.");
-            return Listener.super.onClose(webSocket, statusCode, reason);
-        }
-
-        @Override
-        public void onError(WebSocket webSocket, Throwable error) {
-            System.out.println("WebSocket error occurred:" + error.getMessage());
-            Listener.super.onError(webSocket, error);
+        public GroupMeSocketListener(GroupMeBot bot){
+            this.bot = bot;
+            this.gson = new Gson();
         }
 
         @Override
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
             System.out.println("onText: " + data);
+            JsonArray jsonArray = new JsonParser().parse(data.toString()).getAsJsonArray();
+
+            // if data contains successful attribute, then send a ping to let server know we're still alive
+            if(jsonArray.get(0).getAsJsonObject().has("successful")){
+                System.out.println("Reconnecting...");
+                webSocket.abort();
+                listen();
+                return WebSocket.Listener.super.onText(webSocket, data, last);
+            }
 
             try {
-                JsonArray jsonArray = new JsonParser().parse(data.toString()).getAsJsonArray();
                 ChatResponse r = gson.fromJson(jsonArray.get(0), ChatResponse.class);
 
                 //if message was created by a user (not bot) in the required group,
                 //then send to bot for processing
                 ChatResponse.Subject subject = r.getData().getSubject();
 
-                if(subject.getGroupId().equals(GROUP_ID) && subject.getSenderType().equals("user")
-                  && subject.getText().startsWith(bot.getBotKeyword() + " ")){
+                if(subject.getGroupId().equals(bot.getBotGroupId()) && subject.getSenderType().equals("user")
+                        && subject.getText().startsWith(bot.getBotKeyword() + " ")){
                     String fromUser = subject.getName();
                     String text = subject.getText().replace(bot.getBotKeyword(), "").trim();
                     String[] attachments = subject.getAttachments();
 
                     bot.processResponse(fromUser, text, attachments);
                 }
-            } catch(Exception e){
+            } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
+            } catch(Exception e){
+                System.out.println("Unexpected exception in onText: " + e);
             }
 
-            return Listener.super.onText(webSocket, data, last);
+            return WebSocket.Listener.super.onText(webSocket, data, last);
+        }
+
+        @Override
+        public void onOpen(WebSocket webSocket){
+            System.out.println("WebSocket connection opened.");
+            WebSocket.Listener.super.onOpen(webSocket);
+        }
+
+        @Override
+        public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+            System.out.println("WebSocket connection closed. Reconnecting...");
+            webSocket.abort();
+            listen();
+            return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
+        }
+
+        @Override
+        public void onError(WebSocket webSocket, Throwable error) {
+            System.out.println("WebSocket error occurred: " + error.getMessage());
+            WebSocket.Listener.super.onError(webSocket, error);
+        }
+
+        @Override
+        public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+            System.out.println("onBinary: " + new String(data.array()));
+            return WebSocket.Listener.super.onBinary(webSocket,data,last);
+        }
+
+        @Override
+        public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
+            System.out.println("onPing: " + new String(message.array()));
+            return WebSocket.Listener.super.onPing(webSocket,message);
+        }
+
+        @Override
+        public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
+            System.out.println("onPong: " + new String(message.array()));
+            return WebSocket.Listener.super.onPong(webSocket,message);
         }
     }
 }

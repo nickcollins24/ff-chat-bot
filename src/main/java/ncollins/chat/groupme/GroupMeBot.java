@@ -15,18 +15,30 @@ public class GroupMeBot implements ChatBot {
 
     private final String botId;
     private final String botName;
+    private final String botGroupId;
+    private final String botUserId;
     private final String botKeyword;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
 
-    public GroupMeBot(String botId, String botName){
+    public GroupMeBot(String botId, String botName, String botGroupId, String botUserId){
         this.botId = botId;
         this.botName = botName;
+        this.botGroupId = botGroupId;
+        this.botUserId = botUserId;
         this.botKeyword = "@" + this.botName;
         this.client = HttpClient.newHttpClient();
     }
 
     public String getBotKeyword() {
         return botKeyword;
+    }
+
+    public String getBotGroupId() {
+        return botGroupId;
+    }
+
+    public String getBotUserId() {
+        return botUserId;
     }
 
     @Override
