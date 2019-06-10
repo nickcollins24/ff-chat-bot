@@ -1,7 +1,7 @@
 package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBot;
-import ncollins.model.chat.ChatResponse;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,23 +11,37 @@ import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
     private HttpClient client;
+    private final String botId;
+    private final String botName;
+    private final String botKeyword;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
-    private static final String BOT_ID = "7f608eb2e1c2b036fe461a4765";
 
-    public GroupMeBot(){
+    public GroupMeBot(String botId, String botName){
+        this.botId = botId;
+        this.botName = botName;
+        this.botKeyword = "@" + this.botName;
         this.client = HttpClient.newHttpClient();
+    }
+
+    public String getBotKeyword() {
+        return botKeyword;
     }
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
-        sendMessage(fromUser, text, imageUrls);
+        if(text.matches("^$")) sendMessage(fromUser, buildHelpMessage());
+        else if(text.matches("^help$")) sendMessage(fromUser, buildShowCommandsMessage());
+    }
+
+    private void sendMessage(String fromUser, String text){
+        sendMessage(fromUser, text, ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
     @Override
     public void sendMessage(String fromUser, String text, String[] imageUrls) {
         String attachments = buildAttachmentsPayload(imageUrls);
         String payload = "{" +
-                "\"bot_id\": \"" + BOT_ID + "\"," +
+                "\"bot_id\": \"" + botId + "\"," +
                 "\"text\": \"" + text + "\"," +
                 "\"attachments\": " + attachments + "}";
 
@@ -55,5 +69,14 @@ public class GroupMeBot implements ChatBot {
         sb.append("]");
 
         return sb.toString();
+    }
+
+    private String buildHelpMessage(){
+        return "you rang? type '" + getBotKeyword() + " help' to see what i can do.";
+    }
+
+    private String buildShowCommandsMessage(){
+        return "commands:\\n" +
+                    getBotKeyword() + " help -- show bot commands";
     }
 }
