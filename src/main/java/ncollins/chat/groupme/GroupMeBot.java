@@ -83,7 +83,8 @@ public class GroupMeBot implements ChatBot {
 
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
-                    getBotKeyword() + " help -- show bot commands";
+               getBotKeyword() + " help -- show bot commands\\n" +
+               getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n";
     }
 
     private String buildGifMessage(String query){
