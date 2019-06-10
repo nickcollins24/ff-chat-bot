@@ -136,7 +136,7 @@ public class GroupMeListener implements ChatBotListener {
                 ChatResponse.Subject subject = r.getData().getSubject();
 
                 if(subject.getGroupId().equals(GROUP_ID) && subject.getSenderType().equals("user")
-                  && subject.getText().startsWith(bot.getBotKeyword())){
+                  && subject.getText().startsWith(bot.getBotKeyword() + " ")){
                     String fromUser = subject.getName();
                     String text = subject.getText().replace(bot.getBotKeyword(), "").trim();
                     String[] attachments = subject.getAttachments();

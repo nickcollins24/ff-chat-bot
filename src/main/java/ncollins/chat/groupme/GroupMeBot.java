@@ -1,8 +1,8 @@
 package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBot;
+import ncollins.gif.GifGenerator;
 import org.apache.commons.lang3.ArrayUtils;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,6 +11,8 @@ import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
     private HttpClient client;
+    private GifGenerator gifGenerator = new GifGenerator();
+
     private final String botId;
     private final String botName;
     private final String botKeyword;
@@ -29,8 +31,12 @@ public class GroupMeBot implements ChatBot {
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
-        if(text.matches("^$")) sendMessage(fromUser, buildHelpMessage());
-        else if(text.matches("^help$")) sendMessage(fromUser, buildShowCommandsMessage());
+        if(text.matches("^$"))
+            sendMessage(fromUser, buildHelpMessage());
+        else if(text.matches("^help$"))
+            sendMessage(fromUser, buildShowCommandsMessage());
+        else if(text.startsWith("gif "))
+            sendMessage(fromUser, buildGifMessage(text.replace("gif","").trim()));
     }
 
     private void sendMessage(String fromUser, String text){
@@ -78,5 +84,9 @@ public class GroupMeBot implements ChatBot {
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
                     getBotKeyword() + " help -- show bot commands";
+    }
+
+    private String buildGifMessage(String query){
+        return gifGenerator.getRandomGif(query);
     }
 }
