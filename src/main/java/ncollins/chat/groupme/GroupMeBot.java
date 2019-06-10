@@ -2,6 +2,7 @@ package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBot;
 import ncollins.gif.GifGenerator;
+import ncollins.salt.SaltGenerator;
 import org.apache.commons.lang3.ArrayUtils;
 import java.io.IOException;
 import java.net.URI;
@@ -20,6 +21,7 @@ public class GroupMeBot implements ChatBot {
     private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
     private static final String GIPHY_RATING = "R";
     private GifGenerator gifGenerator = new GifGenerator(GIPHY_KEY,GIPHY_RATING);
+    private SaltGenerator saltGenerator = new SaltGenerator();
 
     public GroupMeBot(String botId, String botName, String botGroupId, String botUserId){
         this.botId = botId;
@@ -45,19 +47,27 @@ public class GroupMeBot implements ChatBot {
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
         if(text.matches("^$"))
-            sendMessage(fromUser, buildHelpMessage());
+            sendMessage(buildHelpMessage());
         else if(text.matches("^help$"))
-            sendMessage(fromUser, buildShowCommandsMessage());
+            sendMessage(buildShowCommandsMessage());
         else if(text.startsWith("gif "))
-            sendMessage(fromUser, buildGifMessage(text.replace("gif","").trim()));
+            sendMessage(buildGifMessage(text.replace("gif","").trim()));
+        else if(text.startsWith("salt "))
+            sendMessage(buildSaltMessage(text.replace("salt","").trim()));
+        else if(text.startsWith("show "))
+            processEspnResponse(text.replace("show","").trim());
     }
 
-    private void sendMessage(String fromUser, String text){
-        sendMessage(fromUser, text, ArrayUtils.EMPTY_STRING_ARRAY);
+    private void processEspnResponse(String text){
+            sendMessage(text);
+    }
+
+    private void sendMessage(String text){
+        sendMessage(text, ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
     @Override
-    public void sendMessage(String fromUser, String text, String[] imageUrls) {
+    public void sendMessage(String text, String[] imageUrls) {
         String attachments = buildAttachmentsPayload(imageUrls);
         String payload = "{" +
                 "\"bot_id\": \"" + botId + "\"," +
@@ -103,4 +113,5 @@ public class GroupMeBot implements ChatBot {
     private String buildGifMessage(String query){
         return gifGenerator.getRandomGif(query);
     }
+    private String buildSaltMessage(String recipient) { return saltGenerator.throwSalt(recipient); }
 }
