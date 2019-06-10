@@ -13,7 +13,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
-import java.nio.ByteBuffer;
 import java.util.concurrent.CompletionStage;
 
 public class GroupMeListener implements ChatBotListener {
@@ -166,24 +165,6 @@ public class GroupMeListener implements ChatBotListener {
         public void onError(WebSocket webSocket, Throwable error) {
             System.out.println("WebSocket error occurred: " + error.getMessage());
             WebSocket.Listener.super.onError(webSocket, error);
-        }
-
-        @Override
-        public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
-            System.out.println("onBinary: " + new String(data.array()));
-            return WebSocket.Listener.super.onBinary(webSocket,data,last);
-        }
-
-        @Override
-        public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
-            System.out.println("onPing: " + new String(message.array()));
-            return WebSocket.Listener.super.onPing(webSocket,message);
-        }
-
-        @Override
-        public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
-            System.out.println("onPong: " + new String(message.array()));
-            return WebSocket.Listener.super.onPong(webSocket,message);
         }
     }
 }

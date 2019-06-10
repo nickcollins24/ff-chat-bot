@@ -11,14 +11,15 @@ import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
     private HttpClient client;
-    private GifGenerator gifGenerator = new GifGenerator();
-
     private final String botId;
     private final String botName;
     private final String botGroupId;
     private final String botUserId;
     private final String botKeyword;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
+    private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
+    private static final String GIPHY_RATING = "R";
+    private GifGenerator gifGenerator = new GifGenerator(GIPHY_KEY,GIPHY_RATING);
 
     public GroupMeBot(String botId, String botName, String botGroupId, String botUserId){
         this.botId = botId;
