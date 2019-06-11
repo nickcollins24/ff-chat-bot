@@ -99,14 +99,17 @@ public class GroupMeBot implements ChatBot {
         else if(text.contains("gattaca"))
             sendMessage(gifGenerator.getRandomGif("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$")){
-            int year = Year.now().getValue();
-            String[] images = {"https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"};
-            sendMessage(year + "-" + year, images);
+            sendMessage("", "https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview");
         }
     }
 
     public void sendMessage(String text){
         sendMessage(text, ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+
+    public void sendMessage(String text, String imageUrl){
+        String[] imageUrls = {imageUrl};
+        sendMessage(text, imageUrls);
     }
 
     @Override
