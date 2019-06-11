@@ -125,15 +125,12 @@ public class GroupMeListener implements ChatBotListener {
 
             try {
                 ChatResponse r = gson.fromJson(jsonArray.get(0), ChatResponse.class);
-
-                //if message was created by a user (not bot) in the required group,
-                //then send to bot for processing
                 ChatResponse.Subject subject = r.getData().getSubject();
 
-                if(subject.getGroupId().equals(bot.getBotGroupId()) && subject.getSenderType().equals("user")
-                        && subject.getText().startsWith(bot.getBotKeyword() + " ")){
+                //send to bot for processing if message was created by a user (not bot) in the required group
+                if(subject.getGroupId().equals(bot.getBotGroupId()) && subject.getSenderType().equals("user")){
                     String fromUser = subject.getName();
-                    String text = subject.getText().replace(bot.getBotKeyword(), "").trim();
+                    String text = subject.getText().trim();
                     String[] attachments = subject.getAttachments();
 
                     bot.processResponse(fromUser, text, attachments);

@@ -1,6 +1,7 @@
 package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBot;
+import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
 import ncollins.salt.SaltGenerator;
 import org.apache.commons.lang3.ArrayUtils;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Year;
 
 public class GroupMeBot implements ChatBot {
     private HttpClient client;
@@ -18,10 +20,9 @@ public class GroupMeBot implements ChatBot {
     private final String botUserId;
     private final String botKeyword;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
-    private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
-    private static final String GIPHY_RATING = "R";
-    private GifGenerator gifGenerator = new GifGenerator(GIPHY_KEY,GIPHY_RATING);
+    private GifGenerator gifGenerator = new GifGenerator();
     private SaltGenerator saltGenerator = new SaltGenerator();
+    private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
 
     public GroupMeBot(String botId, String botName, String botGroupId, String botUserId){
         this.botId = botId;
@@ -30,10 +31,6 @@ public class GroupMeBot implements ChatBot {
         this.botUserId = botUserId;
         this.botKeyword = "@" + this.botName;
         this.client = HttpClient.newHttpClient();
-    }
-
-    public String getBotKeyword() {
-        return botKeyword;
     }
 
     public String getBotGroupId() {
@@ -46,6 +43,14 @@ public class GroupMeBot implements ChatBot {
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
+        text = text.toLowerCase();
+
+        if(text.startsWith(botKeyword))
+            processBotResponse(text.replace(botKeyword, "").trim());
+        else processEasterEggResponse(text);
+    }
+
+    private void processBotResponse(String text){
         if(text.matches("^$"))
             sendMessage(buildHelpMessage());
         else if(text.matches("^help$"))
@@ -59,10 +64,50 @@ public class GroupMeBot implements ChatBot {
     }
 
     private void processEspnResponse(String text){
-            sendMessage(text);
+        // SCORES
+        // scores {top|bottom} [TOTAL] [YEAR|ever]-- top/bottom scores this year or all-time. if year==null, show this year
+
+        // MATCHUPS
+        // matchups [WEEK] -- matchups for given week. if week==null, show this week
+        // matchups [TEAM0] [TEAM1] -- all time matchup stats
+
+        // STANDINGS
+        // standings [YEAR|ever] -- standings for given year or all-time. if year==null, show this year.
+
+        // POINTS
+        // points [for|against] through [WEEK] {top|bottom} [TOTAL] -- most/least points for or against through given week
+
+        // PLAYERS
+        // players {top|bottom} [TOTAL] [POSITION] [YEAR] -- years top/worst players. if year==null, show this week
+
+        // STREAKS
+        // streaks [POINT_TOTAL] points [TOTAL] -- longest streaks of point_total >= points
+        // streaks {win|loss} [TOTAL] -- longest regular season win/loss streaks
+
+        // OTHER
+        // jujus -- this years jujus
+        // salties -- this years salties
+        // blowouts [TOTAL] -- biggest blowouts ever
+        // heartbreaks [TOTAL] -- closest games ever
+
+        sendMessage(text);
     }
 
-    private void sendMessage(String text){
+    private void processEasterEggResponse(String text){
+        if(text.contains("wonder"))
+            sendMessage("did somebody say wonder?!");
+        else if(text.contains("same"))
+            sendMessage("same");
+        else if(text.contains("gattaca"))
+            sendMessage(gifGenerator.getRandomGif("rafi gattaca"));
+        else if(text.matches(".+ de[a]?d$")){
+            int year = Year.now().getValue();
+            String[] images = {"https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"};
+            sendMessage(year + "-" + year, images);
+        }
+    }
+
+    public void sendMessage(String text){
         sendMessage(text, ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
@@ -101,17 +146,20 @@ public class GroupMeBot implements ChatBot {
     }
 
     private String buildHelpMessage(){
-        return "you rang? type '" + getBotKeyword() + " help' to see what i can do.";
+        return "you rang? type '" + botKeyword + " help' to see what i can do.";
     }
 
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
-               getBotKeyword() + " help -- show bot commands\\n" +
-               getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n";
+                botKeyword + " help -- show bot commands\\n" +
+                botKeyword + " gif [SOMETHING] -- post a random gif of something\\n";
     }
 
     private String buildGifMessage(String query){
         return gifGenerator.getRandomGif(query);
     }
-    private String buildSaltMessage(String recipient) { return saltGenerator.throwSalt(recipient); }
+
+    private String buildSaltMessage(String recipient) {
+        return saltGenerator.throwSalt(recipient);
+    }
 }

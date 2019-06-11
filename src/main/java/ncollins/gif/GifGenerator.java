@@ -11,19 +11,17 @@ import java.net.http.HttpResponse;
 
 public class GifGenerator {
     private HttpClient client;
-    private String giphyKey;
-    private String giphyRating;
+    private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
+    private static final String GIPHY_RATING = "R";
     private static final String GIPHY_URL = "https://api.giphy.com/v1/gifs/translate";
 
-    public GifGenerator(String giphyKey, String giphyRating){
-        this.giphyKey = giphyKey;
-        this.giphyRating = giphyRating;
+    public GifGenerator(){
         this.client = HttpClient.newHttpClient();
     }
 
     public String getRandomGif(String query){
         String queryNoSpaces = query.replaceAll(" ", "+");
-        URI giphyUrl = URI.create(GIPHY_URL + "?api_key=" + giphyKey + "&s=" + queryNoSpaces + "&rating=" + giphyRating);
+        URI giphyUrl = URI.create(GIPHY_URL + "?api_key=" + GIPHY_KEY + "&s=" + queryNoSpaces + "&rating=" + GIPHY_RATING);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(giphyUrl)
