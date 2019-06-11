@@ -19,14 +19,13 @@ import java.util.concurrent.CompletionStage;
 
 public class GroupMeListener implements ChatBotListener {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private GroupMeBot bot;
-    private HttpClient client;
-    private String accessToken;
     private static final String HTTPS_GROUP_ME_URL = "https://push.groupme.com/faye";
     private static final String WSS_GROUP_ME_URL = "wss://push.groupme.com/faye";
+    private static final String ACCESS_TOKEN = "QXpw652wlQUrMRUvWO6YHk57EP2dSPzqlS5biTwe";
+    private GroupMeBot bot;
+    private HttpClient client;
 
-    public GroupMeListener(String accessToken, GroupMeBot bot){
-        this.accessToken = accessToken;
+    public GroupMeListener(GroupMeBot bot){
         this.bot = bot;
         this.client = HttpClient.newHttpClient();
     }
@@ -56,7 +55,7 @@ public class GroupMeListener implements ChatBotListener {
                 "\"subscription\": \"/user/" + bot.getBotUserId() + "\"," +
                 "\"id\": \"2\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + accessToken + "\"," +
+                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -68,7 +67,7 @@ public class GroupMeListener implements ChatBotListener {
                 "\"subscription\": \"/group/" + bot.getBotGroupId() + "\"," +
                 "\"id\": \"3\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + accessToken + "\"," +
+                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);

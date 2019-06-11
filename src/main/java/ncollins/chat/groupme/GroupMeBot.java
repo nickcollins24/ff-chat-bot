@@ -16,41 +16,36 @@ import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private HttpClient client;
-    private final String botId;
-    private final String botName;
-    private final String botGroupId;
-    private final String botUserId;
-    private final String botKeyword;
+    private static final String BOT_ID = "7f608eb2e1c2b036fe461a4765";
+    private static final String BOT_NAME = "testbot";
+    private static final String GROUP_ID = "43518373";
+    private static final String USER_ID = "27277860";
+    private static final String BOT_KEYWORD = "@" + BOT_NAME;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
+    private HttpClient client;
     private GifGenerator gifGenerator = new GifGenerator();
     private SaltGenerator saltGenerator = new SaltGenerator();
     private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
 
-    public GroupMeBot(String botId, String botName, String botGroupId, String botUserId){
-        this.botId = botId;
-        this.botName = botName;
-        this.botGroupId = botGroupId;
-        this.botUserId = botUserId;
-        this.botKeyword = "@" + this.botName;
+    public GroupMeBot(){
         this.client = HttpClient.newHttpClient();
     }
 
     public String getBotGroupId() {
-        return botGroupId;
+        return GROUP_ID;
     }
 
     public String getBotUserId() {
-        return botUserId;
+        return USER_ID;
     }
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
-        logger.info(botName + " is processing request: " + text);
+        logger.info(BOT_NAME + " is processing request: " + text);
         text = text.toLowerCase();
 
-        if(text.startsWith(botKeyword))
-            processBotResponse(text.replace(botKeyword, "").trim());
+        if(text.startsWith(BOT_KEYWORD))
+            processBotResponse(text.replace(BOT_KEYWORD, "").trim());
         else processEasterEggResponse(text);
     }
 
@@ -120,7 +115,7 @@ public class GroupMeBot implements ChatBot {
     public void sendMessage(String text, String[] imageUrls) {
         String attachments = buildAttachmentsPayload(imageUrls);
         String payload = "{" +
-                "\"bot_id\": \"" + botId + "\"," +
+                "\"bot_id\": \"" + BOT_ID + "\"," +
                 "\"text\": \"" + text + "\"," +
                 "\"attachments\": " + attachments + "}";
 
@@ -151,13 +146,13 @@ public class GroupMeBot implements ChatBot {
     }
 
     private String buildHelpMessage(){
-        return "you rang? type '" + botKeyword + " help' to see what i can do.";
+        return "you rang? type '" + BOT_KEYWORD + " help' to see what i can do.";
     }
 
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
-                botKeyword + " help -- show bot commands\\n" +
-                botKeyword + " gif [SOMETHING] -- post a random gif of something\\n";
+                BOT_KEYWORD + " help -- show bot commands\\n" +
+                BOT_KEYWORD + " gif [SOMETHING] -- post a random gif of something\\n";
     }
 
     private String buildGifMessage(String query){

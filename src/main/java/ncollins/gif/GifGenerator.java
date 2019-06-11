@@ -2,6 +2,8 @@ package ncollins.gif;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,10 +12,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class GifGenerator {
-    private HttpClient client;
+    Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
     private static final String GIPHY_RATING = "R";
     private static final String GIPHY_URL = "https://api.giphy.com/v1/gifs/translate";
+    private HttpClient client;
 
     public GifGenerator(){
         this.client = HttpClient.newHttpClient();
@@ -36,12 +39,11 @@ public class GifGenerator {
                     get("images").getAsJsonObject().
                     get("fixed_height").getAsJsonObject().
                     get("url").getAsString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
+            logger.error("Exception while getting gif for query (" + query + "): " + e);
         }
 
+        logger.error("Failed to get gif for query: " + query);
         return "";
     }
 }
