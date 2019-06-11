@@ -64,33 +64,31 @@ public class GroupMeBot implements ChatBot {
     }
 
     private void processEspnResponse(String text){
-        // SCORES
-        // scores {top|bottom} [TOTAL] [YEAR|ever]-- top/bottom scores this year or all-time. if year==null, show this year
-
-        // MATCHUPS
-        // matchups [WEEK] -- matchups for given week. if week==null, show this week
-        // matchups [TEAM0] [TEAM1] -- all time matchup stats
-
-        // STANDINGS
-        // standings [YEAR|ever] -- standings for given year or all-time. if year==null, show this year.
-
-        // POINTS
-        // points [for|against] through [WEEK] {top|bottom} [TOTAL] -- most/least points for or against through given week
-
-        // PLAYERS
-        // players {top|bottom} [TOTAL] [POSITION] [YEAR] -- years top/worst players. if year==null, show this week
-
-        // STREAKS
-        // streaks [POINT_TOTAL] points [TOTAL] -- longest streaks of point_total >= points
-        // streaks {win|loss} [TOTAL] -- longest regular season win/loss streaks
-
-        // OTHER
-        // jujus -- this years jujus
-        // salties -- this years salties
-        // blowouts [TOTAL] -- biggest blowouts ever
-        // heartbreaks [TOTAL] -- closest games ever
-
-        sendMessage(text);
+        if(text.startsWith("scores "))
+            sendMessage(espnMessageBuilder.buildScoresMessage(text.replace("scores","").trim()));
+        else if(text.startsWith("matchups "))
+            sendMessage(espnMessageBuilder.buildMatchupsMessage(text.replace("matchups","").trim()));
+        else if(text.startsWith("standings "))
+            sendMessage(espnMessageBuilder.buildStandingsMessage(text.replace("standings","").trim()));
+        else if(text.startsWith("points "))
+            sendMessage(espnMessageBuilder.buildPointsMessage(text.replace("points","").trim()));
+        else if(text.startsWith("players "))
+            sendMessage(espnMessageBuilder.buildPlayersMessage(text.replace("players","").trim()));
+        else if(text.startsWith("streaks "))
+            sendMessage(espnMessageBuilder.buildStreaksMessage(text.replace("scores","").trim()));
+        else if(text.equals("jujus"))
+            sendMessage(espnMessageBuilder.buildJujusMessage());
+        else if(text.equals("salties"))
+            sendMessage(espnMessageBuilder.buildSaltiesMessage());
+        else if(text.matches("^blowouts($|\\s\\d+)")){
+            String countStr = text.replaceAll("\\D+","");
+            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
+            sendMessage(espnMessageBuilder.buildBlowoutsMessage(count));
+        } else if(text.matches("^heartbreaks($|\\s\\d+)")){
+            String countStr = text.replaceAll("\\D+","");
+            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
+            sendMessage(espnMessageBuilder.buildHeartbreaksMessage(count));
+        }
     }
 
     private void processEasterEggResponse(String text){
