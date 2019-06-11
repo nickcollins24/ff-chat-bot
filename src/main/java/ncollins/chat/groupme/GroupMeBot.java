@@ -5,14 +5,17 @@ import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
 import ncollins.salt.SaltGenerator;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Year;
 
 public class GroupMeBot implements ChatBot {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
     private HttpClient client;
     private final String botId;
     private final String botName;
@@ -43,6 +46,7 @@ public class GroupMeBot implements ChatBot {
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
+        logger.info(botName + " is processing request: " + text);
         text = text.toLowerCase();
 
         if(text.startsWith(botKeyword))

@@ -6,6 +6,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import ncollins.chat.ChatBotListener;
 import ncollins.model.chat.ChatResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,6 +18,7 @@ import java.net.http.WebSocket;
 import java.util.concurrent.CompletionStage;
 
 public class GroupMeListener implements ChatBotListener {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
     private GroupMeBot bot;
     private HttpClient client;
     private String accessToken;
@@ -112,12 +115,12 @@ public class GroupMeListener implements ChatBotListener {
 
         @Override
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-            System.out.println("onText: " + data);
+            logger.debug("onText: " + data);
             JsonArray jsonArray = new JsonParser().parse(data.toString()).getAsJsonArray();
 
             // if data contains successful attribute, then send a ping to let server know we're still alive
             if(jsonArray.get(0).getAsJsonObject().has("successful")){
-                System.out.println("Reconnecting...");
+                logger.debug("Reconnecting...");
                 webSocket.abort();
                 listen();
                 return WebSocket.Listener.super.onText(webSocket, data, last);
@@ -138,7 +141,7 @@ public class GroupMeListener implements ChatBotListener {
             } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
             } catch(Exception e){
-                System.out.println("Unexpected exception in onText: " + e);
+                logger.error("Unexpected exception in onText: " + e);
             }
 
             return WebSocket.Listener.super.onText(webSocket, data, last);
@@ -146,13 +149,13 @@ public class GroupMeListener implements ChatBotListener {
 
         @Override
         public void onOpen(WebSocket webSocket){
-            System.out.println("WebSocket connection opened.");
+            logger.info("WebSocket connection opened.");
             WebSocket.Listener.super.onOpen(webSocket);
         }
 
         @Override
         public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-            System.out.println("WebSocket connection closed. Reconnecting...");
+            logger.info("WebSocket connection closed. Reconnecting...");
             webSocket.abort();
             listen();
             return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
@@ -160,7 +163,7 @@ public class GroupMeListener implements ChatBotListener {
 
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
-            System.out.println("WebSocket error occurred: " + error.getMessage());
+            logger.error("WebSocket error occurred: " + error.getMessage());
             WebSocket.Listener.super.onError(webSocket, error);
         }
     }
