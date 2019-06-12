@@ -64,17 +64,17 @@ public class GroupMeBot implements ChatBot {
 
     private void processEspnResponse(String text){
         if(text.startsWith("scores "))
-            sendMessage(espnMessageBuilder.buildScoresMessage(text.replace("scores","").trim()));
+            sendMessage(espnMessageBuilder.buildScoresMessage(null,0,null,false));
         else if(text.startsWith("matchups "))
-            sendMessage(espnMessageBuilder.buildMatchupsMessage(text.replace("matchups","").trim()));
+            sendMessage(espnMessageBuilder.buildMatchupsMessage(null,null));
         else if(text.startsWith("standings "))
-            sendMessage(espnMessageBuilder.buildStandingsMessage(text.replace("standings","").trim()));
+            sendMessage(espnMessageBuilder.buildStandingsMessage(null));
         else if(text.startsWith("points "))
-            sendMessage(espnMessageBuilder.buildPointsMessage(text.replace("points","").trim()));
+            sendMessage(espnMessageBuilder.buildPointsMessage(null,0,null,0));
         else if(text.startsWith("players "))
-            sendMessage(espnMessageBuilder.buildPlayersMessage(text.replace("players","").trim()));
+            sendMessage(espnMessageBuilder.buildPlayersMessage(null,0,null,null));
         else if(text.startsWith("streaks "))
-            sendMessage(espnMessageBuilder.buildStreaksMessage(text.replace("scores","").trim()));
+            sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(null,0));
         else if(text.equals("jujus"))
             sendMessage(espnMessageBuilder.buildJujusMessage());
         else if(text.equals("salties"))
