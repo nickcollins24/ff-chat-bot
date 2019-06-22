@@ -12,12 +12,9 @@ public class EspnMessageBuilder {
     Espn espn = new Espn();
 
     /***
-     *  scores {top|bottom} [TOTAL] [YEAR|ever]-- top/bottom scores this year or all-time. if year==null, show this year
+     *  scores {top|bottom} [TOTAL] -- top/bottom scores this year.
      */
-    public String buildScoresMessage(Order order, int total, Year year, boolean ever){
-        return "TODO: buildScoresMessage";
-    }
-    public String buildScoresMessage(Order order, int total, boolean ever){
+    public String buildScoresMessage(Order order, int total){
         return "TODO: buildScoresMessage";
     }
 
@@ -33,9 +30,9 @@ public class EspnMessageBuilder {
     }
 
     /***
-     *  standings [YEAR|ever] -- standings for given year or all-time. if year==null, show this year.
+     *  standings -- standings this year.
      */
-    public String buildStandingsMessage(Year year){
+    public String buildStandingsMessage(){
         return "TODO: buildStandingsMessage";
     }
 
@@ -47,9 +44,9 @@ public class EspnMessageBuilder {
     }
 
     /***
-     *  players {top|bottom} [TOTAL] [POSITION] [YEAR] -- years top/worst players. if year==null, show this week
+     *  players {top|bottom} [TOTAL] [POSITION] -- years top/worst players. if year==null, show this week
      */
-    public String buildPlayersMessage(Order order, int total, Position position, Year year){
+    public String buildPlayersMessage(Order order, int total, Position position){
         return "TODO: buildPlayersMessage";
     }
 

@@ -64,15 +64,15 @@ public class GroupMeBot implements ChatBot {
 
     private void processEspnResponse(String text){
         if(text.startsWith("scores "))
-            sendMessage(espnMessageBuilder.buildScoresMessage(null,0,null,false));
+            sendMessage(espnMessageBuilder.buildScoresMessage(null,0));
         else if(text.startsWith("matchups "))
             sendMessage(espnMessageBuilder.buildMatchupsMessage(null,null));
         else if(text.startsWith("standings "))
-            sendMessage(espnMessageBuilder.buildStandingsMessage(null));
+            sendMessage(espnMessageBuilder.buildStandingsMessage());
         else if(text.startsWith("points "))
             sendMessage(espnMessageBuilder.buildPointsMessage(null,0,null,0));
         else if(text.startsWith("players "))
-            sendMessage(espnMessageBuilder.buildPlayersMessage(null,0,null,null));
+            sendMessage(espnMessageBuilder.buildPlayersMessage(null,0,null));
         else if(text.startsWith("streaks "))
             sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(null,0));
         else if(text.equals("jujus"))
