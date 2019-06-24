@@ -4,6 +4,7 @@ import ncollins.chat.ChatBot;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
 import ncollins.model.Order;
+import ncollins.model.espn.Outcome;
 import ncollins.salt.SaltGenerator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -65,40 +66,45 @@ public class GroupMeBot implements ChatBot {
 
     private void processEspnResponse(String text){
         // {top|bottom} [TOTAL] scores
-        if(text.matches("(top|bottom) \\d* ?scores")){
+        if(text.matches("(top|bottom) \\d* ?scores$")){
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String countStr = text.replaceAll("\\D+","");
-            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
-            sendMessage(espnMessageBuilder.buildScoresMessage(order,count));
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            sendMessage(espnMessageBuilder.buildScoresMessage(order,total));
+        // {top|bottom} [TOTAL] [POSITION|players]
+        } else if(text.matches("(top|bottom) \\d* ?players$")) {
+            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, null));
+        // [TOTAL] {win|loss} streaks
+        } else if(text.matches("\\d* ?(win|loss) streaks$")) {
+            Outcome outcome = text.contains(" win ") ? Outcome.WIN : Outcome.TIE;
+            String totalStr = text.replaceAll("\\D+", "");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(outcome, total));
+        // [TOTAL] blowouts
+        } else if(text.matches("(^|\\s\\d+)blowouts$")){
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            sendMessage(espnMessageBuilder.buildBlowoutsMessage(total));
+        // [TOTAL] heartbreaks
+        } else if(text.matches("(^|\\s\\d+)heartbreaks$")){
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            sendMessage(espnMessageBuilder.buildHeartbreaksMessage(total));
         // matchups
         } else if(text.equals("matchups"))
             sendMessage(espnMessageBuilder.buildMatchupsMessage());
         // standings
         else if(text.equals("standings"))
             sendMessage(espnMessageBuilder.buildStandingsMessage());
-        // {top|bottom} [TOTAL] [POSITION|players]
-        else if(text.endsWith("players"))
-            sendMessage(espnMessageBuilder.buildPlayersMessage(null,0,null));
-        // [TOTAL] {win|loss} streaks
-        else if(text.endsWith("streaks"))
-            sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(null,0));
         // jujus
         else if(text.equals("jujus"))
             sendMessage(espnMessageBuilder.buildJujusMessage());
         // salties
         else if(text.equals("salties"))
             sendMessage(espnMessageBuilder.buildSaltiesMessage());
-        // [TOTAL] blowouts
-        else if(text.matches("(^|\\s\\d+)blowouts$")){
-            String countStr = text.replaceAll("\\D+","");
-            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
-            sendMessage(espnMessageBuilder.buildBlowoutsMessage(count));
-        // [TOTAL] heartbreaks
-        } else if(text.matches("(^|\\s\\d+)heartbreaks$")){
-            String countStr = text.replaceAll("\\D+","");
-            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
-            sendMessage(espnMessageBuilder.buildHeartbreaksMessage(count));
-        }
     }
 
     private void processEasterEggResponse(String text){
