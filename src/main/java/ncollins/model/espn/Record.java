@@ -1,45 +1,70 @@
 package ncollins.model.espn;
 
 public class Record {
-    private Away AwayObject;
-    private Division DivisionObject;
-    private Home HomeObject;
-    private Overall OverallObject;
+    private Away        away;
+    private Division    division;
+    private Home        home;
+    private Overall     overall;
 
+    // GET
+    public Away getAway() { return away; }
+    public Division getDivision() { return division; }
+    public Home getHome() { return home; }
+    public Overall getOverall() { return overall; }
 
-    // Getter Methods
+    // SET
+    public void setAway(Away awayObject) { this.away = awayObject; }
+    public void setDivision(Division divisionObject) { this.division = divisionObject; }
+    public void setHome(Home homeObject) { this.home = homeObject; }
+    public void setOverall(Overall overallObject) { this.overall = overallObject; }
 
-    public Away getAway() {
-        return AwayObject;
+    private class Home {
+        private Home(){ super(); }
     }
 
-    public Division getDivision() {
-        return DivisionObject;
+    private class Away extends Residence {
+        private Away(){ super(); }
     }
 
-    public Home getHome() {
-        return HomeObject;
+    private class Division extends Residence {
+        private Division(){ super(); }
     }
 
-    public Overall getOverall() {
-        return OverallObject;
+    private class Overall extends Residence {
+        private Overall(){ super(); }
     }
 
-    // Setter Methods
+    private class Residence {
+        private int     gamesBack;
+        private int     losses;
+        private Double  percentage;
+        private Double  pointsAgainst;
+        private Double  pointsFor;
+        private int     streakLength;
+        private String  streakType;
+        private int     ties;
+        private int     wins;
 
-    public void setAway(Away awayObject) {
-        this.AwayObject = awayObject;
-    }
+        // GET
+        public int getGamesBack() { return gamesBack; }
+        public int getLosses() { return losses; }
+        public Double getPercentage() { return percentage; }
+        public Double getPointsAgainst() { return pointsAgainst; }
+        public Double getPointsFor() { return pointsFor; }
+        public int getStreakLength() { return streakLength; }
+        public String getStreakType() { return streakType; }
+        public int getTies() { return ties; }
+        public int getWins() { return wins; }
 
-    public void setDivision(Division divisionObject) {
-        this.DivisionObject = divisionObject;
-    }
-
-    public void setHome(Home homeObject) {
-        this.HomeObject = homeObject;
-    }
-
-    public void setOverall(Overall overallObject) {
-        this.OverallObject = overallObject;
+        // SET
+        public void setGamesBack(int gamesBack) { this.gamesBack = gamesBack; }
+        public void setLosses(int losses) { this.losses = losses; }
+        public void setPercentage(Double percentage) { this.percentage = percentage; }
+        public void setPointsAgainst(Double pointsAgainst) { this.pointsAgainst = pointsAgainst; }
+        public void setPointsFor(Double pointsFor) { this.pointsFor = pointsFor; }
+        public void setStreakLength(int streakLength) { this.streakLength = streakLength; }
+        public void setStreakType(String streakType) { this.streakType = streakType; }
+        public void setTies(int ties) { this.ties = ties; }
+        public void setWins(int wins) { this.wins = wins; }
     }
 }

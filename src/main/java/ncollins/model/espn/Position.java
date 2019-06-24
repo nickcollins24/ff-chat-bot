@@ -1,4 +1,10 @@
 package ncollins.model.espn;
 
-public class Position {
+public enum Position {
+    QB,
+    RB,
+    WR,
+    TE,
+    K,
+    D
 }

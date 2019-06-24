@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import ncollins.chat.ChatBot;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
+import ncollins.model.Order;
 import ncollins.salt.SaltGenerator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -63,27 +64,37 @@ public class GroupMeBot implements ChatBot {
     }
 
     private void processEspnResponse(String text){
-        if(text.startsWith("scores "))
-            sendMessage(espnMessageBuilder.buildScoresMessage(null,0));
-        else if(text.startsWith("matchups "))
-            sendMessage(espnMessageBuilder.buildMatchupsMessage(null,null));
-        else if(text.startsWith("standings "))
+        // {top|bottom} [TOTAL] scores
+        if(text.matches("(top|bottom) \\d* ?scores")){
+            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+            String countStr = text.replaceAll("\\D+","");
+            int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
+            sendMessage(espnMessageBuilder.buildScoresMessage(order,count));
+        // matchups
+        } else if(text.equals("matchups"))
+            sendMessage(espnMessageBuilder.buildMatchupsMessage());
+        // standings
+        else if(text.equals("standings"))
             sendMessage(espnMessageBuilder.buildStandingsMessage());
-        else if(text.startsWith("points "))
-            sendMessage(espnMessageBuilder.buildPointsMessage(null,0,null,0));
-        else if(text.startsWith("players "))
+        // {top|bottom} [TOTAL] [POSITION|players]
+        else if(text.endsWith("players"))
             sendMessage(espnMessageBuilder.buildPlayersMessage(null,0,null));
-        else if(text.startsWith("streaks "))
+        // [TOTAL] {win|loss} streaks
+        else if(text.endsWith("streaks"))
             sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(null,0));
+        // jujus
         else if(text.equals("jujus"))
             sendMessage(espnMessageBuilder.buildJujusMessage());
+        // salties
         else if(text.equals("salties"))
             sendMessage(espnMessageBuilder.buildSaltiesMessage());
-        else if(text.matches("^blowouts($|\\s\\d+)")){
+        // [TOTAL] blowouts
+        else if(text.matches("(^|\\s\\d+)blowouts$")){
             String countStr = text.replaceAll("\\D+","");
             int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
             sendMessage(espnMessageBuilder.buildBlowoutsMessage(count));
-        } else if(text.matches("^heartbreaks($|\\s\\d+)")){
+        // [TOTAL] heartbreaks
+        } else if(text.matches("(^|\\s\\d+)heartbreaks$")){
             String countStr = text.replaceAll("\\D+","");
             int count = countStr.isEmpty() ? 10 : Integer.parseInt(countStr);
             sendMessage(espnMessageBuilder.buildHeartbreaksMessage(count));
@@ -152,7 +163,17 @@ public class GroupMeBot implements ChatBot {
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
                 BOT_KEYWORD + " help -- show bot commands\\n" +
-                BOT_KEYWORD + " gif [SOMETHING] -- post a random gif of something\\n";
+                BOT_KEYWORD + " gif [SOMETHING] -- post a random gif of something\\n" +
+                BOT_KEYWORD + " salt [SOMEONE] -- throw salt at someone\\n" +
+                BOT_KEYWORD + " show {top|bottom} [TOTAL] scores -- top/bottom scores this year\\n" +
+                BOT_KEYWORD + " show matchups -- matchups for the current week\\n" +
+                BOT_KEYWORD + " show standings -- standings this year\\n" +
+                BOT_KEYWORD + " show {top|bottom} [TOTAL] [POSITION|players] -- best/worst players this year\\n" +
+                BOT_KEYWORD + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks this year\\n" +
+                BOT_KEYWORD + " show jujus -- this years jujus\\n" +
+                BOT_KEYWORD + " show salties -- this years salties\\n" +
+                BOT_KEYWORD + " show [TOTAL] blowouts -- biggest blowouts this year\\n" +
+                BOT_KEYWORD + " show [TOTAL] heartbreaks -- closest games this year";
     }
 
     private String buildGifMessage(String query){
