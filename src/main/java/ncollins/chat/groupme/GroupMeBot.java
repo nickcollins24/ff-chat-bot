@@ -109,11 +109,11 @@ public class GroupMeBot implements ChatBot {
 
     private void processEasterEggResponse(String text){
         if(text.contains("wonder"))
-            sendMessage("did somebody say wonder?!");
+            sendMessage("https://houseofgeekery.files.wordpress.com/2013/05/tony-wonder-arrested-development-large-msg-132259950538.jpg");
         else if(text.contains("same"))
-            sendMessage("same");
+            sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
         else if(text.contains("gattaca"))
-            sendMessage(gifGenerator.getRandomGif("rafi gattaca"));
+            sendMessage(gifGenerator.translateGif("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$")){
             sendMessage("", "https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview");
         }
@@ -183,7 +183,7 @@ public class GroupMeBot implements ChatBot {
     }
 
     private String buildGifMessage(String query){
-        return gifGenerator.getRandomGif(query);
+        return gifGenerator.searchGif(query);
     }
 
     private String buildSaltMessage(String recipient) {
