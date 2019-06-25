@@ -38,6 +38,13 @@ public class Espn {
         return scores;
     }
 
+    public List<Team> getTeams(){
+        List<Team> teams = getLeague().getTeams();
+        teams.sort(new SortByWins().thenComparing(new SortByPoints()));
+
+        return teams;
+    }
+
     public String getTeamAbbrev(int teamId){
         for(Team team : getLeague().getTeams()){
             if(team.getId() == teamId){
@@ -64,4 +71,19 @@ public class Espn {
         }
     }
 
+    class SortByWins implements Comparator<Team> {
+        public int compare(Team a, Team b)
+        {
+            return b.getRecord().getOverall().getPercentage().compareTo(
+                    a.getRecord().getOverall().getPercentage());
+        }
+    }
+
+    class SortByPoints implements Comparator<Team> {
+        public int compare(Team a, Team b)
+        {
+            return b.getRecord().getOverall().getPointsFor().compareTo(
+                    a.getRecord().getOverall().getPointsFor());
+        }
+    }
 }

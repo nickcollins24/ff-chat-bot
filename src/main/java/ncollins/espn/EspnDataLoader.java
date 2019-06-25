@@ -9,7 +9,7 @@ import java.net.http.HttpResponse;
 public class EspnDataLoader {
     private EspnHttpClient client;
     private Gson gson;
-    private static final String LEAGUE_YEAR = "2019";
+    private static final String LEAGUE_YEAR = "2018";
     private static final String LEAGUE_ID = "541969";
 
     public EspnDataLoader() {

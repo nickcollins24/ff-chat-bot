@@ -48,7 +48,19 @@ public class EspnMessageBuilder {
      *  Builds message that displays current standings this year
      */
     public String buildStandingsMessage(){
-        return "TODO: buildStandingsMessage";
+        List<Team> teams = espn.getTeams();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Standings:\\n");
+        for(Team team : teams){
+            sb.append(team.getAbbrev() + " ")
+              .append(team.getRecord().getOverall().getWins() + "-" + team.getRecord().getOverall().getLosses() + " ")
+              .append(String.format("%.3f", team.getRecord().getOverall().getPercentage()) + " ")
+              .append(String.format("%.3f", team.getRecord().getOverall().getPointsFor()) + " ")
+              .append(String.format("%.3f", team.getRecord().getOverall().getPointsAgainst()) + "\\n");
+        }
+
+        return sb.toString();
     }
 
     /***
