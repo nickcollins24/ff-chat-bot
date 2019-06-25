@@ -18,9 +18,12 @@ import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String BOT_ID = "7f608eb2e1c2b036fe461a4765";
-    private static final String BOT_NAME = "testbot";
-    private static final String GROUP_ID = "43518373";
+    private static final String BOT_ID = "f0eb000dcff3fc4bc4e7612596";
+    private static final String BOT_NAME = "botclig";
+    private static final String GROUP_ID = "14909010";
+//    private static final String BOT_ID = "7f608eb2e1c2b036fe461a4765";
+//    private static final String BOT_NAME = "testbot";
+//    private static final String GROUP_ID = "43518373";
     private static final String USER_ID = "27277860";
     private static final String BOT_KEYWORD = "@" + BOT_NAME;
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";

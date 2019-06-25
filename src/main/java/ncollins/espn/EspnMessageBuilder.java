@@ -6,6 +6,7 @@ import java.util.List;
 
 public class EspnMessageBuilder {
     Espn espn = new Espn();
+    private static final String NOPE = "i can't do that yet.";
 
     /***
      *  Builds message that displays the best/worst scores by a team this year
@@ -27,21 +28,21 @@ public class EspnMessageBuilder {
      *  Builds message that displays the most/least points by a fantasy player in a week
      */
     public String buildPlayersMessage(Order order, int total, Position position){
-        return "TODO: buildPlayersMessage";
+        return NOPE;
     }
 
     /***
      *  Builds message that displays the longest winning/losing streaks this year
      */
     public String buildOutcomeStreakMessage(Outcome outcome, int total){
-        return "TODO: buildOutcomeStreakMessage";
+        return NOPE;
     }
 
     /***
      *  Builds message that displays the matchups for the current week
      */
     public String buildMatchupsMessage(){
-        return "TODO: buildMatchupsMessage";
+        return NOPE;
     }
 
     /***
@@ -68,7 +69,7 @@ public class EspnMessageBuilder {
      *  Definition of a Juju: TODO
      */
     public String buildJujusMessage(){
-        return "TODO: jujus";
+        return NOPE;
     }
 
     /***
@@ -76,20 +77,20 @@ public class EspnMessageBuilder {
      *  Definition of a Salty: TODO
      */
     public String buildSaltiesMessage(){
-        return "TODO: salties";
+        return NOPE;
     }
 
     /***
      *  Builds message that displays the biggest blowout matchups this year.
      */
     public String buildBlowoutsMessage(int count){
-        return "TODO: blowouts " + count;
+        return NOPE;
     }
 
     /***
      *  Builds message that displays the closest matchups this year.
      */
     public String buildHeartbreaksMessage(int count){
-        return "TODO: heartbreaks " + count;
+        return NOPE;
     }
 }
