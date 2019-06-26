@@ -186,7 +186,7 @@ public class GroupMeBot implements ChatBot {
     }
 
     private String buildGifMessage(String query){
-        return gifGenerator.searchGif(query);
+        return gifGenerator.translateGif(query);
     }
 
     private String buildSaltMessage(String recipient) {

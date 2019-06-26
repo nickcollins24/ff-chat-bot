@@ -36,6 +36,10 @@ public class GifGenerator {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             JsonObject jsonObject = new JsonParser().parse(response.body()).getAsJsonObject();
+            if(jsonObject.get("data").isJsonArray()) {
+                return "i couldn't find a gif for that...";
+            }
+
             return jsonObject.get("data").getAsJsonObject().
                     get("images").getAsJsonObject().
                     get("fixed_height").getAsJsonObject().
@@ -45,7 +49,7 @@ public class GifGenerator {
         }
 
         logger.error("Failed to get gif for query: " + query);
-        return "";
+        return "i couldn't find a gif for that...";
     }
 
     public String searchGif(String query){
@@ -62,15 +66,19 @@ public class GifGenerator {
             JsonObject jsonObject = new JsonParser().parse(response.body()).getAsJsonObject();
             JsonArray jsonArray = jsonObject.getAsJsonArray("data");
 
+            if(jsonArray.size() == 0) {
+                return "i couldn't find a gif for that...";
+            }
+
             return jsonArray.get(ThreadLocalRandom.current().nextInt(0,jsonArray.size())).getAsJsonObject().
-                    get("images").getAsJsonObject().
-                    get("fixed_height").getAsJsonObject().
+                    getAsJsonObject("images").
+                    getAsJsonObject("fixed_height").
                     get("url").getAsString();
         } catch (IOException | InterruptedException e) {
             logger.error("Exception while getting gif for query (" + query + "): " + e);
         }
 
         logger.error("Failed to get gif for query: " + query);
-        return "";
+        return "i couldn't find a gif for that...";
     }
 }
