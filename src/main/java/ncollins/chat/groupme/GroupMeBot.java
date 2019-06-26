@@ -46,7 +46,6 @@ public class GroupMeBot implements ChatBot {
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
-        logger.info(BOT_NAME + " is processing request: " + text);
         text = text.toLowerCase();
 
         if(text.startsWith(BOT_KEYWORD))
@@ -55,6 +54,8 @@ public class GroupMeBot implements ChatBot {
     }
 
     private void processBotResponse(String text){
+        logger.info(BOT_NAME + " is processing request: " + text);
+
         if(text.matches("^$"))
             sendMessage(buildHelpMessage());
         else if(text.matches("^help$"))
