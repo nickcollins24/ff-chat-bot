@@ -7,9 +7,9 @@ import ncollins.salt.words.Verbs;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SaltGenerator {
-    String[] nouns;
-    String[] verbs;
-    String[] adjectives;
+    private String[] nouns;
+    private String[] verbs;
+    private String[] adjectives;
 
     public SaltGenerator(){
         this.nouns = Nouns.values;

@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import ncollins.chat.ChatBot;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
+import ncollins.magiceightball.MagicAnswerGenerator;
 import ncollins.model.Order;
 import ncollins.model.espn.Outcome;
 import ncollins.salt.SaltGenerator;
@@ -29,6 +30,7 @@ public class GroupMeBot implements ChatBot {
     private HttpClient client;
     private GifGenerator gifGenerator = new GifGenerator();
     private SaltGenerator saltGenerator = new SaltGenerator();
+    private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
 
     public GroupMeBot(){
@@ -65,6 +67,8 @@ public class GroupMeBot implements ChatBot {
             sendMessage(buildSaltMessage(text.replace("salt","").trim()));
         else if(text.startsWith("show "))
             processEspnResponse(text.replace("show","").trim());
+        else if(text.endsWith("?"))
+            sendMessage(buildMagicAnswerMessage());
     }
 
     private void processEspnResponse(String text){
@@ -191,5 +195,9 @@ public class GroupMeBot implements ChatBot {
 
     private String buildSaltMessage(String recipient) {
         return saltGenerator.throwSalt(recipient);
+    }
+
+    private String buildMagicAnswerMessage(){
+        return answerGenerator.getRandom();
     }
 }
