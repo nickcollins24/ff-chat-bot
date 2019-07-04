@@ -15,8 +15,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class GifGenerator {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String GIPHY_KEY = "RREB060E8fcRzgHRV8BM9xYqsYFdqB20";
-    private static final String GIPHY_RATING = "R";
+    private static final String GIPHY_KEY = System.getenv("GIPHY_KEY");
+    private static final String GIPHY_RATING = System.getenv("GIPHY_RATING");
+
     private HttpClient client;
 
     public GifGenerator(){

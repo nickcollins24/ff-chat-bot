@@ -19,9 +19,11 @@ import java.util.concurrent.CompletionStage;
 
 public class GroupMeListener implements ChatBotListener {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private static final String ACCESS_TOKEN = System.getenv("GROUP_ME_ACCESS_TOKEN");
     private static final String HTTPS_GROUP_ME_URL = "https://push.groupme.com/faye";
     private static final String WSS_GROUP_ME_URL = "wss://push.groupme.com/faye";
-    private static final String ACCESS_TOKEN = "QXpw652wlQUrMRUvWO6YHk57EP2dSPzqlS5biTwe";
+
     private GroupMeBot bot;
     private HttpClient client;
 

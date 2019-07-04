@@ -7,10 +7,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class EspnDataLoader {
+    private static final String LEAGUE_YEAR = System.getenv("ESPN_LEAGUE_YEAR");
+    private static final String LEAGUE_ID = System.getenv("ESPN_LEAGUE_ID");
+
     private EspnHttpClient client;
     private Gson gson;
-    private static final String LEAGUE_YEAR = "2018";
-    private static final String LEAGUE_ID = "541969";
 
     public EspnDataLoader() {
         this.client = new EspnHttpClient();
