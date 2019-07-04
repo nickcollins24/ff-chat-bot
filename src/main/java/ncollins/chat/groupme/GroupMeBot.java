@@ -178,6 +178,7 @@ public class GroupMeBot implements ChatBot {
                 BOT_KEYWORD + " help -- show bot commands\\n" +
                 BOT_KEYWORD + " gif [SOMETHING] -- post a random gif of something\\n" +
                 BOT_KEYWORD + " salt [SOMEONE] -- throw salt at someone\\n" +
+                BOT_KEYWORD + " [QUESTION]? -- ask a yes/no question\\n" +
                 BOT_KEYWORD + " show {top|bottom} [TOTAL] scores -- top/bottom scores this year\\n" +
                 BOT_KEYWORD + " show matchups -- matchups for the current week\\n" +
                 BOT_KEYWORD + " show standings -- standings this year\\n" +
