@@ -8,7 +8,6 @@ import ncollins.chat.ChatBotListener;
 import ncollins.model.chat.ChatResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,15 +19,16 @@ import java.util.concurrent.CompletionStage;
 public class GroupMeListener implements ChatBotListener {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String ACCESS_TOKEN = System.getenv("GROUP_ME_ACCESS_TOKEN");
     private static final String HTTPS_GROUP_ME_URL = "https://push.groupme.com/faye";
     private static final String WSS_GROUP_ME_URL = "wss://push.groupme.com/faye";
 
-    private GroupMeBot bot;
+    private GroupMeProcessor processor;
     private HttpClient client;
+    private String accessToken;
 
-    public GroupMeListener(GroupMeBot bot){
-        this.bot = bot;
+    public GroupMeListener(GroupMeProcessor processor, String accessToken){
+        this.accessToken = accessToken;
+        this.processor = processor;
         this.client = HttpClient.newHttpClient();
     }
 
@@ -54,10 +54,10 @@ public class GroupMeListener implements ChatBotListener {
     private void subscribeUser(String clientId){
         String payload = "{\"channel\": \"/meta/subscribe\"," +
                 "\"clientId\": \"" + clientId + "\"," +
-                "\"subscription\": \"/user/" + bot.getBotUserId() + "\"," +
+                "\"subscription\": \"/user/" + processor.getMainBot().getBotUserId() + "\"," +
                 "\"id\": \"2\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
+                "\"access_token\": \"" + accessToken + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -66,10 +66,10 @@ public class GroupMeListener implements ChatBotListener {
     private void subscribeGroup(String clientId){
         String payload = "{\"channel\": \"/meta/subscribe\"," +
                 "\"clientId\": \"" + clientId + "\"," +
-                "\"subscription\": \"/group/" + bot.getBotGroupId() + "\"," +
+                "\"subscription\": \"/group/" + processor.getMainBot().getBotGroupId() + "\"," +
                 "\"id\": \"3\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + ACCESS_TOKEN + "\"," +
+                "\"access_token\": \"" + accessToken + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -83,7 +83,7 @@ public class GroupMeListener implements ChatBotListener {
 
         WebSocket.Builder webSocketBuilder = client.newWebSocketBuilder();
         WebSocket webSocket =
-                webSocketBuilder.buildAsync(URI.create(WSS_GROUP_ME_URL), new GroupMeSocketListener(bot)).join();
+                webSocketBuilder.buildAsync(URI.create(WSS_GROUP_ME_URL), new GroupMeSocketListener(processor)).join();
         webSocket.sendText(payload, true);
     }
 
@@ -106,11 +106,11 @@ public class GroupMeListener implements ChatBotListener {
     }
 
     public class GroupMeSocketListener implements WebSocket.Listener {
-        private GroupMeBot bot;
+        private GroupMeProcessor processor;
         private Gson gson;
 
-        public GroupMeSocketListener(GroupMeBot bot){
-            this.bot = bot;
+        public GroupMeSocketListener(GroupMeProcessor processor){
+            this.processor = processor;
             this.gson = new Gson();
         }
 
@@ -132,12 +132,12 @@ public class GroupMeListener implements ChatBotListener {
                 ChatResponse.Subject subject = r.getData().getSubject();
 
                 //send to bot for processing if message was created by a user (not bot) in the required group
-                if(subject.getGroupId().equals(bot.getBotGroupId()) && subject.getSenderType().equals("user")){
+                if(subject.getGroupId().equals(processor.getMainBot().getBotGroupId()) && subject.getSenderType().equals("user")){
                     String fromUser = subject.getName();
                     String text = subject.getText().trim();
                     String[] attachments = subject.getAttachments();
 
-                    bot.processResponse(fromUser, text, attachments);
+                    processor.processResponse(fromUser, text, attachments);
                 }
             } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
