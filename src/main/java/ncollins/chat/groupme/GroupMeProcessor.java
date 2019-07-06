@@ -1,0 +1,149 @@
+package ncollins.chat.groupme;
+
+import ncollins.chat.ChatBotProcessor;
+import ncollins.model.Order;
+import ncollins.model.espn.Outcome;
+import ncollins.espn.EspnMessageBuilder;
+import ncollins.gif.GifGenerator;
+import ncollins.magiceightball.MagicAnswerGenerator;
+import ncollins.salt.SaltGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class GroupMeProcessor implements ChatBotProcessor {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private GroupMeBot mainBot;
+    private GroupMeBot espnBot;
+    private GifGenerator gifGenerator = new GifGenerator();
+    private SaltGenerator saltGenerator = new SaltGenerator();
+    private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
+    private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
+
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot){
+        this.mainBot = mainBot;
+        this.espnBot = espnBot;
+    }
+
+    public GroupMeBot getMainBot(){
+        return mainBot;
+    }
+
+    private GroupMeBot getEspnBot(){
+        return espnBot;
+    }
+
+    @Override
+    public void processResponse(String fromUser, String text, String[] imageUrls) {
+        text = text.toLowerCase();
+
+        if(text.startsWith(getMainBot().getBotKeyword()))
+            processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
+        else processEasterEggResponse(text);
+    }
+
+    private void processBotResponse(String text){
+        logger.info(getMainBot().getBotKeyword() + " is processing request: " + text);
+
+        if(text.matches("^$"))
+            getMainBot().sendMessage(buildHelpMessage());
+        else if(text.matches("^help$"))
+            getMainBot().sendMessage(buildShowCommandsMessage());
+        else if(text.startsWith("gif "))
+            getMainBot().sendMessage(buildGifMessage(text.replace("gif","").trim()));
+        else if(text.startsWith("salt "))
+            getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
+        else if(text.startsWith("show "))
+            processEspnResponse(text.replace("show","").trim());
+        else if(text.endsWith("?"))
+            getMainBot().sendMessage(buildMagicAnswerMessage());
+    }
+
+    private void processEspnResponse(String text){
+        // {top|bottom} [TOTAL] scores
+        if(text.matches("(top|bottom) \\d* ?scores$")){
+            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order,total));
+        // {top|bottom} [TOTAL] [POSITION|players]
+        } else if(text.matches("(top|bottom) \\d* ?players$")) {
+            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, null));
+        // [TOTAL] {win|loss} streaks
+        } else if(text.matches("\\d* ?(win|loss) streaks$")) {
+            Outcome outcome = text.contains(" win ") ? Outcome.WIN : Outcome.TIE;
+            String totalStr = text.replaceAll("\\D+", "");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(outcome, total));
+        // [TOTAL] blowouts
+        } else if(text.matches("(^|\\s\\d+)blowouts$")){
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildBlowoutsMessage(total));
+        // [TOTAL] heartbreaks
+        } else if(text.matches("(^|\\s\\d+)heartbreaks$")){
+            String totalStr = text.replaceAll("\\D+","");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildHeartbreaksMessage(total));
+        // matchups
+        } else if(text.equals("matchups"))
+            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage());
+        // standings
+        else if(text.equals("standings"))
+            getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage());
+        // jujus
+        else if(text.equals("jujus"))
+            getEspnBot().sendMessage(espnMessageBuilder.buildJujusMessage());
+        // salties
+        else if(text.equals("salties"))
+            getEspnBot().sendMessage(espnMessageBuilder.buildSaltiesMessage());
+    }
+
+    private void processEasterEggResponse(String text){
+        if(text.contains("wonder"))
+            getMainBot().sendMessage("https://houseofgeekery.files.wordpress.com/2013/05/tony-wonder-arrested-development-large-msg-132259950538.jpg");
+        else if(text.contains("same"))
+            getMainBot().sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
+        else if(text.contains("gattaca"))
+            getMainBot().sendMessage(gifGenerator.translateGif("rafi gattaca"));
+        else if(text.matches(".+ de[a]?d$")){
+            getMainBot().sendMessage("", "https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview");
+        }
+    }
+
+    private String buildHelpMessage(){
+        return "you rang? type '" + getMainBot().getBotKeyword() + " help' to see what i can do.";
+    }
+
+    private String buildShowCommandsMessage(){
+        return "commands:\\n" +
+                getMainBot().getBotKeyword() + " help -- show bot commands\\n" +
+                getMainBot().getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n" +
+                getMainBot().getBotKeyword() + " salt [SOMEONE] -- throw salt at someone\\n" +
+                getMainBot().getBotKeyword() + " [QUESTION]? -- ask a yes/no question\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores -- top/bottom scores this year\\n" +
+                getMainBot().getBotKeyword() + " show matchups -- matchups for the current week\\n" +
+                getMainBot().getBotKeyword() + " show standings -- standings this year\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] [POSITION|players] -- best/worst players this year\\n" +
+                getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks this year\\n" +
+                getMainBot().getBotKeyword() + " show jujus -- this years jujus\\n" +
+                getMainBot().getBotKeyword() + " show salties -- this years salties\\n" +
+                getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest blowouts this year\\n" +
+                getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest games this year";
+    }
+
+    private String buildGifMessage(String query){
+        return gifGenerator.translateGif(query);
+    }
+
+    private String buildSaltMessage(String recipient) {
+        return saltGenerator.throwSalt(recipient);
+    }
+
+    private String buildMagicAnswerMessage(){
+        return answerGenerator.getRandom();
+    }
+}
