@@ -53,7 +53,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         text = text.toLowerCase();
 
         if(text.contains("@here"))
-            getMainBot().sendMessage("@here", buildMentionAllPayload(new int[]{0,5}));
+            getMainBot().sendMessage("@here \uD83D\uDC40\uD83D\uDC46", buildMentionAllPayload(new int[]{0,5}));
 
         if(text.startsWith(getMainBot().getBotKeyword()))
             processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
