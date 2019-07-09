@@ -21,6 +21,6 @@ public class Application {
 
         GroupMeBot mainBot = new GroupMeBot(MAIN_BOT_ID,MAIN_BOT_NAME,GROUP_ID,USER_ID);
         GroupMeBot espnBot = new GroupMeBot(ESPN_BOT_ID,ESPN_BOT_NAME,GROUP_ID,USER_ID);
-        new GroupMeListener(new GroupMeProcessor(mainBot, espnBot), GROUP_ME_ACCESS_TOKEN).listen();
+        new GroupMeListener(new GroupMeProcessor(mainBot, espnBot, GROUP_ME_ACCESS_TOKEN), GROUP_ME_ACCESS_TOKEN).listen();
     }
 }

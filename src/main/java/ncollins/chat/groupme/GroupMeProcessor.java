@@ -1,7 +1,11 @@
 package ncollins.chat.groupme;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import ncollins.chat.ChatBotProcessor;
 import ncollins.model.Order;
+import ncollins.model.chat.ImagePayload;
+import ncollins.model.chat.MentionPayload;
 import ncollins.model.espn.Outcome;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
@@ -9,6 +13,11 @@ import ncollins.magiceightball.MagicAnswerGenerator;
 import ncollins.salt.SaltGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class GroupMeProcessor implements ChatBotProcessor {
     Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -19,10 +28,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private SaltGenerator saltGenerator = new SaltGenerator();
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
+    private String accessToken;
+    private HttpClient client;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot){
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, String accessToken){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
+        this.accessToken = accessToken;
+        this.client = HttpClient.newHttpClient();
     }
 
     public GroupMeBot getMainBot(){
@@ -35,7 +48,12 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     @Override
     public void processResponse(String fromUser, String text, String[] imageUrls) {
+        logger.info("Incoming message: " + text);
+
         text = text.toLowerCase();
+
+        if(text.contains("@here"))
+            getMainBot().sendMessage("@here", buildMentionAllPayload(new int[]{0,5}));
 
         if(text.startsWith(getMainBot().getBotKeyword()))
             processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
@@ -43,8 +61,6 @@ public class GroupMeProcessor implements ChatBotProcessor {
     }
 
     private void processBotResponse(String text){
-        logger.info(getMainBot().getBotKeyword() + " is processing request: " + text);
-
         if(text.matches("^$"))
             getMainBot().sendMessage(buildHelpMessage());
         else if(text.matches("^help$"))
@@ -110,7 +126,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.contains("gattaca"))
             getMainBot().sendMessage(gifGenerator.translateGif("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$")){
-            getMainBot().sendMessage("", "https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview");
+            getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
         }
     }
 
@@ -120,6 +136,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
+                "@here -- sends a mention notification to group\\n" +
                 getMainBot().getBotKeyword() + " help -- show bot commands\\n" +
                 getMainBot().getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n" +
                 getMainBot().getBotKeyword() + " salt [SOMEONE] -- throw salt at someone\\n" +
@@ -145,5 +162,36 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     private String buildMagicAnswerMessage(){
         return answerGenerator.getRandom();
+    }
+
+    private MentionPayload buildMentionAllPayload(int[] loci){
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.groupme.com/v3/groups/" + mainBot.getBotGroupId() + "?token=" + accessToken))
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+
+        try {
+            String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            JsonArray jsonArray = new JsonParser().parse(response).getAsJsonObject().getAsJsonObject("response").getAsJsonArray("members");
+
+            int[] userIds = new int[jsonArray.size()];
+            for(int i=0; i < jsonArray.size(); i++){
+                userIds[i] = jsonArray.get(i).getAsJsonObject().get("user_id").getAsInt();
+            }
+
+            int[][] loci2D = new int[userIds.length][2];
+            for(int i=0; i < userIds.length; i++){
+                loci2D[i] = loci;
+            }
+
+            return new MentionPayload(userIds, loci2D);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

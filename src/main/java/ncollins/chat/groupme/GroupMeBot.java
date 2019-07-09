@@ -1,7 +1,11 @@
 package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBot;
-import org.apache.commons.lang3.ArrayUtils;
+import ncollins.model.chat.ImagePayload;
+import ncollins.model.chat.MentionPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,6 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class GroupMeBot implements ChatBot {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
 
     private String botId;
@@ -39,22 +44,25 @@ public class GroupMeBot implements ChatBot {
         return botKeyword;
     }
 
-    public void sendMessage(String text){
-        sendMessage(text, ArrayUtils.EMPTY_STRING_ARRAY);
-    }
-
-    public void sendMessage(String text, String imageUrl){
-        String[] imageUrls = {imageUrl};
-        sendMessage(text, imageUrls);
+    @Override
+    public void sendMessage(String text, ImagePayload payload){
+        sendMessage(text, payload.toString());
     }
 
     @Override
-    public void sendMessage(String text, String[] imageUrls) {
-        String attachments = buildAttachmentsPayload(imageUrls);
+    public void sendMessage(String text, MentionPayload payload){
+        sendMessage(text, payload.toString());
+    }
+
+    public void sendMessage(String text){
+        sendMessage(text, "[]");
+    }
+
+    public void sendMessage(String text, String attachmentPayload) {
         String payload = "{" +
                 "\"bot_id\": \"" + botId + "\"," +
                 "\"text\": \"" + text + "\"," +
-                "\"attachments\": " + attachments + "}";
+                "\"attachments\": " + attachmentPayload + "}";
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GROUP_ME_URL))
@@ -69,16 +77,5 @@ public class GroupMeBot implements ChatBot {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    private String buildAttachmentsPayload(String[] imageUrls){
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for(String imageUrl : imageUrls){
-            sb.append("{\"type\": \"image\",\"url\": \"" + imageUrl + "\"}");
-        }
-        sb.append("]");
-
-        return sb.toString();
     }
 }
