@@ -20,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public class GroupMeProcessor implements ChatBotProcessor {
     Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -57,7 +58,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         if(text.contains("@here"))
             getMainBot().sendMessage("@here \uD83D\uDC40\uD83D\uDC46", buildMentionAllPayload(new int[]{0,5}));
         if(text.contains("#pin"))
-            getMainBot().addPin(new Pin(text.replaceAll("\\p{C}", " / "), fromUser, currentTime));
+            getMainBot().addPin(new Pin(text.replaceAll("\n", Matcher.quoteReplacement("\\n")), fromUser, currentTime));
 
         if(text.startsWith(getMainBot().getBotKeyword()))
             processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
@@ -73,12 +74,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage(buildGifMessage(text.replace("gif","").trim()));
         else if(text.startsWith("salt "))
             getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
-        else if(text.equals("show pins"))
-            getMainBot().sendMessage(buildPinsMessage());
-        else if(text.matches("^delete pin \\d*$")){
+        else if(text.equals("show pins")){
+            if(getMainBot().getPins().isEmpty())
+                getMainBot().sendMessage("add #pin to any message to pin it");
+            else getMainBot().sendMessage(buildPinsMessage());
+        } else if(text.matches("^delete pin \\d*$")){
             int index =   Integer.parseInt(text.replaceAll("\\D+",""));
             if(0 > index || index >= getMainBot().getPins().size())
-                getMainBot().sendMessage("pick a valid number jagoff");
+                getMainBot().sendMessage("pick a valid id");
             else getMainBot().deletePin(index);
         } else if(text.startsWith("show "))
             processEspnResponse(text.replace("show","").trim());
