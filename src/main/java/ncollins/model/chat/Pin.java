@@ -20,7 +20,7 @@ public class Pin {
         String date = simpleDateFormat.format(new Date(creationTime));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("''" + text + "''\\n");
+        sb.append("''" + text.trim() + "''\\n");
         sb.append("-" + this.user + " (" + date + ")");
         return sb.toString();
     }

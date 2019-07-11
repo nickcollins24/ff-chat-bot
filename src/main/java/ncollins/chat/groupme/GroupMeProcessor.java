@@ -57,8 +57,12 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
         if(text.contains("@here"))
             getMainBot().sendMessage("@here \uD83D\uDC40\uD83D\uDC46", buildMentionAllPayload(new int[]{0,5}));
-        if(text.contains("#pin"))
-            getMainBot().addPin(new Pin(text.replaceAll("\n", Matcher.quoteReplacement("\\n")), fromUser, currentTime));
+        if(text.startsWith("#pin ") || text.endsWith(" #pin") || text.contains(" #pin ")){
+            String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
+                    .replaceAll("#pin", "");
+
+            getMainBot().addPin(new Pin(textEdited, fromUser, currentTime));
+        }
 
         if(text.startsWith(getMainBot().getBotKeyword()))
             processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());

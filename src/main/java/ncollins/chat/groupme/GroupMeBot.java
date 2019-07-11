@@ -75,7 +75,14 @@ public class GroupMeBot implements ChatBot {
         sendMessage(text, "[]");
     }
 
+    /**
+     * Send message to group from this bot.
+     *
+     * Note: max char[] length of message is 1000
+     */
     public void sendMessage(String text, String attachmentPayload) {
+        logger.info(botName + " response length: " + text.toCharArray().length);
+
         String payload = "{" +
                 "\"bot_id\": \"" + botId + "\"," +
                 "\"text\": \"" + text + "\"," +
