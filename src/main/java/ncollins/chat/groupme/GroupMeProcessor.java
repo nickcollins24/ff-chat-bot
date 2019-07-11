@@ -6,6 +6,7 @@ import ncollins.chat.ChatBotProcessor;
 import ncollins.model.Order;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
+import ncollins.model.chat.Pin;
 import ncollins.model.espn.Outcome;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
@@ -18,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 public class GroupMeProcessor implements ChatBotProcessor {
     Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -47,13 +49,15 @@ public class GroupMeProcessor implements ChatBotProcessor {
     }
 
     @Override
-    public void processResponse(String fromUser, String text, String[] imageUrls) {
+    public void processResponse(String fromUser, String text, String[] imageUrls, long currentTime) {
         logger.info("Incoming message: " + text);
 
         text = text.toLowerCase();
 
         if(text.contains("@here"))
             getMainBot().sendMessage("@here \uD83D\uDC40\uD83D\uDC46", buildMentionAllPayload(new int[]{0,5}));
+        if(text.contains("#pin"))
+            getMainBot().addPin(new Pin(text.replaceAll("\\p{C}", " / "), fromUser, currentTime));
 
         if(text.startsWith(getMainBot().getBotKeyword()))
             processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
@@ -69,7 +73,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage(buildGifMessage(text.replace("gif","").trim()));
         else if(text.startsWith("salt "))
             getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
-        else if(text.startsWith("show "))
+        else if(text.equals("show pins"))
+            getMainBot().sendMessage(buildPinsMessage());
+        else if(text.matches("^delete pin \\d*$")){
+            int index =   Integer.parseInt(text.replaceAll("\\D+",""));
+            if(0 > index || index >= getMainBot().getPins().size())
+                getMainBot().sendMessage("pick a valid number jagoff");
+            else getMainBot().deletePin(index);
+        } else if(text.startsWith("show "))
             processEspnResponse(text.replace("show","").trim());
         else if(text.endsWith("?"))
             getMainBot().sendMessage(buildMagicAnswerMessage());
@@ -137,10 +148,13 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
                 "@here -- sends a mention notification to group\\n" +
+                "#pin -- pin a message to view later\\n" +
                 getMainBot().getBotKeyword() + " help -- show bot commands\\n" +
                 getMainBot().getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n" +
                 getMainBot().getBotKeyword() + " salt [SOMEONE] -- throw salt at someone\\n" +
                 getMainBot().getBotKeyword() + " [QUESTION]? -- ask a yes/no question\\n" +
+                getMainBot().getBotKeyword() + " show pins -- show all pinned messages\\n" +
+                getMainBot().getBotKeyword() + " delete pin [INDEX] -- delete a pinned message\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores -- top/bottom scores this year\\n" +
                 getMainBot().getBotKeyword() + " show matchups -- matchups for the current week\\n" +
                 getMainBot().getBotKeyword() + " show standings -- standings this year\\n" +
@@ -162,6 +176,17 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     private String buildMagicAnswerMessage(){
         return answerGenerator.getRandom();
+    }
+
+    private String buildPinsMessage(){
+        List<Pin> pins = getMainBot().getPins();
+
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i < pins.size(); i++){
+            sb.append(pins.get(i).toString() + " (id:" + i + ")\\n\\n");
+        }
+
+        return sb.toString();
     }
 
     private MentionPayload buildMentionAllPayload(int[] loci){

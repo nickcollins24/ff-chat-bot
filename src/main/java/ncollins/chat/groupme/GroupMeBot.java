@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import ncollins.chat.ChatBot;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
+import ncollins.model.chat.Pin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupMeBot implements ChatBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -21,6 +24,7 @@ public class GroupMeBot implements ChatBot {
     private String botKeyword;
     private String groupId;
     private String userId;
+    private List<Pin> pins;
     private HttpClient client;
 
     public GroupMeBot(String botId, String botName, String groupId, String userId){
@@ -29,6 +33,7 @@ public class GroupMeBot implements ChatBot {
         this.botKeyword = "@" + botName;
         this.groupId = groupId;
         this.userId = userId;
+        this.pins = new ArrayList();
         this.client = HttpClient.newHttpClient();
     }
 
@@ -42,6 +47,18 @@ public class GroupMeBot implements ChatBot {
 
     public String getBotKeyword() {
         return botKeyword;
+    }
+
+    public List<Pin> getPins(){
+        return pins;
+    }
+
+    public void addPin(Pin pin){
+        pins.add(pin);
+    }
+
+    public void deletePin(int index){
+        pins.remove(index);
     }
 
     @Override

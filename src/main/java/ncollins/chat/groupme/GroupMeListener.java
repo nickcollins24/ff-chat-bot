@@ -137,7 +137,7 @@ public class GroupMeListener implements ChatBotListener {
                     String text = subject.getText().trim();
                     String[] attachments = subject.getAttachments();
 
-                    processor.processResponse(fromUser, text, attachments);
+                    processor.processResponse(fromUser, text, attachments, System.currentTimeMillis());
                 }
             } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
