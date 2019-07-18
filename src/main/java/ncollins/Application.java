@@ -3,6 +3,7 @@ package ncollins;
 import ncollins.chat.groupme.GroupMeBot;
 import ncollins.chat.groupme.GroupMeListener;
 import ncollins.chat.groupme.GroupMeProcessor;
+import ncollins.data.PinCollection;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,11 +17,17 @@ public class Application {
         String MAIN_BOT_NAME =          System.getenv("MAIN_BOT_NAME");
         String ESPN_BOT_ID =            System.getenv("ESPN_BOT_ID");
         String ESPN_BOT_NAME =          System.getenv("ESPN_BOT_NAME");
+        // these only get set when testing locally, dont set these if running in GCP
+        String GCP_PROJECT_ID =         System.getenv("GCP_PROJECT_ID");
+        String GCP_KEY =                System.getenv("GCP_KEY");
 
         SpringApplication.run(Application.class, args);
 
         GroupMeBot mainBot = new GroupMeBot(MAIN_BOT_ID,MAIN_BOT_NAME,GROUP_ID,USER_ID);
         GroupMeBot espnBot = new GroupMeBot(ESPN_BOT_ID,ESPN_BOT_NAME,GROUP_ID,USER_ID);
-        new GroupMeListener(new GroupMeProcessor(mainBot, espnBot, GROUP_ME_ACCESS_TOKEN), GROUP_ME_ACCESS_TOKEN).listen();
+        PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
+        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, GROUP_ME_ACCESS_TOKEN);
+
+        new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
     }
 }

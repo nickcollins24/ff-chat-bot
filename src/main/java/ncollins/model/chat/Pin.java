@@ -5,23 +5,53 @@ import java.util.Date;
 
 public class Pin {
     private String text;
-    private long creationTime;
+    private long timestamp;
     private String user;
 
-    public Pin(String text, String user, long creationTime){
+    public Pin(){
+        this.setText("");
+        this.setUser("");
+        this.setTimestamp(0);
+    }
+
+    public Pin(String text, String user, long timestamp){
+        this.setText(text);
+        this.setUser(user);
+        this.setTimestamp(timestamp);
+    }
+
+    public long getTimestamp(){
+        return this.timestamp;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
         this.text = text;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
         this.user = user;
-        this.creationTime = creationTime;
     }
 
     @Override
     public String toString(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yy HH:mm");
-        String date = simpleDateFormat.format(new Date(creationTime));
+        String date = simpleDateFormat.format(new Date(getTimestamp()));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("''" + text.trim() + "''\\n");
-        sb.append("-" + this.user + " (" + date + ")");
+        sb.append("''" + getText().trim() + "''\\n");
+        sb.append("-" + this.getUser() + " (" + date + ")");
         return sb.toString();
     }
 }

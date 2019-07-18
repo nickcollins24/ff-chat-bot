@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import ncollins.chat.ChatBotProcessor;
+import ncollins.data.PinCollection;
 import ncollins.model.Order;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
@@ -32,13 +33,15 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
     private String accessToken;
+    private PinCollection pinCollection;
     private HttpClient client;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, String accessToken){
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection, String accessToken){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
         this.accessToken = accessToken;
         this.client = HttpClient.newHttpClient();
+        this.pinCollection = pinCollection;
     }
 
     public GroupMeBot getMainBot(){
@@ -61,7 +64,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
             String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
                     .replaceAll("#pin", "");
 
-            getMainBot().addPin(new Pin(textEdited, fromUser, currentTime));
+            pinCollection.addPin(new Pin(textEdited, fromUser, currentTime));
         }
 
         if(text.startsWith(getMainBot().getBotKeyword()))
@@ -79,14 +82,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.startsWith("salt "))
             getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
         else if(text.equals("show pins")){
-            if(getMainBot().getPins().isEmpty())
+            if(pinCollection.getPins().isEmpty())
                 getMainBot().sendMessage("add #pin to any message to pin it");
             else getMainBot().sendMessage(buildPinsMessage());
         } else if(text.matches("^delete pin \\d*$")){
             int index =   Integer.parseInt(text.replaceAll("\\D+",""));
-            if(0 > index || index >= getMainBot().getPins().size())
+            if(0 > index || index >= pinCollection.getPins().size())
                 getMainBot().sendMessage("pick a valid id");
-            else getMainBot().deletePin(index);
+            else pinCollection.deletePin(index);
         } else if(text.startsWith("show "))
             processEspnResponse(text.replace("show","").trim());
         else if(text.endsWith("?"))
@@ -186,7 +189,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
     }
 
     private String buildPinsMessage(){
-        List<Pin> pins = getMainBot().getPins();
+        List<Pin> pins = pinCollection.getPins();
 
         StringBuilder sb = new StringBuilder();
         for(int i=0; i < pins.size(); i++){
