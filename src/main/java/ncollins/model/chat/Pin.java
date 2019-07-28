@@ -50,7 +50,7 @@ public class Pin {
         String date = simpleDateFormat.format(new Date(getTimestamp()));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("'' " + getText().trim() + " ''\\n");
+        sb.append("\" " + getText().trim() + " \"\\n");
         sb.append("-" + this.getUser() + " (" + date + ")");
         return sb.toString();
     }
