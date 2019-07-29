@@ -11,8 +11,8 @@ public class EspnMessageBuilder {
     /***
      *  Builds message that displays the best/worst scores by a team this year
      */
-    public String buildScoresMessage(Order order, int total){
-        List<Score> scores = espn.getScores(order, total);
+    public String buildScoresMessage(Order order, int total, boolean includePlayoffs){
+        List<Score> scores = espn.getScoresSorted(order, total, includePlayoffs);
 
         StringBuilder sb = new StringBuilder();
         sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Scores:\\n");
@@ -84,13 +84,41 @@ public class EspnMessageBuilder {
      *  Builds message that displays the biggest blowout matchups this year.
      */
     public String buildBlowoutsMessage(int count){
-        return NOPE;
+        List<ScheduleItem> matchups = espn.getMatchupsSorted(Order.DESC, count, false);
+
+        StringBuilder sb = new StringBuilder();
+            sb.append(" Biggest Blowouts:\\n");
+            for(ScheduleItem matchup : matchups){
+                ScheduleItem.Residence winner = matchup.getWinner().equals("HOME") ? matchup.getHome() : matchup.getAway();
+                ScheduleItem.Residence loser = matchup.getWinner().equals("AWAY") ? matchup.getHome() : matchup.getAway();
+
+                sb.append(String.format("%.2f", Math.abs(matchup.getHome().getTotalPoints() - matchup.getAway().getTotalPoints())) + ": ")
+                  .append(espn.getTeamAbbrev(winner.getTeamId()) + " " + winner.getTotalPoints() + " - ")
+                  .append(loser.getTotalPoints() + " " + espn.getTeamAbbrev(loser.getTeamId()) + " ")
+                  .append("(wk " + matchup.getMatchupPeriodId() + ")\\n");
+            }
+
+        return sb.toString();
     }
 
     /***
      *  Builds message that displays the closest matchups this year.
      */
     public String buildHeartbreaksMessage(int count){
-        return NOPE;
+        List<ScheduleItem> matchups = espn.getMatchupsSorted(Order.ASC, count, false);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" Biggest Heartbreaks:\\n");
+        for(ScheduleItem matchup : matchups){
+            ScheduleItem.Residence winner = matchup.getWinner().equals("HOME") ? matchup.getHome() : matchup.getAway();
+            ScheduleItem.Residence loser = matchup.getWinner().equals("AWAY") ? matchup.getHome() : matchup.getAway();
+
+            sb.append(String.format("%.2f", Math.abs(matchup.getHome().getTotalPoints() - matchup.getAway().getTotalPoints())) + ": ")
+                    .append(espn.getTeamAbbrev(loser.getTeamId()) + " " + loser.getTotalPoints() + " - ")
+                    .append(winner.getTotalPoints() + " " + espn.getTeamAbbrev(winner.getTeamId()) + " ")
+                    .append("(wk " + matchup.getMatchupPeriodId() + ")\\n");
+        }
+
+        return sb.toString();
     }
 }

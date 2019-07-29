@@ -31,7 +31,7 @@ public class League {
     public void setSchedule(List<ScheduleItem> schedule) { this.schedule = schedule; }
     public void setTeams(List<Team> teams) { this.teams = teams; }
 
-    private class DraftDetail {
+    public class DraftDetail {
         private boolean drafted;
         private boolean inProgress;
 

@@ -20,22 +20,40 @@ public class Espn {
         return this.league;
     }
 
-    public List<Score> getScores(Order order, int total){
-        List<Score> scores = getScores();
+    public List<Score> getScoresSorted(Order order, int total, boolean includePlayoffs){
+        List<Score> scores = getScores(includePlayoffs);
         scores.sort(new SortByScore(order));
 
         return scores.subList(0, total);
     }
 
-    public List<Score> getScores(){
+    public List<Score> getScores(boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
         for(ScheduleItem scheduleItem : getLeague().getSchedule()){
-            if(scheduleItem.getPlayoffTierType().equals("NONE")){
+            if(includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")){
                 scores.add(new Score(scheduleItem.getHome(), scheduleItem.getAway(), scheduleItem.getMatchupPeriodId()));
                 scores.add(new Score(scheduleItem.getAway(), scheduleItem.getHome(), scheduleItem.getMatchupPeriodId()));
             }
         }
         return scores;
+    }
+
+    public List<ScheduleItem> getMatchupsSorted(Order order, int total, boolean includePlayoffs){
+        List<ScheduleItem> matchups = getMatchupsSorted(includePlayoffs);
+        matchups.sort(new SortByDifference(order));
+
+        return matchups.subList(0, total);
+    }
+
+    public List<ScheduleItem> getMatchupsSorted(boolean includePlayoffs){
+        List<ScheduleItem> matchups = new ArrayList();
+        for(ScheduleItem scheduleItem : getLeague().getSchedule()){
+            if(includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")){
+                matchups.add(scheduleItem);
+            }
+        }
+
+        return matchups;
     }
 
     public List<Team> getTeams(){
@@ -66,6 +84,24 @@ public class Espn {
                 return a.getPoints().compareTo(b.getPoints());
             } else {
                 return b.getPoints().compareTo(a.getPoints());
+            }
+
+        }
+    }
+
+    class SortByDifference implements Comparator<ScheduleItem> {
+        private Order order;
+
+        public SortByDifference(Order order){ this.order = order; }
+
+        public int compare(ScheduleItem a, ScheduleItem b)
+        {
+            if(this.order.equals(Order.ASC)){
+                return Double.valueOf(Math.abs(a.getHome().getTotalPoints() - a.getAway().getTotalPoints())).compareTo(
+                        Double.valueOf(Math.abs(b.getHome().getTotalPoints() - b.getAway().getTotalPoints())));
+            } else {
+                return Double.valueOf(Math.abs(b.getHome().getTotalPoints() - b.getAway().getTotalPoints())).compareTo(
+                        Double.valueOf(Math.abs(a.getHome().getTotalPoints() - a.getAway().getTotalPoints())));
             }
 
         }

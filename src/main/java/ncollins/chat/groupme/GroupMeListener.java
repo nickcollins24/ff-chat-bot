@@ -165,6 +165,8 @@ public class GroupMeListener implements ChatBotListener {
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
             logger.error("WebSocket error occurred: " + error.getMessage());
+            webSocket.abort();
+            listen();
             WebSocket.Listener.super.onError(webSocket, error);
         }
     }

@@ -102,7 +102,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order,total));
+            getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, false));
         // {top|bottom} [TOTAL] [POSITION|players]
         } else if(text.matches("(top|bottom) \\d* ?players$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -116,12 +116,12 @@ public class GroupMeProcessor implements ChatBotProcessor {
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(outcome, total));
         // [TOTAL] blowouts
-        } else if(text.matches("(^|\\s\\d+)blowouts$")){
+        } else if(text.matches("(^|\\d+\\s)blowouts$")){
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildBlowoutsMessage(total));
         // [TOTAL] heartbreaks
-        } else if(text.matches("(^|\\s\\d+)heartbreaks$")){
+        } else if(text.matches("(^|\\d+\\s)heartbreaks$")){
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildHeartbreaksMessage(total));
