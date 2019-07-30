@@ -10,10 +10,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupMeBot implements ChatBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
+    private static final int MAX_MESSAGE_LENGTH = 1000;
 
     private String botId;
     private String botName;
@@ -66,24 +69,53 @@ public class GroupMeBot implements ChatBot {
         // replace ["] with [\"], otherwise message doesnt send.
         text = text.replaceAll("(?<![\\\\])\"","\\\\\"");
 
-        logger.info(botName + " response length: " + text.toCharArray().length);
-        String payload = "{" +
-                "\"bot_id\": \"" + botId + "\"," +
-                "\"text\": \"" + text + "\"," +
-                "\"attachments\": " + attachmentPayload + "}";
+        // split text into chunks of length <= MAX_MESSAGE_LENGTH and send each chunk separately
+        List<String> texts = splitMessage(text);
+        for(String t : texts){
+            logger.info(botName + " response length: " + t.toCharArray().length);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(GROUP_ME_URL))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .build();
+            String payload = "{" +
+                    "\"bot_id\": \"" + botId + "\"," +
+                    "\"text\": \"" + t + "\"," +
+                    "\"attachments\": " + attachmentPayload + "}";
 
-        try {
-            client.send(request, HttpResponse.BodyHandlers.ofString()).body();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(GROUP_ME_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+
+            try {
+                client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    /**
+     * Splits message into chunks, ensuring that no chunk exceeds MAX_MESSAGE_LENGTH characters.
+     * This is to avoid exceeding GroupMe's character limit, which results in a failed send.
+     * @param text
+     * @return
+     */
+    private List<String> splitMessage(String text){
+        List<String> messages = new ArrayList();
+
+        if(text.toCharArray().length <= MAX_MESSAGE_LENGTH){
+            messages.add(text);
+            return messages;
+        }
+
+        while(text.toCharArray().length > MAX_MESSAGE_LENGTH){
+            int index = text.lastIndexOf("\\n", MAX_MESSAGE_LENGTH);
+            messages.add(text.substring(0, index+2));
+            text = text.substring(index+2);
+        }
+        messages.add(text);
+
+        return messages;
     }
 }

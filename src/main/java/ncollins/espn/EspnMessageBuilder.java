@@ -16,9 +16,10 @@ public class EspnMessageBuilder {
 
         StringBuilder sb = new StringBuilder();
         sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Scores:\\n");
-        for(Score score : scores){
-            String teamAbbrev = espn.getTeamAbbrev(score.getTeamId());
-            sb.append(score.getPoints() + " - " + teamAbbrev + "(" + score.getMatchupPeriodId() + ")\\n");
+
+        for(int i=0; i < scores.size(); i++){
+            String teamAbbrev = espn.getTeamAbbrev(scores.get(i).getTeamId());
+            sb.append(i+1 + ": " + scores.get(i).getPoints() + " - " + teamAbbrev + "(" + scores.get(i).getMatchupPeriodId() + ")\\n");
         }
 
         return sb.toString();
