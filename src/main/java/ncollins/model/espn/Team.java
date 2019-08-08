@@ -23,6 +23,7 @@ public class Team {
     private TradeBlock              tradeBlock;
     private TransactionCounter      transactionCounter;
     private int                     waiverRank;
+    private int                     seasonId;
 
     // GET
     public String getAbbrev() { return abbrev; }
@@ -45,6 +46,7 @@ public class Team {
     public TransactionCounter getTransactionCounter() { return transactionCounter; }
     public int getWaiverRank() { return waiverRank; }
     public List<String> getOwners() { return owners; }
+    public int getSeasonId() { return seasonId; }
 
     // SET
     public void setAbbrev(String abbrev) { this.abbrev = abbrev; }
@@ -67,6 +69,7 @@ public class Team {
     public void setTransactionCounter(TransactionCounter transactionCounterObject) { this.transactionCounter = transactionCounterObject; }
     public void setWaiverRank(int waiverRank) { this.waiverRank = waiverRank; }
     public void setOwners(List<String> owners) { this.owners = owners; }
+    public void setSeasonId(int seasonId) { this.seasonId = seasonId; }
 
     private class TradeBlock {
         // Getter Methods

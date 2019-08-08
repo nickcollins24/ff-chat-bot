@@ -7,13 +7,15 @@ public class Score {
     private Double  pointsAgainst;
     private Outcome outcome;
     private int     matchupPeriodId;
+    private int     seasonId;
 
-    public Score(ScheduleItem.Residence teamFor, ScheduleItem.Residence teamAgainst, int matchupPeriodId){
+    public Score(ScheduleItem.Residence teamFor, ScheduleItem.Residence teamAgainst, int matchupPeriodId, int seasonId){
         this.teamId = teamFor.getTeamId();
         this.teamIdAgainst = teamAgainst.getTeamId();
         this.points = teamFor.getTotalPoints();
         this.pointsAgainst = teamAgainst.getTotalPoints();
         this.matchupPeriodId = matchupPeriodId;
+        this.seasonId = seasonId;
 
         if(points > pointsAgainst){
             this.outcome = Outcome.WIN;
@@ -30,6 +32,7 @@ public class Score {
     public Double getPointsAgainst() { return pointsAgainst; }
     public Outcome getOutcome() { return outcome; }
     public int getMatchupPeriodId() { return matchupPeriodId; }
+    public int getSeasonId() { return seasonId; }
     public Double getPoints() { return points; }
 
     // SET
@@ -39,4 +42,5 @@ public class Score {
     public void setPointsAgainst(Double pointsAgainst) { this.pointsAgainst = pointsAgainst; }
     public void setOutcome(Outcome outcome) { this.outcome = outcome; }
     public void setMatchupPeriodId(int matchupPeriodId) { this.matchupPeriodId = matchupPeriodId; }
+    public void setSeasonId(int seasonId) { this.seasonId = seasonId; }
 }
