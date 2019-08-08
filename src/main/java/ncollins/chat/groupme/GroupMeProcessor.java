@@ -98,19 +98,51 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     //TODO: add in cases for "all-time", "current year", and "a given year"
     private void processEspnResponse(String text){
-        // {top|bottom} [TOTAL] scores
-        if(text.matches("(top|bottom) \\d* ?scores$")) {
+        // {top|bottom} [TOTAL] scores {ever|YEAR|}
+        if(text.matches("(top|bottom) \\d* ?scores(\\sever|\\s\\d+|)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String totalStr = text.replaceAll("\\D+", "");
+
+            String[] textSplit = text.split("scores");
+            String totalStr = textSplit[0].replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, false));
-        // {top|bottom} [TOTAL] records
-        } else if(text.matches("(top|bottom) \\d* ?records$")){
+
+            String yearStr = textSplit.length == 1 ? "" :
+                    textSplit[1].replaceAll("\\D+", "");
+
+            // history
+            if(text.contains("ever")){
+                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, false));
+            // specified season
+            } else if(!yearStr.isEmpty()){
+                Integer seasonId = Integer.parseInt(yearStr);
+                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, seasonId,false));
+            // current season
+            } else {
+                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessageCurrentYear(order, total,false));
+            }
+        // {top|bottom} [TOTAL] records {ever|YEAR|}
+        } else if(text.matches("(top|bottom) \\d* ?records(\\sever|\\s\\d+|)$")){
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String totalStr = text.replaceAll("\\D+","");
+
+            String[] textSplit = text.split("records");
+            String totalStr = textSplit[0].replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessage(order, total));
-        // {top|bottom} [TOTAL] [POSITION|players]
+
+            String yearStr = textSplit.length == 1 ? "" :
+                    textSplit[1].replaceAll("\\D+", "");
+
+            // history
+            if(text.contains("ever")){
+                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessage(order, total));
+            // specified season
+            } else if(!yearStr.isEmpty()){
+                Integer seasonId = Integer.parseInt(yearStr);
+                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessage(order, total, seasonId));
+            // current season
+            } else {
+                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessageCurrentYear(order, total));
+            }
+        // {top|bottom} [TOTAL] [POSITION|players] {ever|YEAR|}
         } else if(text.matches("(top|bottom) \\d* ?players$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
             String totalStr = text.replaceAll("\\D+","");
@@ -172,11 +204,11 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " [QUESTION]? -- ask a yes/no question\\n" +
                 getMainBot().getBotKeyword() + " show pins -- show all pinned messages\\n" +
                 getMainBot().getBotKeyword() + " delete pin [INDEX] -- delete a pinned message\\n" +
-                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores -- top/bottom scores\\n" +
-                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] records -- top/bottom records\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores {ever|YEAR|} -- top/bottom scores\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] records {ever|YEAR|} -- top/bottom records\\n" +
                 getMainBot().getBotKeyword() + " show matchups -- matchups for the current week\\n" +
                 getMainBot().getBotKeyword() + " show standings -- current standings this year\\n" +
-                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] [POSITION|players] -- best/worst players\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {POSITION|players} {ever|YEAR|} -- best/worst players\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks\\n" +
                 getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
                 getMainBot().getBotKeyword() + " show salties -- all time salties\\n" +

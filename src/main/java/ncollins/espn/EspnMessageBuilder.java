@@ -16,18 +16,27 @@ public class EspnMessageBuilder {
     }
 
     /***
+     *  Builds message that displays the best/worst scores by a team this year
+     */
+    public String buildScoresMessageCurrentYear(Order order, int total, boolean includePlayoffs){
+        return buildScoresMessage(order, total, espn.getCurrentSeasonId(), includePlayoffs);
+    }
+
+    /***
      *  Builds message that displays the best/worst scores by a team
      */
     public String buildScoresMessage(Order order, int total, Integer seasonId, boolean includePlayoffs){
         List<Score> scores = espn.getScoresSorted(order, total, seasonId, includePlayoffs);
+        String timePeriod = seasonId == null ? " All Time" : " " + String.valueOf(seasonId);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Scores:\\n");
+        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Scores" + timePeriod + ":\\n");
 
         for(int i=0; i < scores.size(); i++){
+            String optionalYear = seasonId == null ? "/" + scores.get(i).getSeasonId() : "";
             Member member = espn.getMemberByTeamId(scores.get(i).getTeamId(), scores.get(i).getSeasonId());
             String memberName = member.getFirtName() + " " + member.getLastName();
-            sb.append(i+1 + ": " + scores.get(i).getPoints() + " - " + memberName + " (" + scores.get(i).getMatchupPeriodId() + "/" + scores.get(i).getSeasonId() + ")\\n");
+            sb.append(i+1 + ": " + scores.get(i).getPoints() + " - " + memberName + " (" + scores.get(i).getMatchupPeriodId() + optionalYear + ")\\n");
         }
 
         return sb.toString();
@@ -88,6 +97,13 @@ public class EspnMessageBuilder {
     }
 
     /***
+     *  Builds message that displays the best/worst records by a team this year
+     */
+    public String buildRecordsMessageCurrentYear(Order order, int total){
+        return buildRecordsMessage(order, total, espn.getCurrentSeasonId());
+    }
+
+    /***
      *  Builds message that displays best/worst records all-time
      */
     public String buildRecordsMessage(Order order, int total){
@@ -99,10 +115,13 @@ public class EspnMessageBuilder {
      */
     public String buildRecordsMessage(Order order, int total, Integer seasonId){
         List<Team> teams = espn.getTeamsSorted(order, total, seasonId);
+        String timePeriod = seasonId == null ? " All Time" : " " + String.valueOf(seasonId);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Records:\\n");
+        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Records" + timePeriod + ":\\n");
+
         for(int i=0; i < teams.size(); i++){
+            String optionalYear = seasonId == null ? "(" + teams.get(i).getSeasonId() + ")" : "";
             Member member = espn.getMemberByTeamId(teams.get(i).getId(), teams.get(i).getSeasonId());
             String memberName = member.getFirtName() + " " + member.getLastName();
 
@@ -111,7 +130,7 @@ public class EspnMessageBuilder {
               .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPercentage()) + " ")
               .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsFor()) + " ")
               .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsAgainst()) + " ")
-              .append("(" + teams.get(i).getSeasonId() + ")\\n");
+              .append(optionalYear + "\\n");
         }
 
         return sb.toString();
