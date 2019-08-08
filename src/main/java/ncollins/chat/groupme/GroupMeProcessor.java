@@ -149,7 +149,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private void processEasterEggResponse(String text){
         if(text.contains("wonder"))
             getMainBot().sendMessage("https://houseofgeekery.files.wordpress.com/2013/05/tony-wonder-arrested-development-large-msg-132259950538.jpg");
-        else if(text.contains("same"))
+        else if(text.equals("same"))
             getMainBot().sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
         else if(text.contains("gattaca"))
             getMainBot().sendMessage(gifGenerator.translateGif("rafi gattaca"));
