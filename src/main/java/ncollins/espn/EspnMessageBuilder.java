@@ -53,8 +53,15 @@ public class EspnMessageBuilder {
      *  Builds message that displays the most/least points by a fantasy player in a week
      *  TODO: implement buildPlayersMessage
      */
-    public String buildPlayersMessage(Order order, int total, Integer seasonId, Position position){
+    public String buildPlayersMessage(Order order, int total, Integer week, Position position){
         return NOPE;
+    }
+
+    /***
+     *  Builds message that displays the most/least points by a fantasy player in a week
+     */
+    public String buildPlayersMessageCurrentWeek(Order order, int total, Position position){
+        return buildPlayersMessage(order, total, null, position);
     }
 
     /***

@@ -10,6 +10,7 @@ import ncollins.model.espn.Outcome;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
 import ncollins.magiceightball.MagicAnswerGenerator;
+import ncollins.model.espn.Position;
 import ncollins.salt.SaltGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,12 +132,34 @@ public class GroupMeProcessor implements ChatBotProcessor {
             } else {
                 getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessageCurrentYear(order, total));
             }
-        // {top|bottom} [TOTAL] [POSITION|players] {ever|YEAR|}
-        } else if(text.matches("(top|bottom) \\d* ?players$")) {
+        // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
+        } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)(\\s\\d+|)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String totalStr = text.replaceAll("\\D+","");
+            String[] textSplit = text.split("[a-zA-Z]");
+            String totalStr = textSplit[0].replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, null));
+
+            String weekStr = textSplit.length == 1 ? "" :
+                    textSplit[1].replaceAll("\\D+", "");
+
+            Position position;
+            try {
+                String positionStr = text.replaceAll("(top|bottom)", "").
+                        replaceAll("\\d+", "").trim();
+                position = positionStr.equals("players") ? null : Position.valueOf(positionStr.toUpperCase());
+            } catch(Exception e){
+                getEspnBot().sendMessage("enter a valid position [qb,rb,wr,te,k,d]");
+                return;
+            }
+
+            // specified
+            if(!weekStr.isEmpty()){
+                Integer seasonId = Integer.parseInt(weekStr);
+                getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, seasonId, position));
+            // current season
+            } else {
+                getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessageCurrentWeek(order, total, position));
+            }
         // {top|bottom} [TOTAL] pf through [WEEK]
         } else if(text.matches("(top|bottom)(\\s\\d)* pf through \\d+$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -211,7 +234,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores {ever|YEAR|} -- top/bottom scores\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] records {ever|YEAR|} -- top/bottom records\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] pf through [WEEK] -- top/bottom pf through given week\\n" +
-                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {POSITION|players} {ever|YEAR|} -- best/worst players\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {POSITION|players} {WEEK|} -- best/worst players\\n" +
                 getMainBot().getBotKeyword() + " show top streaks [TOTAL] pf -- longest streaks of >= pf\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest wins\\n" +
