@@ -25,7 +25,7 @@ public class LineupReminderScheduler implements Scheduler {
 
         // schedule task every Thursday at 5PM PST
         Long startTime = LocalDateTime.now().until(
-                LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY)).atTime(17,0), ChronoUnit.MINUTES);
+                LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY)).atTime(12,0), ChronoUnit.MINUTES);
         scheduler.scheduleAtFixedRate(task, startTime, TimeUnit.DAYS.toMinutes(7), TimeUnit.MINUTES);
     }
 }

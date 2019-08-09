@@ -36,6 +36,6 @@ public class Application {
 
         // start schedulers
         new MunndayScheduler(mainBot).start();
-        new LineupReminderScheduler(mainBot).start();
+//        new LineupReminderScheduler(mainBot).start();
     }
 }
