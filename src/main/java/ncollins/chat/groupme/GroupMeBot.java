@@ -1,5 +1,7 @@
 package ncollins.chat.groupme;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import ncollins.chat.ChatBot;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
@@ -18,6 +20,7 @@ public class GroupMeBot implements ChatBot {
     private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
     private static final int MAX_MESSAGE_LENGTH = 1000;
 
+    private String accessToken;
     private String botId;
     private String botName;
     private String botKeyword;
@@ -25,7 +28,8 @@ public class GroupMeBot implements ChatBot {
     private String userId;
     private HttpClient client;
 
-    public GroupMeBot(String botId, String botName, String groupId, String userId){
+    public GroupMeBot(String accessToken, String botId, String botName, String groupId, String userId){
+        this.accessToken = accessToken;
         this.botId = botId;
         this.botName = botName;
         this.botKeyword = "@" + botName;
@@ -58,6 +62,16 @@ public class GroupMeBot implements ChatBot {
 
     public void sendMessage(String text){
         sendMessage(text, "[]");
+    }
+
+    /**
+     * Send message to group from this bot that mentions(@) all users in the group.
+     *
+     * @param text message text to display
+     * @param loci location of text that should be displayed in bold font
+     */
+    public void sendMessageWithMention(String text, int[] loci){
+        sendMessage(text, buildMentionAllPayload(loci).toString());
     }
 
     /**
@@ -117,5 +131,36 @@ public class GroupMeBot implements ChatBot {
         messages.add(text);
 
         return messages;
+    }
+
+    private MentionPayload buildMentionAllPayload(int[] loci){
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.groupme.com/v3/groups/" + this.getBotGroupId() + "?token=" + this.accessToken))
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+
+        try {
+            String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            JsonArray jsonArray = new JsonParser().parse(response).getAsJsonObject().getAsJsonObject("response").getAsJsonArray("members");
+
+            int[] userIds = new int[jsonArray.size()];
+            for(int i=0; i < jsonArray.size(); i++){
+                userIds[i] = jsonArray.get(i).getAsJsonObject().get("user_id").getAsInt();
+            }
+
+            int[][] loci2D = new int[userIds.length][2];
+            for(int i=0; i < userIds.length; i++){
+                loci2D[i] = loci;
+            }
+
+            return new MentionPayload(userIds, loci2D);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

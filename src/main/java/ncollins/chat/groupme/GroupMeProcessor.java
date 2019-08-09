@@ -1,12 +1,9 @@
 package ncollins.chat.groupme;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
 import ncollins.model.Order;
 import ncollins.model.chat.ImagePayload;
-import ncollins.model.chat.MentionPayload;
 import ncollins.model.chat.Pin;
 import ncollins.model.espn.Outcome;
 import ncollins.espn.EspnMessageBuilder;
@@ -15,11 +12,6 @@ import ncollins.magiceightball.MagicAnswerGenerator;
 import ncollins.salt.SaltGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -32,15 +24,11 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private SaltGenerator saltGenerator = new SaltGenerator();
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
-    private String accessToken;
     private PinCollection pinCollection;
-    private HttpClient client;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection, String accessToken){
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
-        this.accessToken = accessToken;
-        this.client = HttpClient.newHttpClient();
         this.pinCollection = pinCollection;
     }
 
@@ -59,7 +47,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         text = text.toLowerCase();
 
         if(text.contains("@here"))
-            getMainBot().sendMessage("@here \uD83D\uDC40\uD83D\uDC46", buildMentionAllPayload(new int[]{0,5}));
+            getMainBot().sendMessageWithMention("@here \uD83D\uDC40\uD83D\uDC46", new int[]{0,5});
         if(text.startsWith("#pin ") || text.endsWith(" #pin") || text.contains(" #pin ")){
             String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
                     .replaceAll("#pin", "");
@@ -237,36 +225,5 @@ public class GroupMeProcessor implements ChatBotProcessor {
         }
 
         return sb.toString();
-    }
-
-    private MentionPayload buildMentionAllPayload(int[] loci){
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.groupme.com/v3/groups/" + mainBot.getBotGroupId() + "?token=" + accessToken))
-                .header("Content-Type", "application/json")
-                .GET()
-                .build();
-
-        try {
-            String response = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
-            JsonArray jsonArray = new JsonParser().parse(response).getAsJsonObject().getAsJsonObject("response").getAsJsonArray("members");
-
-            int[] userIds = new int[jsonArray.size()];
-            for(int i=0; i < jsonArray.size(); i++){
-                userIds[i] = jsonArray.get(i).getAsJsonObject().get("user_id").getAsInt();
-            }
-
-            int[][] loci2D = new int[userIds.length][2];
-            for(int i=0; i < userIds.length; i++){
-                loci2D[i] = loci;
-            }
-
-            return new MentionPayload(userIds, loci2D);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 }
