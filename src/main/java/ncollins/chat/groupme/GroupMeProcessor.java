@@ -3,6 +3,7 @@ package ncollins.chat.groupme;
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
 import ncollins.model.Order;
+import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.Pin;
 import ncollins.model.espn.Outcome;
@@ -41,7 +42,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
     }
 
     @Override
-    public void processResponse(String fromUser, String text, String[] imageUrls, long currentTime) {
+    public void processResponse(String fromUser, String text, ChatResponse.Attachment[] attachments, long currentTime) {
         logger.info("Incoming message: " + text);
 
         text = text.toLowerCase();

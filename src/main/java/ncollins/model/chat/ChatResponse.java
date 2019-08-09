@@ -14,7 +14,13 @@ import com.google.gson.annotations.SerializedName;
  *      "alert":"...: ...",
  *      "received_at":1560109645000,
  *      "subject":{
- *          "attachments":[],
+ *          "attachments":[{
+ * 				"charmap": [
+ * 					[19, 13]
+ * 				],
+ * 				"placeholder": "�",
+ * 				"type": "emoji"
+ *          }],
  *          "avatar_url":"...",
  *          "created_at":1560109645,
  *          "group_id":"...",
@@ -109,7 +115,7 @@ public class ChatResponse {
     }
 
     public class Subject {
-        private String[] attachments;
+        private Attachment[] attachments;
         @SerializedName("avatar_url")
         private String avatarUrl;
         @SerializedName("created_at")
@@ -132,11 +138,11 @@ public class ChatResponse {
         @SerializedName("user_id")
         private String userId;
 
-        public String[] getAttachments() {
+        public Attachment[] getAttachments() {
             return attachments;
         }
 
-        public void setAttachments(String[] attachments) {
+        public void setAttachments(Attachment[] attachments) {
             this.attachments = attachments;
         }
 
@@ -243,6 +249,12 @@ public class ChatResponse {
         public void setUserId(String userId) {
             this.userId = userId;
         }
+    }
+
+    public class Attachment {
+        private int[][] charmap;
+        private String placeholder;
+        private String type;
     }
 
     public class Location {
