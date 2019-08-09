@@ -51,6 +51,7 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays the most/least points by a fantasy player in a week
+     *  TODO: implement buildPlayersMessage
      */
     public String buildPlayersMessage(Order order, int total, Integer seasonId, Position position){
         return NOPE;
@@ -65,15 +66,17 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays the longest winning/losing streaks
+     *  TODO: implement buildOutcomeStreakMessage
      */
     public String buildOutcomeStreakMessage(Outcome outcome, Integer seasonId, int total){
         return NOPE;
     }
 
     /***
-     *  Builds message that displays the matchups for the current week
+     *  Builds message that displays matchup history between two teams
+     *  TODO: implement buildMatchupsMessage
      */
-    public String buildMatchupsMessage(){
+    public String buildMatchupsMessage(String team0, String team1){
         return NOPE;
     }
 
@@ -138,7 +141,11 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays all jujus of all-time.
-     *  Definition of a Juju: TODO
+     *
+     *  a Juju is a week in which a fantasy football team:
+     *          1) has a bottom-five score for the week
+     *          2) is below the average score for that week
+     *          3) wins
      */
     public String buildJujusMessage(){
         return buildJujusMessage(null);
@@ -146,7 +153,12 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays all jujus.
-     *  Definition of a Juju: TODO
+     *  TODO: implement buildJujusMessage
+     *
+     *  a Juju describes a week in which a fantasy football team:
+     *          1) has a bottom-five score for the week
+     *          2) is below the average score for that week
+     *          3) wins
      */
     public String buildJujusMessage(Integer seasonId){
         return NOPE;
@@ -154,7 +166,11 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays all salties of all-time.
-     *  Definition of a Salty: TODO
+     *
+     *  a Salty describes a week in which a fantasy football team:
+     *          1) has a top-five score for the week
+     *          2) is above the average score for the week
+     *          3) loses
      */
     public String buildSaltiesMessage(){
         return buildSaltiesMessage(null);
@@ -162,7 +178,12 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays all salties.
-     *  Definition of a Salty: TODO
+     *  TODO: implement buildSaltiesMessage
+     *
+     *  a Salty describes a week in which a fantasy football team:
+     *          1) has a top-five score for the week
+     *          2) is above the average score for the week
+     *          3) loses
      */
     public String buildSaltiesMessage(Integer seasonId){
         return NOPE;
@@ -236,5 +257,21 @@ public class EspnMessageBuilder {
         }
 
         return sb.toString();
+    }
+
+    /***
+     *  Builds message that displays the top/bottom points through a given week.
+     *  TODO: implement buildPoinstThroughMessage
+     */
+    public String buildPointsThroughMessage(Order order, int total, int week){
+        return NOPE;
+    }
+
+    /***
+     *  Builds message that displays the top streak of >= given points.
+     *  TODO: implement buildPointsStreakMessage
+     */
+    public String buildPointsStreakMessage(int total){
+        return NOPE;
     }
 }

@@ -137,9 +137,23 @@ public class GroupMeProcessor implements ChatBotProcessor {
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, null));
+        // {top|bottom} [TOTAL] pf through [WEEK]
+        } else if(text.matches("(top|bottom)(\\s\\d)* pf through \\d+$")) {
+            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+            String[] textSplit = text.split("through");
+            String totalStr = textSplit[0].replaceAll("\\D+", "");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            String weekStr = textSplit[1].replaceAll("\\D+", "");
+            int week = Integer.parseInt(weekStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildPointsThroughMessage(order, total, week));
+        // top [TOTAL] pf streaks
+        } else if(text.matches("top(\\s\\d)* pf streaks$")) {
+            String totalStr = text.replaceAll("\\D+", "");
+            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+            getEspnBot().sendMessage(espnMessageBuilder.buildPointsStreakMessage(total));
         // [TOTAL] {win|loss} streaks
         } else if(text.matches("\\d* ?(win|loss) streaks$")) {
-            Outcome outcome = text.contains(" win ") ? Outcome.WIN : Outcome.TIE;
+            Outcome outcome = text.contains(" win ") ? Outcome.WIN : Outcome.LOSS;
             String totalStr = text.replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(outcome, total));
@@ -153,11 +167,12 @@ public class GroupMeProcessor implements ChatBotProcessor {
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
             getEspnBot().sendMessage(espnMessageBuilder.buildHeartbreaksMessage(total));
-        // matchups
-        } else if(text.equals("matchups"))
-            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage());
-        // standings
-        else if(text.equals("standings"))
+        // matchups [TEAM1] [TEAM2]
+        } else if(text.matches("matchups \\S+ \\S+$")) {
+            String[] teams = text.split("\\s");
+            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[0], teams[1]));
+            // standings
+        } else if(text.equals("standings"))
             getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage());
         // jujus
         else if(text.equals("jujus"))
@@ -195,14 +210,16 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " delete pin [INDEX] -- delete a pinned message\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores {ever|YEAR|} -- top/bottom scores\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] records {ever|YEAR|} -- top/bottom records\\n" +
-                getMainBot().getBotKeyword() + " show matchups -- matchups for the current week\\n" +
-                getMainBot().getBotKeyword() + " show standings -- current standings this year\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] pf through [WEEK] -- top/bottom pf through given week\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {POSITION|players} {ever|YEAR|} -- best/worst players\\n" +
+                getMainBot().getBotKeyword() + " show top streaks [TOTAL] pf -- longest streaks of >= pf\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks\\n" +
-                getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
-                getMainBot().getBotKeyword() + " show salties -- all time salties\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest wins\\n" +
-                getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses";
+                getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses\\n" +
+                getMainBot().getBotKeyword() + " show matchups [TEAM1] [TEAM2] -- matchup stats between two teams\\n" +
+                getMainBot().getBotKeyword() + " show standings -- current standings this year\\n" +
+                getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
+                getMainBot().getBotKeyword() + " show salties -- all time salties";
     }
 
     private String buildGifMessage(String query){
