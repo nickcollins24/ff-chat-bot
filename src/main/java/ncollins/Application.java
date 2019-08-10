@@ -6,6 +6,7 @@ import ncollins.chat.groupme.GroupMeProcessor;
 import ncollins.data.PinCollection;
 import ncollins.schedulers.LineupReminderScheduler;
 import ncollins.schedulers.MunndayScheduler;
+import ncollins.schedulers.TradeNotificationScheduler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -37,5 +38,6 @@ public class Application {
         // start schedulers
         new MunndayScheduler(mainBot).start();
 //        new LineupReminderScheduler(mainBot).start();
+//        new TradeNotificationScheduler(espnBot).start();
     }
 }

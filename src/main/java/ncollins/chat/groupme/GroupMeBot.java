@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import ncollins.chat.ChatBot;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
+import ncollins.model.chat.PollPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -17,7 +18,8 @@ import java.util.List;
 
 public class GroupMeBot implements ChatBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String GROUP_ME_URL = "https://api.groupme.com/v3/bots/post";
+    private static final String GROUP_ME_BOT_URL = "https://api.groupme.com/v3/bots/post";
+    private static final String GROUP_ME_POLL_URL = "https://api.groupme.com/v3/poll";
     private static final int MAX_MESSAGE_LENGTH = 1000;
 
     private String accessToken;
@@ -50,6 +52,10 @@ public class GroupMeBot implements ChatBot {
         return botKeyword;
     }
 
+    public String getBotName() {
+        return botName;
+    }
+
     @Override
     public void sendMessage(String text, ImagePayload payload){
         sendMessage(text, payload.toString());
@@ -74,6 +80,20 @@ public class GroupMeBot implements ChatBot {
         sendMessage(text, buildMentionAllPayload(loci).toString());
     }
 
+    public void sendPollMessage(PollPayload payload){
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(GROUP_ME_POLL_URL + "/" + this.getBotGroupId() + "?token=" + this.accessToken))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
+                .build();
+
+        try {
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            logger.error("Exception while sending poll message: " + e);
+        }
+    }
+
     /**
      * Send message to group from this bot.
      *
@@ -94,7 +114,7 @@ public class GroupMeBot implements ChatBot {
                     "\"attachments\": " + attachmentPayload + "}";
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(GROUP_ME_URL))
+                    .uri(URI.create(GROUP_ME_BOT_URL))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(payload))
                     .build();
