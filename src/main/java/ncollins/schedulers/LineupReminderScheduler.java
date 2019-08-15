@@ -24,7 +24,7 @@ public class LineupReminderScheduler implements Scheduler {
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-        // schedule task every Thursday at 5PM PST
+        // schedule task every Thursday at 12PM PST
         Long startTime = LocalDateTime.now(TimeZone.getTimeZone("PST").toZoneId()).until(
                 LocalDate.now(TimeZone.getTimeZone("PST").toZoneId()).with(TemporalAdjusters.nextOrSame(DayOfWeek.THURSDAY)).atTime(12,0), ChronoUnit.MINUTES);
         scheduler.scheduleAtFixedRate(task, startTime, TimeUnit.DAYS.toMinutes(7), TimeUnit.MINUTES);
