@@ -1,6 +1,5 @@
 package ncollins.espn;
 
-import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -28,12 +27,8 @@ public class EspnHttpClient {
     public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler){
         try {
             return client.send(request, responseBodyHandler);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            return null;
         }
-
-        return null;
     }
 }

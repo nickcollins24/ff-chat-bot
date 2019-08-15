@@ -33,18 +33,17 @@ public class EspnDataLoader {
             logger.info("loading espn league data from " + i + "...");
 
             try{
-                String espnUrl = "https://fantasy.espn.com/apis/v3/games/ffl/leagueHistory/" + LEAGUE_ID + "?" +
-                        "view=mBoxscore&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam&seasonId=" + i;
+                HttpResponse<String> response = client.send(buildSeasonRequest(i), HttpResponse.BodyHandlers.ofString());
 
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(espnUrl))
-                        .setHeader("Content-Type", "application/json")
-                        .GET()
-                        .build();
-
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                List<Season> season = gson.fromJson(response.body(), new TypeToken<List<Season>>(){}.getType());
-                league.setSeason(season.get(0));
+                // Get Season from ESPN response if current season
+                if(i == Integer.valueOf(LEAGUE_YEAR)){
+                    Season season = gson.fromJson(response.body(), Season.class);
+                    league.setSeason(season);
+                // Get Season from ESPN response if historical season
+                } else {
+                    List<Season> season = gson.fromJson(response.body(), new TypeToken<List<Season>>(){}.getType());
+                    league.setSeason(season.get(0));
+                }
             } catch(Exception e){
                 logger.info("no espn league data found for " + i + ", loading complete.");
                 return league;
@@ -52,5 +51,21 @@ public class EspnDataLoader {
         }
 
         return league;
+    }
+
+    private HttpRequest buildSeasonRequest(Integer seasonId){
+        String espnUrl = seasonId.equals(Integer.valueOf(LEAGUE_YEAR)) ?
+                // ESPN endpoint for current season
+                "https://fantasy.espn.com/apis/v3/games/ffl/seasons/" + seasonId + "/segments/0/leagues/" + LEAGUE_ID + "?" +
+                        "view=mBoxscore&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam" :
+                // ESPN endpoint for historical seasons
+                "https://fantasy.espn.com/apis/v3/games/ffl/leagueHistory/" + LEAGUE_ID + "?" +
+                        "view=mBoxscore&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam&seasonId=" + seasonId;
+
+        return HttpRequest.newBuilder()
+                .uri(URI.create(espnUrl))
+                .setHeader("Content-Type", "application/json")
+                .GET()
+                .build();
     }
 }
