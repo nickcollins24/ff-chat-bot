@@ -121,8 +121,8 @@ public class EspnMessageBuilder {
                         recordWithOwner.getOverall().getTies() + t.getRecord().getOverall().getTies());
                 // update overall percentage for team with owner
                 recordWithOwner.getOverall().setPercentage(
-                        (double) recordWithOwner.getOverall().getWins() /
-                                (recordWithOwner.getOverall().getWins() + recordWithOwner.getOverall().getLosses()));
+                        (recordWithOwner.getOverall().getWins() + (recordWithOwner.getOverall().getTies()*.5)) /
+                        (recordWithOwner.getOverall().getWins() + recordWithOwner.getOverall().getLosses() + recordWithOwner.getOverall().getTies()));
                 // update overall pf for team with owner
                 recordWithOwner.getOverall().setPointsFor(
                         recordWithOwner.getOverall().getPointsFor() + t.getRecord().getOverall().getPointsFor());
