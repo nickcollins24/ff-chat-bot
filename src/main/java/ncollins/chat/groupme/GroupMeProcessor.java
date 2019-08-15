@@ -132,6 +132,21 @@ public class GroupMeProcessor implements ChatBotProcessor {
             } else {
                 getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessageCurrentYear(order, total));
             }
+        // standings {ever|YEAR|}
+        } else if(text.matches("standings(\\sever|\\s\\d+|)$")){
+            String yearStr = text.replaceAll("\\D+", "");
+
+            // history
+            if(text.contains("ever")){
+                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage());
+            // specified season
+            } else if(!yearStr.isEmpty()){
+                Integer seasonId = Integer.parseInt(yearStr);
+                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage(seasonId));
+            // current season
+            } else {
+                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessageCurrentYear());
+            }
         // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
         } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)(\\s\\d+|)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -194,11 +209,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
         } else if(text.matches("matchups \\S+ \\S+$")) {
             String[] teams = text.split("\\s");
             getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[0], teams[1]));
-            // standings
-        } else if(text.equals("standings"))
-            getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage());
         // jujus
-        else if(text.equals("jujus"))
+        } else if(text.equals("jujus"))
             getEspnBot().sendMessage(espnMessageBuilder.buildJujusMessage());
         // salties
         else if(text.equals("salties"))
@@ -239,8 +251,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest wins\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses\\n" +
+                getMainBot().getBotKeyword() + " show standings {ever|YEAR|} -- standings\\n" +
                 getMainBot().getBotKeyword() + " show matchups [TEAM1] [TEAM2] -- matchup stats between two teams\\n" +
-                getMainBot().getBotKeyword() + " show standings -- current standings this year\\n" +
                 getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
                 getMainBot().getBotKeyword() + " show salties -- all time salties";
     }

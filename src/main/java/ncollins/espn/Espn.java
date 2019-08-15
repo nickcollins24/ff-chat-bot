@@ -1,10 +1,13 @@
 package ncollins.espn;
 
+import ncollins.espn.comparators.SortByDifference;
+import ncollins.espn.comparators.SortByPoints;
+import ncollins.espn.comparators.SortByScore;
+import ncollins.espn.comparators.SortByPercentage;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Espn {
@@ -19,8 +22,8 @@ public class Espn {
         return this.league;
     }
 
-    public int getCurrentWeek(){
-        return getLeague().getSeason(getCurrentSeasonId()).getScoringPeriodId();
+    public int getWeek(Integer seasonId){
+        return getLeague().getSeason(seasonId).getScoringPeriodId();
     }
 
     public int getCurrentSeasonId() {
@@ -34,7 +37,7 @@ public class Espn {
 
         scores.sort(new SortByScore(order));
 
-        return scores.subList(0, total);
+        return scores.subList(0, Math.min(scores.size(), total));
     }
 
     public List<Score> getScoresAllTime(boolean includePlayoffs){
@@ -49,8 +52,10 @@ public class Espn {
 
     public List<Score> getScores(Integer seasonId, boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
-        for(ScheduleItem scheduleItem : getLeague().getSeason(seasonId).getSchedule()){
-            if(includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")){
+
+        Season season = getLeague().getSeason(seasonId);
+        for(ScheduleItem scheduleItem : season.getSchedule()){
+            if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
                 scores.add(new Score(scheduleItem.getHome(), scheduleItem.getAway(), scheduleItem.getMatchupPeriodId(), seasonId));
                 scores.add(new Score(scheduleItem.getAway(), scheduleItem.getHome(), scheduleItem.getMatchupPeriodId(), seasonId));
             }
@@ -64,13 +69,15 @@ public class Espn {
                 getMatchupsAllTime(includePlayoffs, includeTies);
         matchups.sort(new SortByDifference(order));
 
-        return matchups.subList(0, total);
+        return matchups.subList(0, Math.min(matchups.size(), total));
     }
 
     public List<Matchup> getMatchups(Integer seasonId, boolean includePlayoffs, boolean includeTies){
         List<Matchup> matchups = new ArrayList();
-        for(ScheduleItem scheduleItem : getLeague().getSeason(seasonId).getSchedule()){
-            if(includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")){
+
+        Season season = getLeague().getSeason(seasonId);
+        for(ScheduleItem scheduleItem : season.getSchedule()){
+            if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
                 if(includeTies || !scheduleItem.getHome().getTotalPoints().equals(scheduleItem.getAway().getTotalPoints())){
                     matchups.add(new Matchup(scheduleItem, seasonId));
                 }
@@ -90,13 +97,13 @@ public class Espn {
         return matchups;
     }
 
-    public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId){
+    public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId, Boolean includeCurrentSeason){
         List<Team> teams = seasonId != null ?
                 getTeams(seasonId) :
-                getTeamsAllTime();
-        teams.sort(new SortByWins(order).thenComparing(new SortByPoints(order)));
+                getTeamsAllTime(includeCurrentSeason);
+        teams.sort(new SortByPercentage(order).thenComparing(new SortByPoints(order)));
 
-        return total != null ? teams.subList(0, total) : teams;
+        return total != null ? teams.subList(0, Math.min(teams.size(), total)) : teams;
     }
 
     public List<Team> getTeams(Integer seasonId){
@@ -109,29 +116,32 @@ public class Espn {
         return teams;
     }
 
-    public List<Team> getTeamsAllTime(){
+    public List<Team> getTeamsAllTime(Boolean includeCurrentSeason){
         ArrayList<Team> teams = new ArrayList();
 
         for(Integer seasonId : getLeague().getSeasons().keySet()){
-            teams.addAll(getTeams(seasonId));
+            if(includeCurrentSeason || seasonId < getCurrentSeasonId()){
+                teams.addAll(getTeams(seasonId));
+            }
         }
 
         return teams;
     }
 
-    public Team getTeam(Integer teamId, Integer seasonId){
-        for(Team team : getLeague().getSeason(seasonId).getTeams()){
-            if(team.getId() == teamId){
-                team.setSeasonId(seasonId);
-                return team;
+    public String getTeamAbbrev(Integer teamId, Integer seasonId){
+        return getTeam(teamId, seasonId).getAbbrev();
+    }
+
+    public Member getMemberByOwnerId(String ownerId){
+        for(Season s : getLeague().getSeasons().values()){
+            for(Member m : s.getMembers()){
+                if(ownerId.equals(m.getId())){
+                    return m;
+                }
             }
         }
 
         return null;
-    }
-
-    public String getTeamAbbrev(Integer teamId, Integer seasonId){
-        return getTeam(teamId, seasonId).getAbbrev();
     }
 
     public Member getMemberByTeamId(Integer teamId, Integer seasonId){
@@ -146,72 +156,19 @@ public class Espn {
         return null;
     }
 
-    class SortByScore implements Comparator<Score> {
-        private Order order;
-
-        public SortByScore(Order order){ this.order = order; }
-
-        public int compare(Score a, Score b)
-        {
-            if(this.order.equals(Order.ASC)){
-                return a.getPoints().compareTo(b.getPoints());
-            } else {
-                return b.getPoints().compareTo(a.getPoints());
+    private Team getTeam(Integer teamId, Integer seasonId){
+        for(Team team : getLeague().getSeason(seasonId).getTeams()){
+            if(team.getId() == teamId){
+                team.setSeasonId(seasonId);
+                return team;
             }
-
         }
+
+        return null;
     }
 
-    class SortByDifference implements Comparator<Matchup> {
-        private Order order;
-
-        public SortByDifference(Order order){ this.order = order; }
-
-        public int compare(Matchup a, Matchup b)
-        {
-            if(this.order.equals(Order.ASC)){
-                return Double.valueOf(Math.abs(a.getScheduleItem().getHome().getTotalPoints() - a.getScheduleItem().getAway().getTotalPoints())).compareTo(
-                        Double.valueOf(Math.abs(b.getScheduleItem().getHome().getTotalPoints() - b.getScheduleItem().getAway().getTotalPoints())));
-            } else {
-                return Double.valueOf(Math.abs(b.getScheduleItem().getHome().getTotalPoints() - b.getScheduleItem().getAway().getTotalPoints())).compareTo(
-                        Double.valueOf(Math.abs(a.getScheduleItem().getHome().getTotalPoints() - a.getScheduleItem().getAway().getTotalPoints())));
-            }
-
-        }
-    }
-
-    class SortByWins implements Comparator<Team> {
-        private Order order;
-
-        public SortByWins(Order order){ this.order = order; }
-
-        public int compare(Team a, Team b)
-        {
-            if(this.order.equals(Order.ASC)){
-                return a.getRecord().getOverall().getPercentage().compareTo(
-                        b.getRecord().getOverall().getPercentage());
-            } else {
-                return b.getRecord().getOverall().getPercentage().compareTo(
-                        a.getRecord().getOverall().getPercentage());
-            }
-        }
-    }
-
-    class SortByPoints implements Comparator<Team> {
-        private Order order;
-
-        public SortByPoints(Order order){ this.order = order; }
-
-        public int compare(Team a, Team b)
-        {
-
-            if(this.order.equals(Order.ASC)){
-                return a.getRecord().getOverall().getPointsFor().compareTo(
-                        b.getRecord().getOverall().getPointsFor());
-            } else {
-                return b.getRecord().getOverall().getPointsFor().compareTo(
-                        a.getRecord().getOverall().getPointsFor());
-            }
-        }
+    private Boolean isValidWeek(Boolean includePlayoffs, ScheduleItem scheduleItem, Integer seasonId){
+        return (includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")) &&
+                scheduleItem.getMatchupPeriodId() < getWeek(seasonId);
     }
 }

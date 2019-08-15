@@ -1,7 +1,10 @@
 package ncollins.espn;
 
+import ncollins.espn.comparators.SortOverallByPercentage;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class EspnMessageBuilder {
@@ -90,17 +93,94 @@ public class EspnMessageBuilder {
     /***
      *  Builds message that displays current standings
      */
+    public String buildStandingsMessageCurrentYear(){
+        return buildStandingsMessage(espn.getCurrentSeasonId());
+    }
+
+    /**
+     * Builds message that displays standings all-time
+     */
     public String buildStandingsMessage(){
-        List<Team> teams = espn.getTeamsSorted(Order.DESC, null, espn.getCurrentSeasonId());
+        List<Team> teams = espn.getTeamsAllTime(true);
+        List<OwnerToOverall> recordsByOwner = new ArrayList();
+
+        for(Team t : teams){
+            Member member = espn.getMemberByOwnerId(t.getPrimaryOwner());
+            String ownerName = member.getFirtName() + " " + member.getLastName();
+            OwnerToOverall recordWithOwner = getRecordWithOwner(recordsByOwner, t.getPrimaryOwner(), ownerName);
+
+            if(recordWithOwner != null){
+                // update overall wins for team with owner
+                recordWithOwner.getOverall().setWins(
+                        recordWithOwner.getOverall().getWins() + t.getRecord().getOverall().getWins());
+                // update overall losses for team with owner
+                recordWithOwner.getOverall().setLosses(
+                        recordWithOwner.getOverall().getLosses() + t.getRecord().getOverall().getLosses());
+                // update overall ties for team with owner
+                recordWithOwner.getOverall().setTies(
+                        recordWithOwner.getOverall().getTies() + t.getRecord().getOverall().getTies());
+                // update overall percentage for team with owner
+                recordWithOwner.getOverall().setPercentage(
+                        (double) recordWithOwner.getOverall().getWins() /
+                                (recordWithOwner.getOverall().getWins() + recordWithOwner.getOverall().getLosses()));
+                // update overall pf for team with owner
+                recordWithOwner.getOverall().setPointsFor(
+                        recordWithOwner.getOverall().getPointsFor() + t.getRecord().getOverall().getPointsFor());
+                // update overall pa for team with owner
+                recordWithOwner.getOverall().setPointsAgainst(
+                        recordWithOwner.getOverall().getPointsAgainst() + t.getRecord().getOverall().getPointsAgainst());
+            } else {
+                Record.Overall overall = new Record().new Overall();
+                overall.setWins(t.getRecord().getOverall().getWins());
+                overall.setLosses(t.getRecord().getOverall().getLosses());
+                overall.setTies(t.getRecord().getOverall().getTies());
+                overall.setPercentage(t.getRecord().getOverall().getPercentage());
+                overall.setPointsFor(t.getRecord().getOverall().getPointsFor());
+                overall.setPointsAgainst(t.getRecord().getOverall().getPointsAgainst());
+
+                recordsByOwner.add(new OwnerToOverall(t.getPrimaryOwner(), ownerName, overall));
+            }
+        }
+        recordsByOwner.sort(new SortOverallByPercentage(Order.DESC));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Standings:\\n");
-        for(Team team : teams){
-            sb.append(espn.getTeamAbbrev(team.getId(), team.getSeasonId()) + " ")
-                    .append(team.getRecord().getOverall().getWins() + "-" + team.getRecord().getOverall().getLosses() + " ")
-                    .append(String.format("%.1f", team.getRecord().getOverall().getPercentage()) + " ")
-                    .append(String.format("%.1f", team.getRecord().getOverall().getPointsFor()) + " ")
-                    .append(String.format("%.1f", team.getRecord().getOverall().getPointsAgainst()) + "\\n");
+        sb.append("All-Time Standings:\\n");
+        for(int i=0; i < recordsByOwner.size(); i++){
+            String tiesStr = recordsByOwner.get(i).getOverall().getTies() > 0 ?
+                    "-" + recordsByOwner.get(i).getOverall().getTies():
+                    "";
+
+            sb.append(recordsByOwner.get(i).getOwnerName() + " ")
+                    .append(recordsByOwner.get(i).getOverall().getWins() + "-" + recordsByOwner.get(i).getOverall().getLosses() + tiesStr + " ")
+                    .append(String.format("%.3f", recordsByOwner.get(i).getOverall().getPercentage()) + " ")
+                    .append(String.format("%.1f", recordsByOwner.get(i).getOverall().getPointsFor()) + " ")
+                    .append(String.format("%.1f", recordsByOwner.get(i).getOverall().getPointsAgainst()) + "\\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Builds message that displays standings in a given year
+     */
+    public String buildStandingsMessage(Integer seasonId){
+        List<Team> teams = espn.getTeamsSorted(Order.DESC, null, seasonId, true);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(seasonId + " Standings:\\n");
+        for(int i=0; i < teams.size(); i++){
+            Member member = espn.getMemberByTeamId(teams.get(i).getId(), teams.get(i).getSeasonId());
+            String memberName = member.getFirtName() + " " + member.getLastName();
+
+            String tiesStr = teams.get(i).getRecord().getOverall().getTies() > 0 ?
+                    "-" + teams.get(i).getRecord().getOverall().getTies():
+                    "";
+
+            sb.append(memberName + " ")
+                    .append(teams.get(i).getRecord().getOverall().getWins() + "-" + teams.get(i).getRecord().getOverall().getLosses() + tiesStr + " ")
+                    .append(String.format("%.3f", teams.get(i).getRecord().getOverall().getPercentage()) + " ")
+                    .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsFor()) + " ")
+                    .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsAgainst()) + "\\n");
         }
 
         return sb.toString();
@@ -110,21 +190,28 @@ public class EspnMessageBuilder {
      *  Builds message that displays the best/worst records by a team this year
      */
     public String buildRecordsMessageCurrentYear(Order order, int total){
-        return buildRecordsMessage(order, total, espn.getCurrentSeasonId());
+        return buildRecordsMessage(order, total, espn.getCurrentSeasonId(), true);
     }
 
     /***
      *  Builds message that displays best/worst records all-time
      */
     public String buildRecordsMessage(Order order, int total){
-        return buildRecordsMessage(order, total, null);
+        return buildRecordsMessage(order, total, null, false);
     }
 
     /***
      *  Builds message that displays best/worst records in given year
      */
     public String buildRecordsMessage(Order order, int total, Integer seasonId){
-        List<Team> teams = espn.getTeamsSorted(order, total, seasonId);
+        return buildRecordsMessage(order, total, seasonId, true);
+    }
+
+    /***
+     *  Builds message that displays best/worst records in given year
+     */
+    public String buildRecordsMessage(Order order, int total, Integer seasonId, Boolean includeCurrentSeason){
+        List<Team> teams = espn.getTeamsSorted(order, total, seasonId, includeCurrentSeason);
         String timePeriod = seasonId == null ? " All Time" : " " + String.valueOf(seasonId);
 
         StringBuilder sb = new StringBuilder();
@@ -135,9 +222,13 @@ public class EspnMessageBuilder {
             Member member = espn.getMemberByTeamId(teams.get(i).getId(), teams.get(i).getSeasonId());
             String memberName = member.getFirtName() + " " + member.getLastName();
 
+            String tiesStr = teams.get(i).getRecord().getOverall().getTies() > 0 ?
+                "-" + teams.get(i).getRecord().getOverall().getTies():
+                "";
+
             sb.append(i+1 + ": " + memberName + " ")
-              .append(teams.get(i).getRecord().getOverall().getWins() + "-" + teams.get(i).getRecord().getOverall().getLosses() + " ")
-              .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPercentage()) + " ")
+              .append(teams.get(i).getRecord().getOverall().getWins() + "-" + teams.get(i).getRecord().getOverall().getLosses() + tiesStr + " ")
+              .append(String.format("%.3f", teams.get(i).getRecord().getOverall().getPercentage()) + " ")
               .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsFor()) + " ")
               .append(String.format("%.1f", teams.get(i).getRecord().getOverall().getPointsAgainst()) + " ")
               .append(optionalYear + "\\n");
@@ -280,5 +371,15 @@ public class EspnMessageBuilder {
      */
     public String buildPointsStreakMessage(int total){
         return NOPE;
+    }
+
+    private OwnerToOverall getRecordWithOwner(List<OwnerToOverall> ownerToOverall, String ownerId, String ownerName){
+        for(OwnerToOverall o : ownerToOverall){
+            if(o.getOwnerId().equals(ownerId) || o.getOwnerName().equals(ownerName)){
+                return o;
+            }
+        }
+
+        return null;
     }
 }
