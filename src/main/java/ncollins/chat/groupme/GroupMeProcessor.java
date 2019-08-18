@@ -208,7 +208,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         // matchups [TEAM1] [TEAM2]
         } else if(text.matches("matchups \\S+ \\S+$")) {
             String[] teams = text.split("\\s");
-            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[0], teams[1]));
+            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[1], teams[2]));
         // jujus
         } else if(text.equals("jujus"))
             getEspnBot().sendMessage(espnMessageBuilder.buildJujusMessage());

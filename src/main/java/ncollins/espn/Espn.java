@@ -1,14 +1,13 @@
 package ncollins.espn;
 
-import ncollins.espn.comparators.SortByDifference;
-import ncollins.espn.comparators.SortByPoints;
-import ncollins.espn.comparators.SortByScore;
-import ncollins.espn.comparators.SortByPercentage;
+import ncollins.espn.comparators.*;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Espn {
     private static final String LEAGUE_YEAR = System.getenv("ESPN_LEAGUE_YEAR");
@@ -35,7 +34,7 @@ public class Espn {
                 getScores(seasonId, includePlayoffs) :
                 getScoresAllTime(includePlayoffs);
 
-        scores.sort(new SortByScore(order));
+        scores.sort(new SortScoresByPoints(order));
 
         return scores.subList(0, Math.min(scores.size(), total));
     }
@@ -67,7 +66,7 @@ public class Espn {
         List<Matchup> matchups = seasonId != null ?
                 getMatchups(seasonId, includePlayoffs, includeTies) :
                 getMatchupsAllTime(includePlayoffs, includeTies);
-        matchups.sort(new SortByDifference(order));
+        matchups.sort(new SortMatchupsByDifference(order));
 
         return matchups.subList(0, Math.min(matchups.size(), total));
     }
@@ -97,11 +96,37 @@ public class Espn {
         return matchups;
     }
 
+    public List<Matchup> getMatchupsBetween(Member m0, Member m1){
+        List<Matchup> allMatchups = getMatchupsAllTime(true, true);
+        Set<Matchup> matchupsBetween = new HashSet();
+
+        for(Matchup matchup : allMatchups){
+            if(matchup.getScheduleItem().getHome() != null && matchup.getScheduleItem().getAway() != null) {
+                Member homeMember = getMemberByTeamId(matchup.getScheduleItem().getHome().getTeamId(), matchup.getSeasonId());
+                Member awayMember = getMemberByTeamId(matchup.getScheduleItem().getAway().getTeamId(), matchup.getSeasonId());
+
+                if ((homeMember.equals(m0) && awayMember.equals(m1)) ||
+                        (homeMember.equals(m1) && awayMember.equals(m0))) {
+                    matchupsBetween.add(matchup);
+                }
+            }
+        }
+
+        return new ArrayList(matchupsBetween);
+    }
+
+    public List<Matchup> getMatchupsBetweenSorted(Order order, Member m0, Member m1){
+        List<Matchup> matchups = getMatchupsBetween(m0, m1);
+        matchups.sort(new SortMatchupsBySeasonId(order).thenComparing(new SortMatchupsByWeek(order)));
+
+        return matchups;
+    }
+
     public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId, Boolean includeCurrentSeason){
         List<Team> teams = seasonId != null ?
                 getTeams(seasonId) :
                 getTeamsAllTime(includeCurrentSeason);
-        teams.sort(new SortByPercentage(order).thenComparing(new SortByPoints(order)));
+        teams.sort(new SortTeamsByPercentage(order).thenComparing(new SortTeamsByPoints(order)));
 
         return total != null ? teams.subList(0, Math.min(teams.size(), total)) : teams;
     }
@@ -144,12 +169,56 @@ public class Espn {
         return null;
     }
 
+    public Team getTeamByAbbrev(String abbrev){
+        return getTeamByAbbrev(abbrev, getCurrentSeasonId());
+    }
+
+    public Team getTeamByAbbrev(String abbrev, Integer seasonId){
+        for(Team t : getTeams(seasonId)){
+            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev){
+        return getMemberByTeamAbbrev(abbrev, getCurrentSeasonId());
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev, Integer seasonId){
+        List<Team> teams = getTeams(seasonId);
+
+        for(Team t : teams){
+            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
+                return getMemberByTeamId(t.getId(), seasonId);
+            }
+        }
+
+        return null;
+    }
+
+    public Member getMemberByTeamId(Integer teamId){
+        return getMemberByTeamId(teamId, this.getCurrentSeasonId());
+    }
+
     public Member getMemberByTeamId(Integer teamId, Integer seasonId){
         Team team = getTeam(teamId, seasonId);
 
         for(Member member : getLeague().getSeason(seasonId).getMembers()){
             if(member.getId().equals(team.getPrimaryOwner())){
                 return member;
+            }
+        }
+
+        return null;
+    }
+
+    public OwnerToOverall getRecordWithOwner(List<OwnerToOverall> ownerToOverall, String ownerId, String ownerName){
+        for(OwnerToOverall o : ownerToOverall){
+            if(o.getOwnerId().equals(ownerId) || o.getOwnerName().equals(ownerName)){
+                return o;
             }
         }
 

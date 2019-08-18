@@ -5,10 +5,10 @@ import ncollins.model.espn.Matchup;
 
 import java.util.Comparator;
 
-public class SortByDifference implements Comparator<Matchup> {
+public class SortMatchupsByDifference implements Comparator<Matchup> {
     private Order order;
 
-    public SortByDifference(Order order){ this.order = order; }
+    public SortMatchupsByDifference(Order order){ this.order = order; }
 
     public int compare(Matchup a, Matchup b)
     {

@@ -5,7 +5,9 @@ import ncollins.model.Order;
 import ncollins.model.espn.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EspnMessageBuilder {
     private Espn espn = new Espn();
@@ -84,10 +86,85 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays matchup history between two teams
-     *  TODO: implement buildMatchupsMessage
      */
     public String buildMatchupsMessage(String team0, String team1){
-        return NOPE;
+        Member m0 = espn.getMemberByTeamAbbrev(team0);
+        Team t0 = espn.getTeamByAbbrev(team0);
+        Member m1 = espn.getMemberByTeamAbbrev(team1);
+        Team t1 = espn.getTeamByAbbrev(team1);
+        Map<Integer, String> teamMap = new HashMap();
+        teamMap.put(t0.getId(), team0.toUpperCase());
+        teamMap.put(t1.getId(), team1.toUpperCase());
+
+        if(m0 == null || m1 == null){
+            return "Team(s) don't exist.";
+        }
+
+        List<Matchup> matchups = espn.getMatchupsBetweenSorted(Order.DESC, m0, m1);
+
+        if(matchups.isEmpty()){
+            return "Teams have never played each other.";
+        }
+
+        Double t0Points = 0.0;
+        Double t1Points = 0.0;
+
+        int t0Wins = 0;
+        int t0Losses = 0;
+        int t0Ties = 0;
+        for(Matchup m : matchups){
+            if(teamMap.get(m.getScheduleItem().getHome().getTeamId()).equalsIgnoreCase(team0)){
+                t0Points += m.getScheduleItem().getHome().getTotalPoints();
+                t1Points += m.getScheduleItem().getAway().getTotalPoints();
+
+                if(m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()){
+                    t0Wins++;
+                } else if(m.getScheduleItem().getAway().getTotalPoints() > m.getScheduleItem().getHome().getTotalPoints()){
+                    t0Losses++;
+                } else {
+                    t0Ties++;
+                }
+            } else {
+                t1Points += m.getScheduleItem().getHome().getTotalPoints();
+                t0Points += m.getScheduleItem().getAway().getTotalPoints();
+
+                if(m.getScheduleItem().getAway().getTotalPoints() > m.getScheduleItem().getHome().getTotalPoints()){
+                    t0Wins++;
+                } else if(m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()){
+                    t0Losses++;
+                } else {
+                    t0Ties++;
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(m0.getDisplayName() + " (" + team0.toUpperCase() + ") vs. " + m1.getDisplayName() + " (" + team1.toUpperCase() + "):\\n\\n");
+
+        sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + t0Points + "(" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
+          .append(team1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + t1Points + "(" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
+
+        for(int i=0; i < matchups.size(); i++){
+            String winner;
+            String loser;
+            if(matchups.get(i).getScheduleItem().getHome().getTotalPoints() >
+                    matchups.get(i).getScheduleItem().getAway().getTotalPoints()){
+                winner = teamMap.get(matchups.get(i).getScheduleItem().getHome().getTeamId()) + " " +
+                        String.format("%.2f", matchups.get(i).getScheduleItem().getHome().getTotalPoints());
+                loser = String.format("%.2f", matchups.get(i).getScheduleItem().getAway().getTotalPoints())+ " " +
+                        teamMap.get(matchups.get(i).getScheduleItem().getAway().getTeamId());
+            } else {
+                winner = teamMap.get(matchups.get(i).getScheduleItem().getAway().getTeamId()) + " " +
+                        String.format("%.2f", matchups.get(i).getScheduleItem().getAway().getTotalPoints());
+                loser = String.format("%.2f", matchups.get(i).getScheduleItem().getHome().getTotalPoints())+ " " +
+                        teamMap.get(matchups.get(i).getScheduleItem().getHome().getTeamId());
+            }
+
+            sb.append(winner + " - " + loser + " -- ")
+              .append(matchups.get(i).getSeasonId() + "(" + matchups.get(i).getScheduleItem().getMatchupPeriodId() + ")\\n");
+        }
+
+        return sb.toString();
     }
 
     /***
@@ -107,7 +184,7 @@ public class EspnMessageBuilder {
         for(Team t : teams){
             Member member = espn.getMemberByOwnerId(t.getPrimaryOwner());
             String ownerName = member.getFirtName() + " " + member.getLastName();
-            OwnerToOverall recordWithOwner = getRecordWithOwner(recordsByOwner, t.getPrimaryOwner(), ownerName);
+            OwnerToOverall recordWithOwner = espn.getRecordWithOwner(recordsByOwner, t.getPrimaryOwner(), ownerName);
 
             if(recordWithOwner != null){
                 // update overall wins for team with owner
@@ -371,15 +448,5 @@ public class EspnMessageBuilder {
      */
     public String buildPointsStreakMessage(int total){
         return NOPE;
-    }
-
-    private OwnerToOverall getRecordWithOwner(List<OwnerToOverall> ownerToOverall, String ownerId, String ownerName){
-        for(OwnerToOverall o : ownerToOverall){
-            if(o.getOwnerId().equals(ownerId) || o.getOwnerName().equals(ownerName)){
-                return o;
-            }
-        }
-
-        return null;
     }
 }

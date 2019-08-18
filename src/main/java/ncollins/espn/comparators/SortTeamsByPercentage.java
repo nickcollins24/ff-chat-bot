@@ -5,10 +5,10 @@ import ncollins.model.espn.Team;
 
 import java.util.Comparator;
 
-public class SortByPercentage implements Comparator<Team> {
+public class SortTeamsByPercentage implements Comparator<Team> {
     private Order order;
 
-    public SortByPercentage(Order order){ this.order = order; }
+    public SortTeamsByPercentage(Order order){ this.order = order; }
 
     public int compare(Team a, Team b)
     {

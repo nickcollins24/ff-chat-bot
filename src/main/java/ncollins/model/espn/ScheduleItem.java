@@ -55,4 +55,15 @@ public class ScheduleItem {
         public void setTiebreak(int tiebreak) { this.tiebreak = tiebreak; }
         public void setTotalPoints(Double totalPoints) { this.totalPoints = totalPoints; }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof ScheduleItem)) return false;
+
+        ScheduleItem s = (ScheduleItem) o;
+        return s.getMatchupPeriodId() == matchupPeriodId &&
+                s.getHome().getTeamId() == home.getTeamId() &&
+                s.getAway().getTeamId() == away.getTeamId();
+    }
 }

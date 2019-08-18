@@ -24,4 +24,13 @@ public class Matchup {
     public void setSeasonId(int seasonId) {
         this.seasonId = seasonId;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Matchup)) return false;
+
+        Matchup m = (Matchup) o;
+        return m.getSeasonId() == seasonId && m.getScheduleItem().equals(scheduleItem);
+    }
 }

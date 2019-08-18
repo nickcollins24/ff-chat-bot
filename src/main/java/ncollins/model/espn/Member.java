@@ -17,4 +17,14 @@ public class Member {
     public void setFirtName(String firtName) { this.firstName = firtName; }
     public void setId(String id) { this.id = id; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Member)) return false;
+
+        Member m = (Member) o;
+        return m.getId().equals(id) ||
+                (m.firstName + m.lastName).equals(firstName + lastName);
+    }
 }
