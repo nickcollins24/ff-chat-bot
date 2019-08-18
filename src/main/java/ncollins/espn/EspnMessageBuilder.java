@@ -141,8 +141,8 @@ public class EspnMessageBuilder {
         StringBuilder sb = new StringBuilder();
         sb.append(m0.getDisplayName() + " (" + team0.toUpperCase() + ") vs. " + m1.getDisplayName() + " (" + team1.toUpperCase() + "):\\n\\n");
 
-        sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + t0Points + "(" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
-          .append(team1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + t1Points + "(" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
+        sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + String.format("%.2f", t0Points) + " (" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
+          .append(team1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + String.format("%.2f", t1Points) + " (" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
 
         for(int i=0; i < matchups.size(); i++){
             String winner;
