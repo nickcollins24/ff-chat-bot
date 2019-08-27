@@ -92,13 +92,14 @@ public class EspnMessageBuilder {
         Team t0 = espn.getTeamByAbbrev(team0);
         Member m1 = espn.getMemberByTeamAbbrev(team1);
         Team t1 = espn.getTeamByAbbrev(team1);
+
+        if(m0 == null || m1 == null || t0 == null || t1 == null){
+            return "Team(s) don't exist.";
+        }
+
         Map<Integer, String> teamMap = new HashMap();
         teamMap.put(t0.getId(), team0.toUpperCase());
         teamMap.put(t1.getId(), team1.toUpperCase());
-
-        if(m0 == null || m1 == null){
-            return "Team(s) don't exist.";
-        }
 
         List<Matchup> matchups = espn.getMatchupsBetweenSorted(Order.DESC, m0, m1);
 
@@ -141,9 +142,11 @@ public class EspnMessageBuilder {
         StringBuilder sb = new StringBuilder();
         sb.append(m0.getDisplayName() + " (" + team0.toUpperCase() + ") vs. " + m1.getDisplayName() + " (" + team1.toUpperCase() + "):\\n\\n");
 
+        sb.append("Record:\\n");
         sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + String.format("%.2f", t0Points) + " (" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
           .append(team1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + String.format("%.2f", t1Points) + " (" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
 
+        sb.append("Matchups:\\n");
         for(int i=0; i < matchups.size(); i++){
             String winner;
             String loser;

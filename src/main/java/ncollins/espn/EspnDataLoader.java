@@ -26,31 +26,37 @@ public class EspnDataLoader {
     }
 
     public League loadLeague(){
+        logger.info("loading espn league data...");
         League league = new League();
+        Season season;
 
         // load league data by season until we get an exception
         for(int i = Integer.valueOf(LEAGUE_YEAR); i >= 0; i--) {
-            logger.info("loading espn league data from " + i + "...");
-
-            try{
-                HttpResponse<String> response = client.send(buildSeasonRequest(i), HttpResponse.BodyHandlers.ofString());
-
-                // Get Season from ESPN response if current season
-                if(i == Integer.valueOf(LEAGUE_YEAR)){
-                    Season season = gson.fromJson(response.body(), Season.class);
-                    league.setSeason(season);
-                // Get Season from ESPN response if historical season
-                } else {
-                    List<Season> season = gson.fromJson(response.body(), new TypeToken<List<Season>>(){}.getType());
-                    league.setSeason(season.get(0));
-                }
-            } catch(Exception e){
-                logger.info("no espn league data found for " + i + ", loading complete.");
+            season = loadSeason(i);
+            if(season == null){
                 return league;
             }
+
+            league.setSeason(season);
         }
 
         return league;
+    }
+
+    public Season loadSeason(Integer seasonId){
+        logger.info("loading espn season data from " + seasonId + "...");
+
+        try{
+            HttpResponse<String> response = client.send(buildSeasonRequest(seasonId), HttpResponse.BodyHandlers.ofString());
+
+            // Get Season from ESPN response if current season or not
+            return seasonId.equals(Integer.valueOf(LEAGUE_YEAR)) ?
+                    gson.fromJson(response.body(), Season.class) :
+                    ((List<Season>)gson.fromJson(response.body(), new TypeToken<List<Season>>(){}.getType())).get(0);
+        } catch(Exception e){
+            logger.info("no espn season data found for " + seasonId + ".");
+            return null;
+        }
     }
 
     private HttpRequest buildSeasonRequest(Integer seasonId){

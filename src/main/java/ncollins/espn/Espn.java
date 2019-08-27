@@ -4,25 +4,31 @@ import ncollins.espn.comparators.*;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Espn {
     private static final String LEAGUE_YEAR = System.getenv("ESPN_LEAGUE_YEAR");
     private League league;
+    private EspnDataLoader loader = new EspnDataLoader();
 
     public Espn() {
-        this.league = new EspnDataLoader().loadLeague();
+        this.league = loader.loadLeague();
     }
 
     public League getLeague(){
-        return this.league;
+        return league;
+    }
+
+    public Season getSeason(Integer seasonId, boolean live){
+        return live ? loader.loadSeason(seasonId) : getLeague().getSeason(seasonId);
+    }
+
+    public Map<Integer,Season> getSeasons(){
+        return getLeague().getSeasons();
     }
 
     public int getWeek(Integer seasonId){
-        return getLeague().getSeason(seasonId).getScoringPeriodId();
+        return getSeason(seasonId, false).getScoringPeriodId();
     }
 
     public int getCurrentSeasonId() {
@@ -42,7 +48,7 @@ public class Espn {
     public List<Score> getScoresAllTime(boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
 
-        for(Integer seasonId : getLeague().getSeasons().keySet()){
+        for(Integer seasonId : getSeasons().keySet()){
             scores.addAll(getScores(seasonId, includePlayoffs));
         }
 
@@ -52,7 +58,7 @@ public class Espn {
     public List<Score> getScores(Integer seasonId, boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
 
-        Season season = getLeague().getSeason(seasonId);
+        Season season = getSeason(seasonId,false);
         for(ScheduleItem scheduleItem : season.getSchedule()){
             if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
                 scores.add(new Score(scheduleItem.getHome(), scheduleItem.getAway(), scheduleItem.getMatchupPeriodId(), seasonId));
@@ -74,7 +80,7 @@ public class Espn {
     public List<Matchup> getMatchups(Integer seasonId, boolean includePlayoffs, boolean includeTies){
         List<Matchup> matchups = new ArrayList();
 
-        Season season = getLeague().getSeason(seasonId);
+        Season season = getSeason(seasonId,false);
         for(ScheduleItem scheduleItem : season.getSchedule()){
             if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
                 if(includeTies || !scheduleItem.getHome().getTotalPoints().equals(scheduleItem.getAway().getTotalPoints())){
@@ -89,7 +95,7 @@ public class Espn {
     public List<Matchup> getMatchupsAllTime(boolean includePlayoffs, boolean includeTies){
         ArrayList<Matchup> matchups = new ArrayList();
 
-        for(Integer seasonId : getLeague().getSeasons().keySet()){
+        for(Integer seasonId : getSeasons().keySet()){
             matchups.addAll(getMatchups(seasonId, includePlayoffs, includeTies));
         }
 
@@ -124,15 +130,15 @@ public class Espn {
 
     public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId, Boolean includeCurrentSeason){
         List<Team> teams = seasonId != null ?
-                getTeams(seasonId) :
+                getTeams(seasonId,false) :
                 getTeamsAllTime(includeCurrentSeason);
         teams.sort(new SortTeamsByPercentage(order).thenComparing(new SortTeamsByPoints(order)));
 
         return total != null ? teams.subList(0, Math.min(teams.size(), total)) : teams;
     }
 
-    public List<Team> getTeams(Integer seasonId){
-        List<Team> teams = getLeague().getSeason(seasonId).getTeams();
+    public List<Team> getTeams(Integer seasonId, boolean live){
+        List<Team> teams = getSeason(seasonId, live).getTeams();
 
         for(Team team : teams){
             team.setSeasonId(seasonId);
@@ -144,21 +150,17 @@ public class Espn {
     public List<Team> getTeamsAllTime(Boolean includeCurrentSeason){
         ArrayList<Team> teams = new ArrayList();
 
-        for(Integer seasonId : getLeague().getSeasons().keySet()){
+        for(Integer seasonId : getSeasons().keySet()){
             if(includeCurrentSeason || seasonId < getCurrentSeasonId()){
-                teams.addAll(getTeams(seasonId));
+                teams.addAll(getTeams(seasonId,false));
             }
         }
 
         return teams;
     }
 
-    public String getTeamAbbrev(Integer teamId, Integer seasonId){
-        return getTeam(teamId, seasonId).getAbbrev();
-    }
-
     public Member getMemberByOwnerId(String ownerId){
-        for(Season s : getLeague().getSeasons().values()){
+        for(Season s : getSeasons().values()){
             for(Member m : s.getMembers()){
                 if(ownerId.equals(m.getId())){
                     return m;
@@ -174,7 +176,7 @@ public class Espn {
     }
 
     public Team getTeamByAbbrev(String abbrev, Integer seasonId){
-        for(Team t : getTeams(seasonId)){
+        for(Team t : getTeams(seasonId,true)){
             if(t.getAbbrev().equalsIgnoreCase(abbrev)){
                 return t;
             }
@@ -188,9 +190,7 @@ public class Espn {
     }
 
     public Member getMemberByTeamAbbrev(String abbrev, Integer seasonId){
-        List<Team> teams = getTeams(seasonId);
-
-        for(Team t : teams){
+        for(Team t : getTeams(seasonId,true)){
             if(t.getAbbrev().equalsIgnoreCase(abbrev)){
                 return getMemberByTeamId(t.getId(), seasonId);
             }
@@ -206,7 +206,7 @@ public class Espn {
     public Member getMemberByTeamId(Integer teamId, Integer seasonId){
         Team team = getTeam(teamId, seasonId);
 
-        for(Member member : getLeague().getSeason(seasonId).getMembers()){
+        for(Member member : getSeason(seasonId,false).getMembers()){
             if(member.getId().equals(team.getPrimaryOwner())){
                 return member;
             }
@@ -226,7 +226,7 @@ public class Espn {
     }
 
     private Team getTeam(Integer teamId, Integer seasonId){
-        for(Team team : getLeague().getSeason(seasonId).getTeams()){
+        for(Team team : getSeason(seasonId,false).getTeams()){
             if(team.getId() == teamId){
                 team.setSeasonId(seasonId);
                 return team;
