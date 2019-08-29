@@ -2,6 +2,7 @@ package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
+import ncollins.espn.Espn;
 import ncollins.model.Order;
 import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.ImagePayload;
@@ -22,16 +23,17 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
     private GroupMeBot mainBot;
     private GroupMeBot espnBot;
+    private EspnMessageBuilder espnMessageBuilder;
     private GifGenerator gifGenerator = new GifGenerator();
     private SaltGenerator saltGenerator = new SaltGenerator();
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
-    private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder();
     private PinCollection pinCollection;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection){
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection, Espn espn){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
         this.pinCollection = pinCollection;
+        this.espnMessageBuilder = new EspnMessageBuilder(espn);
     }
 
     public GroupMeBot getMainBot(){

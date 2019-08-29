@@ -10,7 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 public class EspnMessageBuilder {
-    private Espn espn = new Espn();
+    private Espn espn;
+
+    public EspnMessageBuilder(Espn espn){
+        this.espn = espn;
+    }
+
     private static final String NOPE = "i can't do that yet.";
 
     /***

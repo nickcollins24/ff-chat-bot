@@ -4,9 +4,10 @@ import ncollins.chat.groupme.GroupMeBot;
 import ncollins.chat.groupme.GroupMeListener;
 import ncollins.chat.groupme.GroupMeProcessor;
 import ncollins.data.PinCollection;
+import ncollins.espn.Espn;
 import ncollins.schedulers.LineupReminderScheduler;
 import ncollins.schedulers.MunndayScheduler;
-import ncollins.schedulers.TradeNotificationScheduler;
+import ncollins.schedulers.EspnRefreshScheduler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -30,7 +31,8 @@ public class Application {
         GroupMeBot mainBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, MAIN_BOT_ID, MAIN_BOT_NAME, GROUP_ID, USER_ID);
         GroupMeBot espnBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, ESPN_BOT_ID, ESPN_BOT_NAME, GROUP_ID, USER_ID);
         PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
-        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection);
+        Espn espn = new Espn();
+        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espn);
 
         // start listening for group me messages
         new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
@@ -38,6 +40,6 @@ public class Application {
         // start schedulers
         new MunndayScheduler(mainBot).start();
         new LineupReminderScheduler(mainBot).start();
-//        new TradeNotificationScheduler(espnBot).start();
+        new EspnRefreshScheduler(espn, espnBot).start();
     }
 }
