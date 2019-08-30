@@ -7,39 +7,26 @@ import ncollins.model.espn.*;
 import java.util.*;
 
 public class Espn {
-    private static final String LEAGUE_YEAR = System.getenv("ESPN_LEAGUE_YEAR");
-    private League league;
-    private EspnDataLoader loader = new EspnDataLoader();
+    private EspnDataLoader loader;
 
-    public Espn() {
-        this.league = loader.loadLeague();
-    }
-
-    public Season refreshLeague(Integer seasonId){
-        Season season = loader.loadSeason(seasonId);
-        league.setSeason(season);
-
-        return season;
-    }
-
-    private League getLeague(){
-        return league;
+    public Espn(EspnDataLoader loader) {
+        this.loader = loader;
     }
 
     private Season getSeason(Integer seasonId){
-        return getLeague().getSeason(seasonId);
+        return loader.getSeason(seasonId);
     }
 
     private Map<Integer,Season> getSeasons(){
-        return getLeague().getSeasons();
+        return loader.getSeasons();
     }
 
-    private int getWeek(Integer seasonId){
-        return getSeason(seasonId).getScoringPeriodId();
+    private int getWeek(Season season){
+        return season.getScoringPeriodId();
     }
 
     public int getCurrentSeasonId() {
-        return Integer.valueOf(LEAGUE_YEAR);
+        return loader.getCurrentSeasonId();
     }
 
     public List<Score> getScoresSorted(Order order, int total, Integer seasonId, boolean includePlayoffs){
@@ -67,7 +54,7 @@ public class Espn {
 
         Season season = getSeason(seasonId);
         for(ScheduleItem scheduleItem : season.getSchedule()){
-            if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
+            if(isValidWeek(includePlayoffs, scheduleItem, season)){
                 scores.add(new Score(scheduleItem.getHome(), scheduleItem.getAway(), scheduleItem.getMatchupPeriodId(), seasonId));
                 scores.add(new Score(scheduleItem.getAway(), scheduleItem.getHome(), scheduleItem.getMatchupPeriodId(), seasonId));
             }
@@ -89,7 +76,7 @@ public class Espn {
 
         Season season = getSeason(seasonId);
         for(ScheduleItem scheduleItem : season.getSchedule()){
-            if(isValidWeek(includePlayoffs, scheduleItem, season.getSeasonId())){
+            if(isValidWeek(includePlayoffs, scheduleItem, season)){
                 if(includeTies || !scheduleItem.getHome().getTotalPoints().equals(scheduleItem.getAway().getTotalPoints())){
                     matchups.add(new Matchup(scheduleItem, seasonId));
                 }
@@ -243,8 +230,8 @@ public class Espn {
         return null;
     }
 
-    private Boolean isValidWeek(Boolean includePlayoffs, ScheduleItem scheduleItem, Integer seasonId){
+    private Boolean isValidWeek(Boolean includePlayoffs, ScheduleItem scheduleItem, Season season){
         return (includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")) &&
-                scheduleItem.getMatchupPeriodId() < getWeek(seasonId);
+                scheduleItem.getMatchupPeriodId() < getWeek(season);
     }
 }

@@ -16,24 +16,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class EspnRefreshScheduler implements Scheduler {
+public class EspnTradeScheduler implements Scheduler {
     private GroupMeBot bot;
-    private Espn espn;
     private static final String TRADE_POLL_TITLE = "All in favor of approving this trade? \uD83D\uDC46";
 
-    public EspnRefreshScheduler(Espn espn, GroupMeBot bot){
-        this.espn = espn;
+    public EspnTradeScheduler(GroupMeBot bot){
         this.bot = bot;
     }
 
     public void start(){
-        // schedule task every 30 seconds
+        // schedule task every 5 minutes
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> refreshEspn(), 0, 30, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> checkEspnTrade(), 0, 5, TimeUnit.MINUTES);
     }
 
-    private void refreshEspn(){
-        Season season = espn.refreshLeague(espn.getCurrentSeasonId());
+    private void checkEspnTrade(){
     }
 
     private void sendTradePoll(){
