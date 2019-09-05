@@ -96,10 +96,10 @@ public class GroupMeListener implements ChatBotListener {
 
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error("Unexpected exception on websocket connection init: " + e
+                    + ". Payload: " + payload + ". Reconnecting...");
+            listen();
         }
 
         return null;
@@ -164,7 +164,7 @@ public class GroupMeListener implements ChatBotListener {
 
         @Override
         public void onError(WebSocket webSocket, Throwable error) {
-            logger.error("WebSocket error occurred: " + error.getMessage());
+            logger.error("WebSocket error occurred: " + error.getMessage() + ". Reconnecting...");
             webSocket.abort();
             listen();
             WebSocket.Listener.super.onError(webSocket, error);
