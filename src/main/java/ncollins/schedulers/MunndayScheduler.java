@@ -31,7 +31,7 @@ public class MunndayScheduler implements Scheduler {
 
         // schedule task every Monday at 10AM PST
         Long startTime = LocalDateTime.now(TimeZone.getTimeZone("PST").toZoneId()).until(
-                LocalDate.now(TimeZone.getTimeZone("PST").toZoneId()).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)).atTime(10,0), ChronoUnit.MINUTES);
+                LocalDate.now(TimeZone.getTimeZone("PST").toZoneId()).with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTime(10,0), ChronoUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(task, startTime, TimeUnit.DAYS.toMinutes(7), TimeUnit.MINUTES);
     }
