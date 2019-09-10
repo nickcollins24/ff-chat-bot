@@ -21,7 +21,7 @@ public class Espn {
         return loader.getSeasons();
     }
 
-    private int getWeek(Season season){
+    public int getWeek(Season season){
         return season.getScoringPeriodId();
     }
 
@@ -29,32 +29,37 @@ public class Espn {
         return loader.getCurrentSeasonId();
     }
 
-    public List<Score> getScoresSorted(Order order, int total, Integer seasonId, boolean includePlayoffs){
+    public int getCurrentScoringPeriodId(){
+        return getWeek(loader.getSeason(loader.getCurrentSeasonId()));
+    }
+
+    public List<Score> getScoresSorted(Order order, int total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
         List<Score> scores = seasonId != null ?
-                getScores(seasonId, includePlayoffs) :
-                getScoresAllTime(includePlayoffs);
+                getScores(scoringPeriodId, seasonId, includePlayoffs) :
+                getScoresAllTime(scoringPeriodId, includePlayoffs);
 
         scores.sort(new SortScoresByPoints(order));
 
         return scores.subList(0, Math.min(scores.size(), total));
     }
 
-    public List<Score> getScoresAllTime(boolean includePlayoffs){
+    public List<Score> getScoresAllTime(Integer scoringPeriodId, boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
 
         for(Integer seasonId : getSeasons().keySet()){
-            scores.addAll(getScores(seasonId, includePlayoffs));
+            scores.addAll(getScores(scoringPeriodId, seasonId, includePlayoffs));
         }
 
         return scores;
     }
 
-    public List<Score> getScores(Integer seasonId, boolean includePlayoffs){
+    public List<Score> getScores(Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
         ArrayList<Score> scores = new ArrayList();
 
         Season season = getSeason(seasonId);
         for(ScheduleItem scheduleItem : season.getSchedule()){
-            if(isValidWeek(includePlayoffs, scheduleItem, season)){
+            if(isValidWeek(includePlayoffs, scheduleItem, season) &&
+                    (scoringPeriodId == null || scoringPeriodId.equals(scheduleItem.getMatchupPeriodId()))){
                 scores.add(new Score(scheduleItem.getHome(), scheduleItem.getAway(), scheduleItem.getMatchupPeriodId(), seasonId));
                 scores.add(new Score(scheduleItem.getAway(), scheduleItem.getHome(), scheduleItem.getMatchupPeriodId(), seasonId));
             }

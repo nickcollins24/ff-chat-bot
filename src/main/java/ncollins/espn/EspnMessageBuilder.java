@@ -22,21 +22,21 @@ public class EspnMessageBuilder {
      *  Builds message that displays the best/worst scores by a team all-time
      */
     public String buildScoresMessage(Order order, int total, boolean includePlayoffs){
-        return buildScoresMessage(order, total, null, includePlayoffs);
+        return buildScoresMessage(order, total, null, null, includePlayoffs);
     }
 
     /***
      *  Builds message that displays the best/worst scores by a team this year
      */
     public String buildScoresMessageCurrentYear(Order order, int total, boolean includePlayoffs){
-        return buildScoresMessage(order, total, espn.getCurrentSeasonId(), includePlayoffs);
+        return buildScoresMessage(order, total, null, espn.getCurrentSeasonId(), includePlayoffs);
     }
 
     /***
      *  Builds message that displays the best/worst scores by a team
      */
-    public String buildScoresMessage(Order order, int total, Integer seasonId, boolean includePlayoffs){
-        List<Score> scores = espn.getScoresSorted(order, total, seasonId, includePlayoffs);
+    public String buildScoresMessage(Order order, int total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
+        List<Score> scores = espn.getScoresSorted(order, total, scoringPeriodId, seasonId, includePlayoffs);
         String timePeriod = seasonId == null ? " All Time" : " " + String.valueOf(seasonId);
 
         StringBuilder sb = new StringBuilder();
@@ -456,5 +456,26 @@ public class EspnMessageBuilder {
      */
     public String buildPointsStreakMessage(int total){
         return NOPE;
+    }
+
+    /***
+     *  Builds message that displays info from previous week including:
+     *      - highest pf
+     *      - jujus
+     *      - salties
+     *      - power ranking update
+     *  TODO: implement buildWeeklyRoundupMessage
+     */
+    public String buildWeeklyRoundupMessage(){
+        Integer previousWeek = espn.getCurrentScoringPeriodId()-1;
+        List<Score> scores = espn.getScoresSorted(Order.DESC, 1, previousWeek, espn.getCurrentSeasonId(), false);
+        Score topScore = scores.get(0);
+        Member member = espn.getMemberByTeamId(topScore.getTeamId());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Week " + previousWeek + " High Score \uD83D\uDCB0:\\n")
+          .append(member.getFirtName() + " " + member.getLastName() + " (" + topScore.getPoints() + " PF)");
+
+        return sb.toString();
     }
 }

@@ -20,6 +20,7 @@ public class Team {
     private int                     rankCalculatedFinal;
     private int                     rankFinal;
     private Record                  record;
+//    private Roster                  roster;
     private TradeBlock              tradeBlock;
     private TransactionCounter      transactionCounter;
     private int                     waiverRank;
@@ -42,6 +43,7 @@ public class Team {
     public int getRankCalculatedFinal() { return rankCalculatedFinal; }
     public int getRankFinal() { return rankFinal; }
     public Record getRecord() { return record; }
+//    public Roster getRoster() { return roster; }
     public TradeBlock getTradeBlock() { return tradeBlock; }
     public TransactionCounter getTransactionCounter() { return transactionCounter; }
     public int getWaiverRank() { return waiverRank; }
@@ -65,6 +67,7 @@ public class Team {
     public void setRankCalculatedFinal(int rankCalculatedFinal) { this.rankCalculatedFinal = rankCalculatedFinal; }
     public void setRankFinal(int rankFinal) { this.rankFinal = rankFinal; }
     public void setRecord(Record recordObject) { this.record = recordObject; }
+//    public void setRoster(Roster roster) { this.roster = roster; }
     public void setTradeBlock(TradeBlock tradeBlockObject) { this.tradeBlock = tradeBlockObject; }
     public void setTransactionCounter(TransactionCounter transactionCounterObject) { this.transactionCounter = transactionCounterObject; }
     public void setWaiverRank(int waiverRank) { this.waiverRank = waiverRank; }

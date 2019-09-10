@@ -2,7 +2,6 @@ package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
-import ncollins.espn.Espn;
 import ncollins.model.Order;
 import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.ImagePayload;
@@ -29,11 +28,12 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private PinCollection pinCollection;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection, Espn espn){
+    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection,
+                            EspnMessageBuilder espnMessageBuilder){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
         this.pinCollection = pinCollection;
-        this.espnMessageBuilder = new EspnMessageBuilder(espn);
+        this.espnMessageBuilder = espnMessageBuilder;
     }
 
     public GroupMeBot getMainBot(){
@@ -107,7 +107,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
             // specified season
             } else if(!yearStr.isEmpty()){
                 Integer seasonId = Integer.parseInt(yearStr);
-                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, seasonId,false));
+                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, null, seasonId,false));
             // current season
             } else {
                 getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessageCurrentYear(order, total,false));

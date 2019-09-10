@@ -6,9 +6,11 @@ import ncollins.chat.groupme.GroupMeProcessor;
 import ncollins.data.PinCollection;
 import ncollins.espn.Espn;
 import ncollins.espn.EspnDataLoader;
+import ncollins.espn.EspnMessageBuilder;
 import ncollins.schedulers.LineupReminderScheduler;
 import ncollins.schedulers.MunndayScheduler;
 import ncollins.schedulers.EspnTradeScheduler;
+import ncollins.schedulers.WeeklyRoundupScheduler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -32,8 +34,8 @@ public class Application {
         GroupMeBot mainBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, MAIN_BOT_ID, MAIN_BOT_NAME, GROUP_ID, USER_ID);
         GroupMeBot espnBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, ESPN_BOT_ID, ESPN_BOT_NAME, GROUP_ID, USER_ID);
         PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
-        Espn espn = new Espn(new EspnDataLoader());
-        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espn);
+        EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(new Espn(new EspnDataLoader()));
+        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espnMessageBuilder);
 
         // start listening for group me messages
         new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
@@ -42,5 +44,6 @@ public class Application {
         new MunndayScheduler(mainBot).start();
         new LineupReminderScheduler(mainBot).start();
         new EspnTradeScheduler(espnBot).start();
+        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();
     }
 }
