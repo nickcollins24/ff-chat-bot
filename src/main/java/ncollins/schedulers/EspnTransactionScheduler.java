@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class EspnTransactionScheduler implements Scheduler {
     private GroupMeBot bot;
     private Espn espn;
-    private static final String TRADE_POLL_TITLE = "All in favor of approving this trade? \uD83D\uDC46";
+    private static final String TRADE_POLL_TITLE = "Do you approve of this trade?\uD83D\uDC46Majority veto nullifies this agreed upon transaction.";
 
     public EspnTransactionScheduler(GroupMeBot bot, Espn espn){
         this.bot = bot;
@@ -85,7 +85,7 @@ public class EspnTransactionScheduler implements Scheduler {
 
         //send trade approval poll message that expires after 1 hour
         long expiration = (System.currentTimeMillis() + 60 * 60000)/1000; // measured in seconds
-        PollPayload payload = new PollPayload(TRADE_POLL_TITLE, new String[]{"Yay","Nay"}, expiration);
+        PollPayload payload = new PollPayload(TRADE_POLL_TITLE, new String[]{"Approve", "Veto"}, expiration);
         bot.sendPollMessage(payload);
     }
 }
