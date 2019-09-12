@@ -1,15 +1,22 @@
 package ncollins.espn;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import ncollins.model.espn.League;
+import ncollins.model.espn.Player;
 import ncollins.model.espn.Season;
+import ncollins.model.espn.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.*;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +96,64 @@ public class EspnDataLoader {
             logger.info("no espn season data found for " + seasonId + ".");
             return null;
         }
+    }
+
+    public List<Transaction> getTransactions(long fromDate, long toDate, List<Integer> transactionIds){
+        try{
+            List<Transaction> transactions = new ArrayList();
+            HttpResponse<String> response = client.send(buildTransactionsRequest(fromDate,toDate,transactionIds), HttpResponse.BodyHandlers.ofString());
+            JsonArray topics = gson.fromJson(response.body(), JsonObject.class).getAsJsonArray("topics");
+
+            for(JsonElement t : topics){
+                transactions.add(gson.fromJson(t, Transaction.class));
+            }
+
+            return transactions;
+        } catch(Exception e){
+            logger.info("Exception while retrieving transactions from espn: " + e);
+            return null;
+        }
+    }
+
+    public Player getPlayer(Integer playerId){
+        try{
+            HttpResponse<String> response = client.send(buildPlayerRequest(playerId), HttpResponse.BodyHandlers.ofString());
+            return gson.fromJson(response.body(), Player.class);
+        } catch(Exception e){
+            logger.info("no espn player data found for " + playerId + ".");
+            return null;
+        }
+    }
+
+    private HttpRequest buildPlayerRequest(Integer playerId){
+        String espnUrl = "https://fantasy.espn.com/apis/v3/games/ffl/seasons/"
+                + getCurrentSeasonId() + "/players/" + playerId + "?view=players_wl";
+
+        return HttpRequest.newBuilder()
+                .uri(URI.create(espnUrl))
+                .GET()
+                .build();
+    }
+
+    private HttpRequest buildTransactionsRequest(long fromDate, long toDate, List<Integer> transactionIds){
+        String espnUrl = "https://fantasy.espn.com/apis/v3/games/ffl/seasons/"
+                + getCurrentSeasonId() + "/segments/0/leagues/"
+                + LEAGUE_ID + "/communication/?view=kona_league_communication";
+
+        String filter = "{\"topics\":" +
+                "{\"filterType\":" +
+                "{\"value\":[\"ACTIVITY_TRANSACTIONS\"]}," +
+                "\"offset\":0," +
+                "\"sortMessageDate\":{\"sortPriority\":1,\"sortAsc\":false}," +
+                "\"sortFor\":{\"sortPriority\":2,\"sortAsc\":false}," +
+                "\"filterDateRange\":{\"value\":" + fromDate + ",\"additionalValue\":" + toDate + "}," +
+                "\"filterIncludeMessageTypeIds\":{\"value\":" + Arrays.toString(transactionIds.toArray()) + "}}}";
+
+        return HttpRequest.newBuilder()
+                .uri(URI.create(espnUrl))
+                .setHeader("x-fantasy-filter", filter)
+                .GET()
+                .build();
     }
 
     private HttpRequest buildSeasonRequest(Integer seasonId){

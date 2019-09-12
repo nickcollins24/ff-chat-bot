@@ -33,6 +33,14 @@ public class Espn {
         return getWeek(loader.getSeason(loader.getCurrentSeasonId()));
     }
 
+    public List<Transaction> getTransactions(long fromDate, long toDate, List<Integer> transactionIds){
+        return loader.getTransactions(fromDate, toDate, transactionIds);
+    }
+
+    public Player getPlayer(Integer playerId){
+        return loader.getPlayer(playerId);
+    }
+
     public List<Score> getScoresSorted(Order order, int total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
         List<Score> scores = seasonId != null ?
                 getScores(scoringPeriodId, seasonId, includePlayoffs) :
@@ -159,11 +167,39 @@ public class Espn {
     }
 
     public Member getMemberByOwnerId(String ownerId){
+        if(ownerId == null || ownerId.isEmpty()){
+            return null;
+        }
+
         for(Season s : getSeasons().values()){
             for(Member m : s.getMembers()){
                 if(ownerId.equals(m.getId())){
                     return m;
                 }
+            }
+        }
+
+        return null;
+    }
+
+    public Team getTeamByOwnerId(String ownerId){
+        if(ownerId == null || ownerId.isEmpty()){
+            return null;
+        }
+
+        for(Team t : getTeams(getCurrentSeasonId())){
+            if(t.getPrimaryOwner().equals(ownerId)){
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public Team getTeamById(int id){
+        for(Team t : getTeams(getCurrentSeasonId())){
+            if(t.getId() == id){
+                return t;
             }
         }
 
@@ -203,6 +239,10 @@ public class Espn {
     }
 
     public Member getMemberByTeamId(Integer teamId, Integer seasonId){
+        if(teamId == null){
+            return null;
+        }
+
         Team team = getTeam(teamId, seasonId);
 
         for(Member member : getSeason(seasonId).getMembers()){
