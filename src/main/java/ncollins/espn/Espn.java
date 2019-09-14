@@ -48,12 +48,14 @@ public class Espn {
         for(ScheduleItem item : scheduleItems){
             if(item.getMatchupPeriodId().equals(week)){
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getHome().getRosterForCurrentScoringPeriod().getRosterEntries()){
-                    if(position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue())){
+                    if(e.getPlayerPoolEntry().getRosterLocked() &&
+                            (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
                         players.add(e.getPlayerPoolEntry());
                     }
                 }
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getAway().getRosterForCurrentScoringPeriod().getRosterEntries()){
-                    if(position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue())){
+                    if(e.getPlayerPoolEntry().getRosterLocked() &&
+                            (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
                         players.add(e.getPlayerPoolEntry());
                     }
                 }

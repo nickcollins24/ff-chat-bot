@@ -62,7 +62,7 @@ public class EspnMessageBuilder {
         String positionStr = position == null ? "Player" : position.name();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Rostered " + positionStr + " of Week " + week + ":\\n");
+        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(players.size() + " Rostered " + positionStr + " of Week " + week + ":\\n");
 
         for(int i=0; i < players.size(); i++){
             String playerName = espn.getPlayer(players.get(i).getId()).getFullName();

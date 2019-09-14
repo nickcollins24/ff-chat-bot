@@ -14,8 +14,8 @@ public class Player {
     private String injuryStatus;
     private String jersey;
     private String lastName;
-    private Integer lastNewsDate;
-    private Integer lastVideoDate;
+    private Long lastNewsDate;
+    private Long lastVideoDate;
     private Integer proTeamId;
     private String seasonOutlook;
     //        private List<Stat> stats;
@@ -109,19 +109,19 @@ public class Player {
         this.lastName = lastName;
     }
 
-    public Integer getLastNewsDate() {
+    public Long getLastNewsDate() {
         return lastNewsDate;
     }
 
-    public void setLastNewsDate(Integer lastNewsDate) {
+    public void setLastNewsDate(Long lastNewsDate) {
         this.lastNewsDate = lastNewsDate;
     }
 
-    public Integer getLastVideoDate() {
+    public Long getLastVideoDate() {
         return lastVideoDate;
     }
 
-    public void setLastVideoDate(Integer lastVideoDate) {
+    public void setLastVideoDate(Long lastVideoDate) {
         this.lastVideoDate = lastVideoDate;
     }
 

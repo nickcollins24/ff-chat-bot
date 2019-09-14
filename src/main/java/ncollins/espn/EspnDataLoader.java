@@ -160,7 +160,7 @@ public class EspnDataLoader {
         String espnUrl = seasonId.equals(getCurrentSeasonId()) ?
                 // ESPN endpoint for current season
                 "https://fantasy.espn.com/apis/v3/games/ffl/seasons/" + seasonId + "/segments/0/leagues/" + LEAGUE_ID + "?" +
-                        "view=mBoxscore&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam" :
+                        "view=mBoxscore&view=mMatchup&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam" :
                 // ESPN endpoint for historical seasons
                 "https://fantasy.espn.com/apis/v3/games/ffl/leagueHistory/" + LEAGUE_ID + "?" +
                         "view=mBoxscore&view=mMatchupScore&view=mSchedule&view=mScoreboard&view=mTeam&seasonId=" + seasonId;
