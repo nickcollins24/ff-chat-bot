@@ -41,6 +41,29 @@ public class Espn {
         return loader.getPlayer(playerId);
     }
 
+    public List<RosterForCurrentScoringPeriod.PlayerPoolEntry> getPlayersByWeeklyPF(Order order, int total, int week, Position position){
+        List<ScheduleItem> scheduleItems = loader.getSeason(getCurrentSeasonId()).getSchedule();
+        List<RosterForCurrentScoringPeriod.PlayerPoolEntry> players = new ArrayList();
+
+        for(ScheduleItem item : scheduleItems){
+            if(item.getMatchupPeriodId().equals(week)){
+                for(RosterForCurrentScoringPeriod.RosterEntry e : item.getHome().getRosterForCurrentScoringPeriod().getRosterEntries()){
+                    if(position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue())){
+                        players.add(e.getPlayerPoolEntry());
+                    }
+                }
+                for(RosterForCurrentScoringPeriod.RosterEntry e : item.getAway().getRosterForCurrentScoringPeriod().getRosterEntries()){
+                    if(position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue())){
+                        players.add(e.getPlayerPoolEntry());
+                    }
+                }
+            }
+        }
+
+        players.sort(new SortPlayerEntriesByPoints(order));
+        return players.subList(0, Math.min(players.size(), total));
+    }
+
     public List<Score> getScoresSorted(Order order, int total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
         List<Score> scores = seasonId != null ?
                 getScores(scoringPeriodId, seasonId, includePlayoffs) :
@@ -204,6 +227,33 @@ public class Espn {
         }
 
         return null;
+    }
+
+    public String getPositionById(Integer i){
+        String position = "";
+
+        switch(i) {
+            case 1:
+                position = Position.QB.name();
+                break;
+            case 2:
+                position = Position.RB.name();
+                break;
+            case 3:
+                position = Position.WR.name();
+                break;
+            case 4:
+                position = Position.TE.name();
+                break;
+            case 5:
+                position = Position.K.name();
+                break;
+            case 16:
+                position = Position.D.name();
+                break;
+        }
+
+        return position;
     }
 
     public Team getTeamByAbbrev(String abbrev){

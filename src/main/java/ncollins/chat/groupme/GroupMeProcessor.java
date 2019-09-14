@@ -150,14 +150,10 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessageCurrentYear());
             }
         // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
-        } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)(\\s\\d+|)$")) {
+        } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String[] textSplit = text.split("[a-zA-Z]");
-            String totalStr = textSplit[0].replaceAll("\\D+", "");
+            String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-
-            String weekStr = textSplit.length == 1 ? "" :
-                    textSplit[1].replaceAll("\\D+", "");
 
             Position position;
             try {
@@ -169,14 +165,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 return;
             }
 
-            // specified
-            if(!weekStr.isEmpty()){
-                Integer seasonId = Integer.parseInt(weekStr);
-                getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessage(order, total, seasonId, position));
-            // current season
-            } else {
-                getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessageCurrentWeek(order, total, position));
-            }
+            getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessageByCurrentWeek(order, total, position));
         // {top|bottom} [TOTAL] pf through [WEEK]
         } else if(text.matches("(top|bottom)(\\s\\d)* pf through \\d+$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;

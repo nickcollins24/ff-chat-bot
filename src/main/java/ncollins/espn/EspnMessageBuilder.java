@@ -53,25 +53,30 @@ public class EspnMessageBuilder {
     }
 
     /***
-     *  Builds message that displays the most/least points by a fantasy player in a week all-time
-     */
-    public String buildPlayersMessage(Order order, int total, Position position){
-        return buildPlayersMessage(order, total, null, position);
-    }
-
-    /***
      *  Builds message that displays the most/least points by a fantasy player in a week
      *  TODO: implement buildPlayersMessage
      */
-    public String buildPlayersMessage(Order order, int total, Integer week, Position position){
-        return NOPE;
+    public String buildPlayersMessageByWeek(Order order, int total, int week, Position position){
+        List<RosterForCurrentScoringPeriod.PlayerPoolEntry> players =
+                espn.getPlayersByWeeklyPF(order, total, week, position);
+        String positionStr = position == null ? "Player" : position.name();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(total + " Rostered " + positionStr + " of Week " + week + ":\\n");
+
+        for(int i=0; i < players.size(); i++){
+            String playerName = espn.getPlayer(players.get(i).getId()).getFullName();
+            sb.append(i+1 + ": " + playerName + "(" + espn.getPositionById(players.get(i).getPlayer().getDefaultPositionId()) + ") - " + String.format("%.2f", players.get(i).getAppliedStatTotal()) + "\\n");
+        }
+
+        return sb.toString();
     }
 
     /***
-     *  Builds message that displays the most/least points by a fantasy player in a week
+     *  Builds message that displays the most/least points by a fantasy player in current week
      */
-    public String buildPlayersMessageCurrentWeek(Order order, int total, Position position){
-        return buildPlayersMessage(order, total, null, position);
+    public String buildPlayersMessageByCurrentWeek(Order order, int total, Position position){
+        return buildPlayersMessageByWeek(order, total, espn.getCurrentScoringPeriodId(), position);
     }
 
     /***
