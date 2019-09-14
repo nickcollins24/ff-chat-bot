@@ -57,7 +57,7 @@ public class EspnMessageBuilder {
      *  TODO: implement buildPlayersMessage
      */
     public String buildPlayersMessageByWeek(Order order, int total, int week, Position position){
-        List<RosterForCurrentScoringPeriod.PlayerPoolEntry> players =
+        List<RosterForCurrentScoringPeriod.RosterEntry> players =
                 espn.getPlayersByWeeklyPF(order, total, week, position);
         String positionStr = position == null ? "Player" : position.name();
 
@@ -65,9 +65,12 @@ public class EspnMessageBuilder {
         sb.append(order.equals(Order.ASC) ? "Bottom " : "Top ").append(players.size() + " Rostered " + positionStr + " of Week " + week + ":\\n");
 
         for(int i=0; i < players.size(); i++){
-            String playerName = espn.getPlayer(players.get(i).getId()).getFullName();
-            sb.append(i+1 + ": " + playerName + "(" + espn.getPositionById(players.get(i).getPlayer().getDefaultPositionId()) + ") - " + String.format("%.2f", players.get(i).getAppliedStatTotal()) + "\\n");
+            String playerName = espn.getPlayer(players.get(i).getPlayerPoolEntry().getId()).getFullName();
+            String benchStatus = players.get(i).getLineupSlotId() == 20 ? " *" : "";
+                    sb.append(i+1 + ": " + playerName + "(" + espn.getPositionById(players.get(i).getPlayerPoolEntry().getPlayer().getDefaultPositionId()) + ") - "
+                    + String.format("%.2f", players.get(i).getPlayerPoolEntry().getAppliedStatTotal()) + benchStatus + "\\n");
         }
+        sb.append("\\n(* = benched)");
 
         return sb.toString();
     }

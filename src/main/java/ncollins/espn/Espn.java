@@ -41,28 +41,28 @@ public class Espn {
         return loader.getPlayer(playerId);
     }
 
-    public List<RosterForCurrentScoringPeriod.PlayerPoolEntry> getPlayersByWeeklyPF(Order order, int total, int week, Position position){
+    public List<RosterForCurrentScoringPeriod.RosterEntry> getPlayersByWeeklyPF(Order order, int total, int week, Position position){
         List<ScheduleItem> scheduleItems = loader.getSeason(getCurrentSeasonId()).getSchedule();
-        List<RosterForCurrentScoringPeriod.PlayerPoolEntry> players = new ArrayList();
+        List<RosterForCurrentScoringPeriod.RosterEntry> players = new ArrayList();
 
         for(ScheduleItem item : scheduleItems){
             if(item.getMatchupPeriodId().equals(week)){
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getHome().getRosterForCurrentScoringPeriod().getRosterEntries()){
                     if(e.getPlayerPoolEntry().getRosterLocked() &&
                             (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
-                        players.add(e.getPlayerPoolEntry());
+                        players.add(e);
                     }
                 }
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getAway().getRosterForCurrentScoringPeriod().getRosterEntries()){
                     if(e.getPlayerPoolEntry().getRosterLocked() &&
                             (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
-                        players.add(e.getPlayerPoolEntry());
+                        players.add(e);
                     }
                 }
             }
         }
 
-        players.sort(new SortPlayerEntriesByPoints(order));
+        players.sort(new SortRosterEntriesByPoints(order));
         return players.subList(0, Math.min(players.size(), total));
     }
 
