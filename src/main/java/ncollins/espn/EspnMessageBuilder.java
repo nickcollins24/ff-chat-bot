@@ -480,19 +480,46 @@ public class EspnMessageBuilder {
     /***
      *  Builds message that displays info from previous week including:
      *      - highest pf
-     *      - jujus TODO
-     *      - salties TODO
-     *      - power ranking update TODO
+     *      - jujus
+     *      - salties
      */
     public String buildWeeklyRoundupMessage(){
         Integer previousWeek = espn.getCurrentScoringPeriodId()-1;
         List<Score> scores = espn.getScoresSorted(Order.DESC, 1, previousWeek, espn.getCurrentSeasonId(), false);
+        List<Score> jujus = espn.getJujus(previousWeek, espn.getCurrentSeasonId());
+        List<Score> salties = espn.getSalties(previousWeek, espn.getCurrentSeasonId());
+
         Score topScore = scores.get(0);
-        Member member = espn.getMemberByTeamId(topScore.getTeamId());
+        Member topScoreMember = espn.getMemberByTeamId(topScore.getTeamId());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Week " + previousWeek + " High Score \uD83D\uDCB0:\\n")
-          .append(member.getFirtName() + " " + member.getLastName() + " (" + topScore.getPoints() + " PF)");
+        sb.append("-- Week " + previousWeek + " Roundup --\\n\\n")
+          .append("High Score \uD83D\uDCB0:\\n")
+          .append(topScoreMember.getFirtName() + " " + topScoreMember.getLastName() + " (" + topScore.getPoints() + ")\\n\\n");
+
+        sb.append("Jujus:\\n");
+        if(jujus.isEmpty()) {
+            sb.append("none\\n");
+        } else {
+            for (Score juju : jujus) {
+                Member jujuMember = espn.getMemberByTeamId(juju.getTeamId());
+                sb.append(jujuMember.getFirtName() + " " + jujuMember.getLastName() + " (")
+                        .append(String.format("%.1f", juju.getPoints()) + "-")
+                        .append(String.format("%.1f", juju.getPointsAgainst()) + ")\\n");
+            }
+        }
+
+        sb.append("\\nSalties:\\n");
+        if(salties.isEmpty()){
+            sb.append("none\\n");
+        } else {
+            for(Score salty : salties){
+                Member saltyMember = espn.getMemberByTeamId(salty.getTeamId());
+                sb.append(saltyMember.getFirtName() + " " + saltyMember.getLastName() + " (")
+                        .append(String.format("%.1f", salty.getPoints()) + "-")
+                        .append(String.format("%.1f", salty.getPointsAgainst()) + ")\\n");
+            }
+        }
 
         return sb.toString();
     }

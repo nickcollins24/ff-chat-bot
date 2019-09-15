@@ -36,6 +36,10 @@ public class EspnTransactionScheduler implements Scheduler {
         List<Transaction> transactions = espn.getTransactions(System.currentTimeMillis()-30000, System.currentTimeMillis(),
                 List.of(TransactionType.TRADE_ACCEPTED.getValue()));
 
+        if(transactions == null){
+            return;
+        }
+
         for(Transaction t : transactions){
             Map<Integer, List<Player>> teamPlayersMap = new HashMap();
 
