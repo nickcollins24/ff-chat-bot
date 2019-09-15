@@ -49,13 +49,13 @@ public class Espn {
             if(item.getMatchupPeriodId().equals(week)){
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getHome().getRosterForCurrentScoringPeriod().getRosterEntries()){
                     if(e.getPlayerPoolEntry().getRosterLocked() &&
-                            (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
+                            (position == null || isMatchingPosition(e.getPlayerPoolEntry().getPlayer().getDefaultPositionId(), position))){
                         players.add(e);
                     }
                 }
                 for(RosterForCurrentScoringPeriod.RosterEntry e : item.getAway().getRosterForCurrentScoringPeriod().getRosterEntries()){
                     if(e.getPlayerPoolEntry().getRosterLocked() &&
-                            (position == null || e.getPlayerPoolEntry().getPlayer().getDefaultPositionId().equals(position.getValue()))){
+                            (position == null || isMatchingPosition(e.getPlayerPoolEntry().getPlayer().getDefaultPositionId(), position))){
                         players.add(e);
                     }
                 }
@@ -415,6 +415,14 @@ public class Espn {
         }
 
         return null;
+    }
+
+    public Boolean isMatchingPosition(Integer positionId, Position position){
+        return positionId.equals(position.getValue()) ||
+                (position.equals(Position.FLEX) &&
+                (positionId.equals(Position.RB.getValue()) ||
+                 positionId.equals(Position.WR.getValue()) ||
+                 positionId.equals(Position.TE.getValue())));
     }
 
     private Boolean isValidWeek(Boolean includePlayoffs, ScheduleItem scheduleItem, Season season){

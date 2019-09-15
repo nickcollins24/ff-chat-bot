@@ -28,7 +28,7 @@ public class EspnTransactionScheduler implements Scheduler {
     public void start(){
         // schedule task every 30 seconds
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> checkForEspnTrade(), 0, 30, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> checkForEspnTrade(), 0, 60, TimeUnit.SECONDS);
     }
 
     private void checkForEspnTrade(){

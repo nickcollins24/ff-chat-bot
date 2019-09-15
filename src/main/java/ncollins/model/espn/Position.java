@@ -6,7 +6,8 @@ public enum Position {
     WR(3),
     TE(4),
     K(5),
-    D(16);
+    D(16),
+    FLEX(0);
 
     private final int value;
 
