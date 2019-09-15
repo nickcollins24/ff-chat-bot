@@ -152,7 +152,7 @@ public class EspnMessageBuilder {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(m0.getDisplayName() + " (" + team0.toUpperCase() + ") vs. " + m1.getDisplayName() + " (" + team1.toUpperCase() + "):\\n\\n");
+        sb.append("-- " + m0.getFirtName() + " " + m0.getLastName() + " (" + team0.toUpperCase() + ") vs. " + m1.getFirtName() + " " + m1.getLastName() + " (" + team1.toUpperCase() + ") --\\n\\n");
 
         sb.append("Record:\\n");
         sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + String.format("%.2f", t0Points) + " (" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
