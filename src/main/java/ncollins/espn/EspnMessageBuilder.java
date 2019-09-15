@@ -54,7 +54,6 @@ public class EspnMessageBuilder {
 
     /***
      *  Builds message that displays the most/least points by a fantasy player in a week
-     *  TODO: implement buildPlayersMessage
      */
     public String buildPlayersMessageByWeek(Order order, int total, int week, Position position){
         List<RosterForCurrentScoringPeriod.RosterEntry> players =
@@ -331,32 +330,38 @@ public class EspnMessageBuilder {
     }
 
     /***
-     *  Builds message that displays all jujus of all-time.
-     *
-     *  a Juju is a week in which a fantasy football team:
-     *          1) has a bottom-five score for the week
-     *          2) is below the average score for that week
-     *          3) wins
-     */
-    public String buildJujusMessage(){
-        return buildJujusMessage(null);
-    }
-
-    /***
      *  Builds message that displays all jujus.
-     *  TODO: implement buildJujusMessage
      *
      *  a Juju describes a week in which a fantasy football team:
      *          1) has a bottom-five score for the week
      *          2) is below the average score for that week
      *          3) wins
      */
-    public String buildJujusMessage(Integer seasonId){
-        return NOPE;
+    public String buildJujusMessage(){
+        List<Score> jujus = espn.getJujus(espn.getCurrentSeasonId());
+
+        if(jujus.isEmpty()){
+            return "no jujus yet this year.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Jujus of " + espn.getCurrentSeasonId() + ":\\n");
+
+        for(Score juju : jujus){
+            Member member = espn.getMemberByTeamId(juju.getTeamId(), espn.getCurrentSeasonId());
+            String memberName = member.getFirtName() + " " + member.getLastName();
+
+            sb.append(memberName + " (")
+              .append(String.format("%.1f", juju.getPoints()) + "-")
+              .append(String.format("%.1f", juju.getPointsAgainst()) + ") - ")
+              .append("wk " + juju.getMatchupPeriodId() + "\\n");
+        }
+
+        return sb.toString();
     }
 
     /***
-     *  Builds message that displays all salties of all-time.
+     *  Builds message that displays all salties.
      *
      *  a Salty describes a week in which a fantasy football team:
      *          1) has a top-five score for the week
@@ -364,20 +369,26 @@ public class EspnMessageBuilder {
      *          3) loses
      */
     public String buildSaltiesMessage(){
-        return buildSaltiesMessage(null);
-    }
+        List<Score> salties = espn.getSalties(espn.getCurrentSeasonId());
 
-    /***
-     *  Builds message that displays all salties.
-     *  TODO: implement buildSaltiesMessage
-     *
-     *  a Salty describes a week in which a fantasy football team:
-     *          1) has a top-five score for the week
-     *          2) is above the average score for the week
-     *          3) loses
-     */
-    public String buildSaltiesMessage(Integer seasonId){
-        return NOPE;
+        if(salties.isEmpty()){
+            return "no salties yet this year.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Salties of " + espn.getCurrentSeasonId() + ":\\n");
+
+        for(Score salty : salties){
+            Member member = espn.getMemberByTeamId(salty.getTeamId(), espn.getCurrentSeasonId());
+            String memberName = member.getFirtName() + " " + member.getLastName();
+
+            sb.append(memberName + " (")
+                    .append(String.format("%.1f", salty.getPoints()) + "-")
+                    .append(String.format("%.1f", salty.getPointsAgainst()) + ") - ")
+                    .append("wk " + salty.getMatchupPeriodId() + "\\n");
+        }
+
+        return sb.toString();
     }
 
     /***
@@ -469,10 +480,9 @@ public class EspnMessageBuilder {
     /***
      *  Builds message that displays info from previous week including:
      *      - highest pf
-     *      - jujus
-     *      - salties
-     *      - power ranking update
-     *  TODO: implement buildWeeklyRoundupMessage
+     *      - jujus TODO
+     *      - salties TODO
+     *      - power ranking update TODO
      */
     public String buildWeeklyRoundupMessage(){
         Integer previousWeek = espn.getCurrentScoringPeriodId()-1;

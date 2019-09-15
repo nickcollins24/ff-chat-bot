@@ -66,14 +66,104 @@ public class Espn {
         return players.subList(0, Math.min(players.size(), total));
     }
 
-    public List<Score> getScoresSorted(Order order, int total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
+    /***
+     *  a Juju describes a week in which a fantasy football team:
+     *          1) has a bottom-five score for the week
+     *          2) is below the average score for that week
+     *          3) wins
+     */
+    public List<Score> getJujus(Integer seasonId){
+        List<Score> jujus = new ArrayList();
+
+        for(int i=1; i < getCurrentScoringPeriodId(); i++){
+            jujus.addAll(getJujus(i, seasonId));
+        }
+
+        return jujus;
+    }
+
+    /***
+     *  a Juju describes a week in which a fantasy football team:
+     *          1) has a bottom-five score for the week
+     *          2) is below the average score for that week
+     *          3) wins
+     */
+    public List<Score> getJujus(Integer scoringPeriodId, Integer seasonId){
+        List<Score> jujus = new ArrayList();
+        List<Score> scores = getScoresSorted(Order.ASC, scoringPeriodId, seasonId, true);
+        Double totalPoints = 0.0;
+
+        for(Score score : scores){
+            totalPoints += score.getPoints();
+        }
+
+        Double averagePoints = totalPoints/(scores.size());
+        for(Score score : scores.subList(0, Math.min(scores.size(), scores.size()/2))){
+            if(score.getOutcome().equals(Outcome.WIN)
+            && score.getPoints() < averagePoints){
+                jujus.add(score);
+            }
+        }
+
+        return jujus;
+    }
+
+    /***
+     *  a Salty describes a week in which a fantasy football team:
+     *          1) has a top-five score for the week
+     *          2) is above the average score for the week
+     *          3) loses
+     */
+    public List<Score> getSalties(Integer seasonId){
+        List<Score> salties = new ArrayList();
+
+        for(int i=1; i < getCurrentScoringPeriodId(); i++){
+            salties.addAll(getSalties(i, seasonId));
+        }
+
+        return salties;
+    }
+
+    /***
+     *  a Salty describes a week in which a fantasy football team:
+     *          1) has a top-five score for the week
+     *          2) is above the average score for the week
+     *          3) loses
+     */
+    public List<Score> getSalties(Integer scoringPeriodId, Integer seasonId){
+        List<Score> salties = new ArrayList();
+        List<Score> scores = getScoresSorted(Order.DESC, scoringPeriodId, seasonId, true);
+        Double totalPoints = 0.0;
+
+        for(Score score : scores){
+            totalPoints += score.getPoints();
+        }
+
+        Double averagePoints = totalPoints/(scores.size());
+        for(Score score : scores.subList(0, Math.min(scores.size(), scores.size()/2))){
+            if(score.getOutcome().equals(Outcome.LOSS)
+                    && score.getPoints() > averagePoints){
+                salties.add(score);
+            }
+        }
+
+        return salties;
+    }
+
+    public List<Score> getScoresSorted(Order order, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
+        return getScoresSorted(order, null, scoringPeriodId, seasonId, includePlayoffs);
+    }
+
+    public List<Score> getScoresSorted(Order order, Integer total, Integer scoringPeriodId, Integer seasonId, boolean includePlayoffs){
         List<Score> scores = seasonId != null ?
                 getScores(scoringPeriodId, seasonId, includePlayoffs) :
                 getScoresAllTime(scoringPeriodId, includePlayoffs);
 
         scores.sort(new SortScoresByPoints(order));
 
-        return scores.subList(0, Math.min(scores.size(), total));
+        return total == null ?
+                scores :
+                scores.subList(0, Math.min(scores.size(), total));
     }
 
     public List<Score> getScoresAllTime(Integer scoringPeriodId, boolean includePlayoffs){
