@@ -161,7 +161,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                         replaceAll("\\d+", "").trim();
                 position = positionStr.equals("players") ? null : Position.valueOf(positionStr.toUpperCase());
             } catch(Exception e){
-                getEspnBot().sendMessage("enter a valid position [qb,rb,wr,te,k,d]");
+                getEspnBot().sendMessage("enter a valid position [qb,rb,wr,te,k,d,flex]");
                 return;
             }
 
@@ -200,6 +200,9 @@ public class GroupMeProcessor implements ChatBotProcessor {
         } else if(text.matches("matchups \\S+ \\S+$")) {
             String[] teams = text.split("\\s");
             getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[1], teams[2]));
+        // pf winners
+        } else if(text.equals("pf winners")){
+            getEspnBot().sendMessage(espnMessageBuilder.buildWeeklyPfWinners());
         // jujus
         } else if(text.equals("jujus"))
             getEspnBot().sendMessage(espnMessageBuilder.buildJujusMessage());
@@ -227,7 +230,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private String buildShowCommandsMessage(){
         return "commands:\\n" +
                 "@here -- sends a mention notification to group\\n" +
-                "#pin -- pin a message to view later\\n" +
+                " #pin -- pin a message to view later\\n" +
                 getMainBot().getBotKeyword() + " help -- show bot commands\\n" +
                 getMainBot().getBotKeyword() + " gif [SOMETHING] -- post a random gif of something\\n" +
                 getMainBot().getBotKeyword() + " salt [SOMEONE] -- throw salt at someone\\n" +
@@ -244,6 +247,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses\\n" +
                 getMainBot().getBotKeyword() + " show standings {ever|YEAR|} -- standings\\n" +
                 getMainBot().getBotKeyword() + " show matchups [TEAM1] [TEAM2] -- matchup stats between two teams\\n" +
+                getMainBot().getBotKeyword() + " show pf winners -- list of most pf per week\\n" +
                 getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
                 getMainBot().getBotKeyword() + " show salties -- all time salties";
     }
