@@ -28,12 +28,12 @@ public class EspnTransactionScheduler implements Scheduler {
     public void start(){
         // schedule task every 30 seconds
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> checkForEspnTrade(), 0, 60, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> checkForTransaction(), 0, 60, TimeUnit.SECONDS);
     }
 
-    private void checkForEspnTrade(){
+    private void checkForTransaction(){
         // get transactions over the last 30 seconds (30000 ms)
-        List<Transaction> transactions = espn.getTransactions(System.currentTimeMillis()-30000, System.currentTimeMillis(),
+        List<Transaction> transactions = espn.getTransactions(System.currentTimeMillis()-60000, System.currentTimeMillis(),
                 List.of(TransactionType.TRADE_ACCEPTED.getValue()));
 
         if(transactions == null){
@@ -41,32 +41,76 @@ public class EspnTransactionScheduler implements Scheduler {
         }
 
         for(Transaction t : transactions){
-            Map<Integer, List<Player>> teamPlayersMap = new HashMap();
-
-            for(int i=0; i < t.getMessages().length; i++){
-                Integer toTeamId = t.getMessages()[i].getTo();
-                Integer playerId = t.getMessages()[i].getTargetId();
-
-                if(toTeamId > 0){
-                    if(teamPlayersMap.containsKey(toTeamId)){
-                        teamPlayersMap.get(toTeamId).add(espn.getPlayer(playerId));
-                    } else {
-                        List<Player> players = new ArrayList();
-                        players.add(espn.getPlayer(playerId));
-                        teamPlayersMap.put(toTeamId, players);
-                    }
-                }
-            }
-
-            List<Integer> teamIds = new ArrayList(teamPlayersMap.keySet());
-            Team team0 = espn.getTeamById(teamIds.get(0));
-            Team team1 = espn.getTeamById(teamIds.get(1));
-            List<Player> playersToTeam0 = teamPlayersMap.get(teamIds.get(0));
-            List<Player> playersToTeam1 = teamPlayersMap.get(teamIds.get(1));
-
-            sendTradePoll(team0, team1, playersToTeam0, playersToTeam1);
+//            if(isTrade(t)){
+                processTrade(t);
+//            } else if(isWaiverAdd(t)){
+//                processWaiverAdd(t);
+//            }
         }
     }
+
+//    private void processWaiverAdd(Transaction t){
+//        Player playerAdded = null;
+//        Player playerDropped = null;
+//        for(int i=0; i < t.getMessages().length; i++){
+//            Transaction.Message m = t.getMessages()[i];
+//            if(m.getMessageTypeId().equals(TransactionType.ADD_WAIVER.getValue())){
+//                playerAdded = espn.getPlayer(m.getTargetId());
+//            } else if(m.getMessageTypeId().equals(TransactionType.DROP_WAIVER.getValue())){
+//                playerDropped = espn.getPlayer(m.getTargetId());
+//            }
+//        }
+//
+//        StringBuilder sb = new StringBuilder();
+//        if(playerAdded != null){
+//            sb.append("Added: " + playerAdded.getFullName() + " (" + espn.getPositionById(playerAdded.getDefaultPositionId()) + ")\\n");
+//        }
+//        if(playerDropped != null){
+//            sb.append("Dropped: " + playerDropped.getFullName() + " (" + espn.getPositionById(playerDropped.getDefaultPositionId()) + ")");
+//        }
+//
+//        bot.sendMessage(sb.toString());
+//    }
+
+    private void processTrade(Transaction t){
+        Map<Integer, List<Player>> teamPlayersMap = new HashMap();
+
+        for(int i=0; i < t.getMessages().length; i++){
+            Integer toTeamId = t.getMessages()[i].getTo();
+            Integer playerId = t.getMessages()[i].getTargetId();
+
+            if(toTeamId > 0){
+                if(teamPlayersMap.containsKey(toTeamId)){
+                    teamPlayersMap.get(toTeamId).add(espn.getPlayer(playerId));
+                } else {
+                    List<Player> players = new ArrayList();
+                    players.add(espn.getPlayer(playerId));
+                    teamPlayersMap.put(toTeamId, players);
+                }
+            }
+        }
+
+        List<Integer> teamIds = new ArrayList(teamPlayersMap.keySet());
+        Team team0 = espn.getTeamById(teamIds.get(0));
+        Team team1 = espn.getTeamById(teamIds.get(1));
+        List<Player> playersToTeam0 = teamPlayersMap.get(teamIds.get(0));
+        List<Player> playersToTeam1 = teamPlayersMap.get(teamIds.get(1));
+
+        sendTradePoll(team0, team1, playersToTeam0, playersToTeam1);
+    }
+
+//    private Boolean isTrade(Transaction t){
+//        return t != null
+//                && t.getMessages().length > 0
+//                && t.getMessages()[0].getMessageTypeId().equals(TransactionType.TRADE_ACCEPTED.getValue());
+//    }
+//
+//    private Boolean isWaiverAdd(Transaction t){
+//        return t != null
+//                && t.getMessages().length > 0
+//                && (t.getMessages()[0].getMessageTypeId().equals(TransactionType.ADD_WAIVER.getValue())
+//                    || t.getMessages()[0].getMessageTypeId().equals(TransactionType.DROP_WAIVER.getValue()));
+//    }
 
     private void sendTradePoll(Team team0, Team team1, List<Player> playersToTeam0, List<Player> playersToTeam1){
         StringBuilder sb0 = new StringBuilder();
