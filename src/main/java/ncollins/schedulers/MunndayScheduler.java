@@ -2,6 +2,7 @@ package ncollins.schedulers;
 
 import ncollins.chat.groupme.GroupMeBot;
 import ncollins.gif.GifGenerator;
+import ncollins.model.chat.Emojis;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ public class MunndayScheduler implements Scheduler {
 
     public void start() {
         Runnable task = () -> {
-            bot.sendMessage("Happy Munnday \uD83E\uDD73");
+            bot.sendMessage("Happy Munnday " + Emojis.PARTY_SMILEY);
             bot.sendMessage(gifGenerator.searchGif("olivia munn sexy"));
         };
 

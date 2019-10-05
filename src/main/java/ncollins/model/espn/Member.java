@@ -1,5 +1,7 @@
 package ncollins.model.espn;
 
+import java.util.Objects;
+
 public class Member {
     private String displayName;
     private String firstName;
@@ -26,5 +28,10 @@ public class Member {
         Member m = (Member) o;
         return m.getId().equals(id) ||
                 (m.firstName + m.lastName).equals(firstName + lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, lastName);
     }
 }

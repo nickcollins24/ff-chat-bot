@@ -4,6 +4,7 @@ import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
 import ncollins.model.Order;
 import ncollins.model.chat.ChatResponse;
+import ncollins.model.chat.Emojis;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.Pin;
 import ncollins.model.espn.Outcome;
@@ -51,7 +52,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         text = text.toLowerCase();
 
         if(text.contains("@here"))
-            getMainBot().sendMessageWithMention("@here \uD83D\uDC40\uD83D\uDC46", new int[]{0,5});
+            getMainBot().sendMessageWithMention("@here " + Emojis.EYES_LEFT + Emojis.FINGER_UP, new int[]{0,5});
         if(text.startsWith("#pin ") || text.endsWith(" #pin") || text.contains(" #pin ")){
             String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
                     .replaceAll("#pin", "");

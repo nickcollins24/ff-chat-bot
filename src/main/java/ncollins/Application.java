@@ -7,10 +7,7 @@ import ncollins.data.PinCollection;
 import ncollins.espn.Espn;
 import ncollins.espn.EspnDataLoader;
 import ncollins.espn.EspnMessageBuilder;
-import ncollins.schedulers.LineupReminderScheduler;
-import ncollins.schedulers.MunndayScheduler;
-import ncollins.schedulers.EspnTransactionScheduler;
-import ncollins.schedulers.WeeklyRoundupScheduler;
+import ncollins.schedulers.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -46,5 +43,6 @@ public class Application {
         new LineupReminderScheduler(mainBot).start();
         new EspnTransactionScheduler(espnBot, espn).start();
         new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();
+        new GameDayScheduler(mainBot, espn).start();
     }
 }

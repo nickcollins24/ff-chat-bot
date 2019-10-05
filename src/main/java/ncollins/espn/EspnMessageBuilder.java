@@ -2,6 +2,7 @@ package ncollins.espn;
 
 import ncollins.espn.comparators.SortOverallByPercentage;
 import ncollins.model.Order;
+import ncollins.model.chat.Emojis;
 import ncollins.model.espn.*;
 
 import java.util.ArrayList;
@@ -332,7 +333,7 @@ public class EspnMessageBuilder {
     public String buildWeeklyPfWinners(){
         StringBuilder sb = new StringBuilder();
 
-        sb.append("High Scores \uD83D\uDCB0\\n");
+        sb.append("High Scores " + Emojis.MONEY_BAG + "\\n");
         for(int i=1; i < espn.getCurrentScoringPeriodId(); i++){
             Score topScore = espn.getScoresSorted(Order.DESC, 1, i, espn.getCurrentSeasonId(), true).get(0);
             Member topScoreMember = espn.getMemberByTeamId(topScore.getTeamId(), espn.getCurrentSeasonId());
@@ -507,7 +508,7 @@ public class EspnMessageBuilder {
 
         StringBuilder sb = new StringBuilder();
         sb.append("-- Week " + previousWeek + " Roundup --\\n\\n")
-          .append("High Score \uD83D\uDCB0:\\n")
+          .append("High Score " + Emojis.MONEY_BAG + ":\\n")
           .append(topScoreMember.getFirtName() + " " + topScoreMember.getLastName() + " (" + topScore.getPoints() + ")\\n\\n");
 
         sb.append("Jujus:\\n");

@@ -35,15 +35,15 @@ public class Record {
     }
 
     public class Residence {
-        private Integer gamesBack;
-        private Integer losses;
-        private Double  percentage;
-        private Double  pointsAgainst;
-        private Double  pointsFor;
-        private Integer streakLength;
+        private Integer gamesBack = 0;
+        private Integer losses = 0;
+        private Double  percentage = 0.0;
+        private Double  pointsAgainst = 0.0;
+        private Double  pointsFor = 0.0;
+        private Integer streakLength = 0;
         private String  streakType;
-        private Integer ties;
-        private Integer wins;
+        private Integer ties = 0;
+        private Integer wins = 0;
 
         // GET
         public Integer getGamesBack() { return gamesBack; }
@@ -66,5 +66,17 @@ public class Record {
         public void setStreakType(String streakType) { this.streakType = streakType; }
         public void setTies(Integer ties) { this.ties = ties; }
         public void setWins(Integer wins) { this.wins = wins; }
+
+        public void addWins(Integer wins) {
+            this.wins += wins;
+        }
+
+        public void addLosses(Integer losses) {
+            this.losses += losses;
+        }
+
+        public void addTies(Integer ties) {
+            this.ties += ties;
+        }
     }
 }

@@ -2,6 +2,7 @@ package ncollins.schedulers;
 
 import ncollins.chat.groupme.GroupMeBot;
 import ncollins.espn.Espn;
+import ncollins.model.chat.Emojis;
 import ncollins.model.chat.PollPayload;
 import ncollins.model.espn.*;
 
@@ -18,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class EspnTransactionScheduler implements Scheduler {
     private GroupMeBot bot;
     private Espn espn;
-    private static final String TRADE_POLL_TITLE = "Do you approve of this trade?\uD83D\uDC46Majority veto nullifies this agreed upon transaction.";
+    private static final String TRADE_POLL_TITLE = "Do you approve of this trade?" + Emojis.FINGER_UP +
+            "Majority veto nullifies this agreed upon transaction.";
 
     public EspnTransactionScheduler(GroupMeBot bot, Espn espn){
         this.bot = bot;
@@ -124,7 +126,7 @@ public class EspnTransactionScheduler implements Scheduler {
         }
 
         //send breaking news message
-        bot.sendMessage("\uD83D\uDEA8 BREAKING NEWS \uD83D\uDEA8 \\n\\n" +
+        bot.sendMessage(Emojis.RED_SIREN + " BREAKING NEWS " + Emojis.RED_SIREN + " \\n\\n" +
                 team0.getLocation() + " " + team0.getNickname() + " (" + team0.getAbbrev() + ") and " +
                 team1.getLocation() + " " + team1.getNickname() + " (" + team1.getAbbrev() + ") " +
                 "have agreed on a trade, multiple sauces tell " + bot.getBotName() + ". Here are the details...\\n\\n" +

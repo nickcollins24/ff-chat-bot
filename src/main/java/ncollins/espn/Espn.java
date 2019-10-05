@@ -3,6 +3,7 @@ package ncollins.espn;
 import ncollins.espn.comparators.*;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
+import ncollins.model.espn.Record;
 
 import java.util.*;
 
@@ -190,6 +191,19 @@ public class Espn {
         return scores;
     }
 
+    public List<Matchup> getMatchups(Integer scoringPeriodId, Integer seasonId){
+        List<Matchup> matchups = new ArrayList();
+
+        Season season = getSeason(seasonId);
+        for(ScheduleItem scheduleItem : season.getSchedule()) {
+            if (scoringPeriodId.equals(scheduleItem.getMatchupPeriodId())) {
+                matchups.add(new Matchup(scheduleItem, seasonId));
+            }
+        }
+
+        return matchups;
+    }
+
     public List<Matchup> getMatchupsSorted(Order order, int total, Integer seasonId, boolean includePlayoffs, boolean includeTies){
         List<Matchup> matchups = seasonId != null ?
                 getMatchups(seasonId, includePlayoffs, includeTies) :
@@ -248,6 +262,40 @@ public class Espn {
         matchups.sort(new SortMatchupsBySeasonId(order).thenComparing(new SortMatchupsByWeek(order)));
 
         return matchups;
+    }
+
+    public Map<Member, Record> getRecordBetween(Member m0, Member m1){
+        List<Matchup> matchups = getMatchupsBetween(m0, m1);
+        Map<Member, Record> memberMap = new HashMap();
+        Record r0 = new Record();
+        r0.setOverall(new Record().new Overall());
+
+        Record r1 = new Record();
+        r1.setOverall(new Record().new Overall());
+
+        memberMap.put(m0, r0);
+        memberMap.put(m1, r1);
+
+        for (Matchup m : matchups) {
+            Member homeMember = getMemberByTeamId(m.getScheduleItem().getHome().getTeamId(), m.getSeasonId());
+            Member awayMember = getMemberByTeamId(m.getScheduleItem().getAway().getTeamId(), m.getSeasonId());
+
+            // home team won
+            if (m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()) {
+                memberMap.get(homeMember).getOverall().addWins(1);
+                memberMap.get(awayMember).getOverall().addLosses(1);
+            // away team won
+            } else if (m.getScheduleItem().getAway().getTotalPoints() > m.getScheduleItem().getHome().getTotalPoints()) {
+                memberMap.get(homeMember).getOverall().addLosses(1);
+                memberMap.get(awayMember).getOverall().addWins(1);
+            // tie
+            } else {
+                memberMap.get(homeMember).getOverall().addTies(1);
+                memberMap.get(awayMember).getOverall().addTies(1);
+            }
+        }
+
+        return memberMap;
     }
 
     public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId, Boolean includeCurrentSeason){
