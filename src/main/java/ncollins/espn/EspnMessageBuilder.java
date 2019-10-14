@@ -475,6 +475,22 @@ public class EspnMessageBuilder {
         return sb.toString();
     }
 
+//    public String buildOutcomeThroughMessage(Order order, Outcome outcome, int total, int week){
+//        List<OwnerToOverall> outcomes = espn.getRecordThroughWeek(order, total, week);
+//
+//        StringBuilder sb = new StringBuilder();
+//        sb.append(outcomes.size()).append(order.equals(Order.ASC) ? " Least" : " Most")
+//                .append(outcome.equals(Outcome.WIN) ? " Wins" : " Losses")
+//                .append(" Through ").append(week + " Weeks");
+//
+//        for(OwnerToOverall o : outcomes){
+//            sb.append(o.getOwnerName() + " " + o.getOverall().getWins() + " " + o.getOverall().getLosses() + " " + o.getOverall().getTies());
+//        }
+//
+//        return sb.toString();
+//    }
+
+
     /***
      *  Builds message that displays the top/bottom points through a given week.
      *  TODO: implement buildPoinstThroughMessage

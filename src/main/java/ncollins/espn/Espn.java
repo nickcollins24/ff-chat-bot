@@ -298,6 +298,17 @@ public class Espn {
         return memberMap;
     }
 
+//    public List<OwnerToOverall> getRecordThroughWeek(Order order, int total, int week){
+//        List<Matchup> matchups = getMatchupsAllTime(true, true);
+//
+//        for(Matchup m : matchups){
+//            if(m.getScheduleItem().getMatchupPeriodId() <= week){
+//                m.
+//            }
+//        }
+//        return null;
+//    }
+
     public List<Team> getTeamsSorted(Order order, Integer total, Integer seasonId, Boolean includeCurrentSeason){
         List<Team> teams = seasonId != null ?
                 getTeams(seasonId) :

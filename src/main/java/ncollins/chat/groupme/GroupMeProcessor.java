@@ -167,15 +167,25 @@ public class GroupMeProcessor implements ChatBotProcessor {
             }
 
             getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessageByCurrentWeek(order, total, position));
-        // {top|bottom} [TOTAL] pf through [WEEK]
-        } else if(text.matches("(top|bottom)(\\s\\d)* pf through \\d+$")) {
-            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
-            String[] textSplit = text.split("through");
-            String totalStr = textSplit[0].replaceAll("\\D+", "");
-            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            String weekStr = textSplit[1].replaceAll("\\D+", "");
-            int week = Integer.parseInt(weekStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildPointsThroughMessage(order, total, week));
+        // {top|bottom} [TOTAL] {pf|wins|losses} through [WEEK]
+//        } else if(text.matches("(top|bottom)(\\s\\d)* (pf|wins|losses) through \\d+$")) {
+//            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
+//            Outcome outcome = text.contains(" wins ") ?
+//                    Outcome.WIN :
+//                    text.contains(" losses ") ? Outcome.LOSS : null;
+//
+//            String[] textSplit = text.split("through");
+//            String totalStr = textSplit[0].replaceAll("\\D+", "");
+//            int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
+//            String weekStr = textSplit[1].replaceAll("\\D+", "");
+//            int week = Integer.parseInt(weekStr);
+//
+//            if(outcome == null){
+//                getEspnBot().sendMessage(espnMessageBuilder.buildPointsThroughMessage(order, total, week));
+//            } else {
+//                getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeThroughMessage(order, outcome, total, week));
+//            }
+
         // top [TOTAL] pf streaks
         } else if(text.matches("top(\\s\\d)* pf streaks$")) {
             String totalStr = text.replaceAll("\\D+", "");
@@ -221,6 +231,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage(gifGenerator.translateGif("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$")){
             getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
+        } else if(text.contains("woof")){
+            getMainBot().sendMessage(gifGenerator.translateGif("corgi"));
         }
     }
 
@@ -241,9 +253,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] scores {ever|YEAR|} -- top/bottom scores\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] records {ever|YEAR|} -- top/bottom records\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] pf through [WEEK] -- top/bottom pf through given week\\n" +
+                getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {wins/losses} through [WEEK] -- top/bottom w/l through given week\\n" +
                 getMainBot().getBotKeyword() + " show {top|bottom} [TOTAL] {POSITION|players} {WEEK|} -- best/worst players\\n" +
-                getMainBot().getBotKeyword() + " show top streaks [TOTAL] pf -- longest streaks of >= pf\\n" +
-                getMainBot().getBotKeyword() + " show [TOTAL] {win|loss} streaks -- longest win/loss streaks\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest wins\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses\\n" +
                 getMainBot().getBotKeyword() + " show standings {ever|YEAR|} -- standings\\n" +
