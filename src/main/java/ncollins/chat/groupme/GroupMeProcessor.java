@@ -232,7 +232,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.matches(".+ de[a]?d$")){
             getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
         } else if(text.contains("woof")){
-            getMainBot().sendMessage(gifGenerator.translateGif("corgi"));
+            getMainBot().sendMessage(gifGenerator.searchGif("corgi"));
         }
     }
 
