@@ -43,6 +43,6 @@ public class Application {
         new LineupReminderScheduler(mainBot).start();
         new EspnTransactionScheduler(espnBot, espn).start();
         new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();
-//        new GameDayScheduler(mainBot, espn).start();
+        new GameDayScheduler(mainBot, espn).start();
     }
 }
