@@ -39,10 +39,11 @@ public class Application {
         new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
 
         // start schedulers
-        new MunndayScheduler(mainBot).start();
-        new LineupReminderScheduler(mainBot).start();
+        new MunndayScheduler(mainBot).start();  // Monday
+        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
+        new LineupReminderScheduler(mainBot).start();   // Thursday
+        new GuyDayScheduler(mainBot).start(); // Friday
         new EspnTransactionScheduler(espnBot, espn).start();
-        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();
-        new GameDayScheduler(mainBot, espn).start();
+        new GameDayScheduler(mainBot, espn).start();    // Sunday
     }
 }
