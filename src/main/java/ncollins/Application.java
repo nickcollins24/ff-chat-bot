@@ -40,10 +40,10 @@ public class Application {
 
         // start schedulers
         new MunndayScheduler(mainBot).start();  // Monday
-        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
-        new LineupReminderScheduler(mainBot).start();   // Thursday
-        new GuyDayScheduler(mainBot).start(); // Friday
-        new EspnTransactionScheduler(espnBot, espn).start();
-        new GameDayScheduler(mainBot, espn).start();    // Sunday
+        //new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
+        //new LineupReminderScheduler(mainBot).start();   // Thursday
+        //new GuyDayScheduler(mainBot).start(); // Friday
+        //new EspnTransactionScheduler(espnBot, espn).start();
+        //new GameDayScheduler(mainBot, espn).start();    // Sunday
     }
 }
