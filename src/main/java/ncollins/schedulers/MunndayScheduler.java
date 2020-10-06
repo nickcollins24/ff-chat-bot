@@ -15,17 +15,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class MunndayScheduler implements Scheduler {
-    private GifGenerator gifGenerator = new GifGenerator();
+    private GifGenerator gifGenerator;
     private GroupMeBot bot;
 
-    public MunndayScheduler(GroupMeBot bot){
+    public MunndayScheduler(GroupMeBot bot, GifGenerator gifGenerator){
+        this.gifGenerator = gifGenerator;
         this.bot = bot;
     }
 
     public void start() {
         Runnable task = () -> {
             bot.sendMessage("Happy Munnday " + Emojis.PARTY_SMILEY);
-            bot.sendMessage(gifGenerator.searchGif("olivia munn sexy"));
+            bot.sendMessage(gifGenerator.search("olivia munn sexy"));
         };
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);

@@ -18,12 +18,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class GuyDayScheduler implements Scheduler {
-    private GifGenerator gifGenerator = new GifGenerator();
+    private GifGenerator gifGenerator;
     private GroupMeBot bot;
     private List<String> guys = new ArrayList();
 
-    public GuyDayScheduler(GroupMeBot bot){
+    public GuyDayScheduler(GroupMeBot bot, GifGenerator gifGenerator){
         this.bot = bot;
+        this.gifGenerator = gifGenerator;
         this.guys.add("adam levine");
         this.guys.add("justin timberlake");
         this.guys.add("vin diesel");
@@ -32,7 +33,7 @@ public class GuyDayScheduler implements Scheduler {
     public void start() {
         Runnable task = () -> {
             bot.sendMessage("Happy Lady Appreciation Day! " + Emojis.PARTY_SMILEY);
-            bot.sendMessage(gifGenerator.searchGif(
+            bot.sendMessage(gifGenerator.search(
                     guys.get(ThreadLocalRandom.current().nextInt(0, guys.size())) + " sexy"));
         };
 

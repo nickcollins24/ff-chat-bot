@@ -7,6 +7,8 @@ import ncollins.data.PinCollection;
 import ncollins.espn.Espn;
 import ncollins.espn.EspnDataLoader;
 import ncollins.espn.EspnMessageBuilder;
+import ncollins.gif.GifGenerator;
+import ncollins.gif.TenorGenerator;
 import ncollins.schedulers.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,20 +32,21 @@ public class Application {
         // init bots
         GroupMeBot mainBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, MAIN_BOT_ID, MAIN_BOT_NAME, GROUP_ID, USER_ID);
         GroupMeBot espnBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, ESPN_BOT_ID, ESPN_BOT_NAME, GROUP_ID, USER_ID);
+        GifGenerator gifGenerator = new TenorGenerator();
         PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
         Espn espn = new Espn(new EspnDataLoader());
         EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(espn);
-        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espnMessageBuilder);
+        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espnMessageBuilder, gifGenerator);
 
         // start listening for group me messages
         new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
 
         // start schedulers
-        new MunndayScheduler(mainBot).start();  // Monday
-        //new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
-        //new LineupReminderScheduler(mainBot).start();   // Thursday
-        //new GuyDayScheduler(mainBot).start(); // Friday
-        //new EspnTransactionScheduler(espnBot, espn).start();
-        //new GameDayScheduler(mainBot, espn).start();    // Sunday
+        new MunndayScheduler(mainBot, gifGenerator).start();  // Monday
+        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
+        new LineupReminderScheduler(mainBot).start();   // Thursday
+        new GuyDayScheduler(mainBot, gifGenerator).start(); // Friday
+        new EspnTransactionScheduler(espnBot, espn).start();
+        new GameDayScheduler(mainBot, espn).start();    // Sunday
     }
 }

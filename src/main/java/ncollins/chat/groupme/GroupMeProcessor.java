@@ -2,6 +2,7 @@ package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
+import ncollins.gif.GifGenerator;
 import ncollins.model.Order;
 import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.Emojis;
@@ -9,7 +10,6 @@ import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.Pin;
 import ncollins.model.espn.Outcome;
 import ncollins.espn.EspnMessageBuilder;
-import ncollins.gif.GifGenerator;
 import ncollins.magiceightball.MagicAnswerGenerator;
 import ncollins.model.espn.Position;
 import ncollins.salt.SaltGenerator;
@@ -24,17 +24,18 @@ public class GroupMeProcessor implements ChatBotProcessor {
     private GroupMeBot mainBot;
     private GroupMeBot espnBot;
     private EspnMessageBuilder espnMessageBuilder;
-    private GifGenerator gifGenerator = new GifGenerator();
+    private GifGenerator gifGenerator;
     private SaltGenerator saltGenerator = new SaltGenerator();
     private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
     private PinCollection pinCollection;
 
     public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection,
-                            EspnMessageBuilder espnMessageBuilder){
+                            EspnMessageBuilder espnMessageBuilder, GifGenerator gifGenerator){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
         this.pinCollection = pinCollection;
         this.espnMessageBuilder = espnMessageBuilder;
+        this.gifGenerator = gifGenerator;
     }
 
     public GroupMeBot getMainBot(){
@@ -228,11 +229,11 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.equals("same"))
             getMainBot().sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
         else if(text.contains("gattaca"))
-            getMainBot().sendMessage(gifGenerator.translateGif("rafi gattaca"));
+            getMainBot().sendMessage(gifGenerator.search("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$")){
             getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
         } else if(text.contains("woof")){
-            getMainBot().sendMessage(gifGenerator.searchGif("corgi"));
+            getMainBot().sendMessage(gifGenerator.search("corgi"));
         }
     }
 
@@ -265,7 +266,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
     }
 
     private String buildGifMessage(String query){
-        return gifGenerator.translateGif(query);
+        return gifGenerator.search(query);
     }
 
     private String buildSaltMessage(String recipient) {
