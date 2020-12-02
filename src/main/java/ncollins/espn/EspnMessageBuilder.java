@@ -98,6 +98,63 @@ public class EspnMessageBuilder {
     }
 
     /***
+     *  Builds message that displays the league loser every year
+     */
+    public String buildSackosMessage(){
+        List<Team> sackos = espn.getSackos();
+
+        StringBuilder sb = new StringBuilder();
+
+
+        sb.append("Sackos:\\n");
+        // hardcoding this here because i dont have access to data from this year
+        sb.append("2011: J Mehta\\n");
+        for(Team sacko : sackos){
+            Member member = espn.getMemberByTeamId(sacko.getId(), sacko.getSeasonId());
+            String memberName = member.getFirtName() + " " + member.getLastName();
+
+            String tiesStr = sacko.getRecord().getOverall().getTies() > 0 ?
+                    "-" + sacko.getRecord().getOverall().getTies():
+                    "";
+
+            sb.append(sacko.getSeasonId() + ": " + memberName + " ")
+                    .append(sacko.getRecord().getOverall().getWins() + "-" + sacko.getRecord().getOverall().getLosses() + tiesStr + " ")
+                    .append(String.format("%.1f", sacko.getRecord().getOverall().getPointsFor()) + "\\n");
+        }
+
+        return sb.toString();
+    }
+
+    /***
+     *  Builds message that displays the league winner every year
+     */
+    public String buildChampsMessage(){
+        List<Team> champs = espn.getChamps();
+
+        StringBuilder sb = new StringBuilder();
+
+
+        sb.append("Champs:\\n");
+
+        // hardcoding this here because i dont have access to data from this year
+        sb.append("2011: Andrew Baclig\\n");
+        for(Team champ : champs){
+            Member member = espn.getMemberByTeamId(champ.getId(), champ.getSeasonId());
+            String memberName = member.getFirtName() + " " + member.getLastName();
+
+            String tiesStr = champ.getRecord().getOverall().getTies() > 0 ?
+                    "-" + champ.getRecord().getOverall().getTies():
+                    "";
+
+            sb.append(champ.getSeasonId() + ": " + memberName + " ")
+                    .append(champ.getRecord().getOverall().getWins() + "-" + champ.getRecord().getOverall().getLosses() + tiesStr + " ")
+                    .append(String.format("%.1f", champ.getRecord().getOverall().getPointsFor()) + "\\n");
+        }
+
+        return sb.toString();
+    }
+
+    /***
      *  Builds message that displays matchup history between two teams
      */
     public String buildMatchupsMessage(String team0, String team1){

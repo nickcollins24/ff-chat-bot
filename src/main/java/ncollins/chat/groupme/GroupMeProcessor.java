@@ -212,6 +212,13 @@ public class GroupMeProcessor implements ChatBotProcessor {
         } else if(text.matches("matchups \\S+ \\S+$")) {
             String[] teams = text.split("\\s");
             getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[1], teams[2]));
+        // sackos ever
+        } else if(text.equals("sackos")){
+            getEspnBot().sendMessage(espnMessageBuilder.buildSackosMessage());
+        // champs ever
+        } else if(text.equals("champs")){
+            getEspnBot().sendMessage(espnMessageBuilder.buildChampsMessage());
+
         // pf winners
         } else if(text.equals("pf winners")){
             getEspnBot().sendMessage(espnMessageBuilder.buildWeeklyPfWinners());
@@ -230,11 +237,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
         else if(text.contains("gattaca"))
             getMainBot().sendMessage(gifGenerator.search("rafi gattaca"));
-        else if(text.matches(".+ de[a]?d$")){
+        else if(text.matches(".+ de[a]?d$"))
             getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
-        } else if(text.contains("woof")){
+        else if(text.contains("woof"))
             getMainBot().sendMessage(gifGenerator.search("corgi"));
-        }
+        else if(text.contains("olivia munn"))
+            getMainBot().sendMessage(gifGenerator.search("olivia munn"));
+        else if(text.contains("boobs"))
+            getMainBot().sendMessage(gifGenerator.search("boobs"));
     }
 
     private String buildHelpMessage(){
@@ -262,7 +272,9 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show matchups [TEAM1] [TEAM2] -- matchup stats between two teams\\n" +
                 getMainBot().getBotKeyword() + " show pf winners -- list of most pf per week\\n" +
                 getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +
-                getMainBot().getBotKeyword() + " show salties -- all time salties";
+                getMainBot().getBotKeyword() + " show salties -- all time salties\\n" +
+                getMainBot().getBotKeyword() + " show champs -- all time champions\\n" +
+                getMainBot().getBotKeyword() + " show sackos -- all time sackos";
     }
 
     private String buildGifMessage(String query){

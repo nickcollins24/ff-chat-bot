@@ -26,7 +26,7 @@ public class GuyDayScheduler implements Scheduler {
         this.bot = bot;
         this.gifGenerator = gifGenerator;
         this.guys.add("adam levine");
-        this.guys.add("justin timberlake");
+        this.guys.add("timberlake");
         this.guys.add("vin diesel");
     }
 
@@ -34,7 +34,7 @@ public class GuyDayScheduler implements Scheduler {
         Runnable task = () -> {
             bot.sendMessage("Happy Lady Appreciation Day! " + Emojis.PARTY_SMILEY);
             bot.sendMessage(gifGenerator.search(
-                    guys.get(ThreadLocalRandom.current().nextInt(0, guys.size())) + " sexy"));
+                    guys.get(ThreadLocalRandom.current().nextInt(0, guys.size()))));
         };
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);

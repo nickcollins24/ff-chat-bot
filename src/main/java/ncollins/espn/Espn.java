@@ -71,7 +71,8 @@ public class Espn {
      *  a Juju describes a week in which a fantasy football team:
      *          1) has a bottom-five score for the week
      *          2) is below the average score for that week
-     *          3) wins
+     *          3) score is less than 100
+     *          4) wins
      */
     public List<Score> getJujus(Integer seasonId){
         List<Score> jujus = new ArrayList();
@@ -87,7 +88,8 @@ public class Espn {
      *  a Juju describes a week in which a fantasy football team:
      *          1) has a bottom-five score for the week
      *          2) is below the average score for that week
-     *          3) wins
+     *          3) score is less than 100
+     *          4) wins
      */
     public List<Score> getJujus(Integer scoringPeriodId, Integer seasonId){
         List<Score> jujus = new ArrayList();
@@ -101,7 +103,8 @@ public class Espn {
         Double averagePoints = totalPoints/(scores.size());
         for(Score score : scores.subList(0, Math.min(scores.size(), scores.size()/2))){
             if(score.getOutcome().equals(Outcome.WIN)
-            && score.getPoints() < averagePoints){
+            && score.getPoints() < averagePoints
+            && score.getPoints() < 100){
                 jujus.add(score);
             }
         }
@@ -113,7 +116,8 @@ public class Espn {
      *  a Salty describes a week in which a fantasy football team:
      *          1) has a top-five score for the week
      *          2) is above the average score for the week
-     *          3) loses
+     *          3) score is greater than or equal to 100
+     *          4) loses
      */
     public List<Score> getSalties(Integer seasonId){
         List<Score> salties = new ArrayList();
@@ -129,7 +133,8 @@ public class Espn {
      *  a Salty describes a week in which a fantasy football team:
      *          1) has a top-five score for the week
      *          2) is above the average score for the week
-     *          3) loses
+     *          3) score is greater than or equal to 100
+     *          4) loses
      */
     public List<Score> getSalties(Integer scoringPeriodId, Integer seasonId){
         List<Score> salties = new ArrayList();
@@ -143,7 +148,8 @@ public class Espn {
         Double averagePoints = totalPoints/(scores.size());
         for(Score score : scores.subList(0, Math.min(scores.size(), scores.size()/2))){
             if(score.getOutcome().equals(Outcome.LOSS)
-                    && score.getPoints() > averagePoints){
+                    && score.getPoints() > averagePoints
+                    && score.getPoints() >= 100){
                 salties.add(score);
             }
         }
@@ -296,6 +302,62 @@ public class Espn {
         }
 
         return memberMap;
+    }
+
+    public List<Team> getSackos(){
+        List<Team> sackos = new ArrayList();
+        Map<Integer, Season> seasonMap = getSeasons();
+
+        //iterate seasons
+        for(Season season : seasonMap.values()){
+            //only iterate completed seasons
+            if(season.getSeasonId() != getCurrentSeasonId()) {
+                Team sacko = null;
+
+                //find lowest ranked team for each season
+                for (Team team : season.getTeams()) {
+                    if (sacko == null || team.getRankCalculatedFinal() > sacko.getRankCalculatedFinal()) {
+                        sacko = team;
+                    }
+                }
+
+                sacko.setSeasonId(season.getSeasonId());
+                sackos.add(sacko);
+            }
+        }
+
+
+        sackos.sort(new SortTeamsBySeasonId(Order.ASC));
+        return sackos;
+
+    }
+
+    public List<Team> getChamps(){
+        List<Team> champs = new ArrayList();
+        Map<Integer, Season> seasonMap = getSeasons();
+
+        //iterate seasons
+        for(Season season : seasonMap.values()){
+            //only iterate completed seasons
+            if(season.getSeasonId() != getCurrentSeasonId()) {
+                Team champ = null;
+
+                //find lowest ranked team for each season
+                for (Team team : season.getTeams()) {
+                    if (champ == null || team.getRankCalculatedFinal() < champ.getRankCalculatedFinal()) {
+                        champ = team;
+                    }
+                }
+
+                champ.setSeasonId(season.getSeasonId());
+                champs.add(champ);
+            }
+        }
+
+
+        champs.sort(new SortTeamsBySeasonId(Order.ASC));
+        return champs;
+
     }
 
 //    public List<OwnerToOverall> getRecordThroughWeek(Order order, int total, int week){
