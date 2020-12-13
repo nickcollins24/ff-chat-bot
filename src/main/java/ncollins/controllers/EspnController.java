@@ -14,21 +14,21 @@ import java.util.List;
 @RestController
 @RequestMapping("espn")
 public class EspnController {
-    private Espn espn = new Espn(new EspnDataLoader());
-    private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(espn);
-
-    @GetMapping("scores/playoffs")
-    public List<Score> getPlayoffScores() {
-        return espn.getPlayoffScoresAllTime();
-    }
-
-    @GetMapping("matchups/playoffs")
-    public List<Matchup> getPlayoffMatchups() {
-        return espn.getPlayoffMatchupsAllTime();
-    }
-
-    @GetMapping("message/standings/playoffs")
-    public String getPlayoffMatchupsMessage(){
-        return espnMessageBuilder.buildPlayoffStandingsMessage();
-    }
+//    private Espn espn = new Espn(new EspnDataLoader());
+//    private EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(espn);
+//
+//    @GetMapping("scores/playoffs")
+//    public List<Score> getPlayoffScores() {
+//        return espn.getPlayoffScoresAllTime();
+//    }
+//
+//    @GetMapping("matchups/playoffs")
+//    public List<Matchup> getPlayoffMatchups() {
+//        return espn.getPlayoffMatchupsAllTime();
+//    }
+//
+//    @GetMapping("message/standings/playoffs")
+//    public String getPlayoffMatchupsMessage(){
+//        return espnMessageBuilder.buildPlayoffStandingsMessage();
+//    }
 }

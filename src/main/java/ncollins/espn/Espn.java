@@ -203,7 +203,7 @@ public class Espn {
         Map<Integer, Season> seasonMap = getSeasons();
         for(Season s : seasonMap.values()){
             for(ScheduleItem si : s.getSchedule()){
-                if(isPlayoffWeek(si) && si.getHome() != null && si.getAway() != null){
+                if(isValidPlayoffWeek(si, s) && si.getHome() != null && si.getAway() != null){
                     scores.add(new Score(si.getHome(), si.getAway(), si.getMatchupPeriodId(), s.getSeasonId()));
                     scores.add(new Score(si.getAway(), si.getHome(), si.getMatchupPeriodId(), s.getSeasonId()));
                 }
@@ -254,7 +254,7 @@ public class Espn {
 
         Season season = getSeason(seasonId);
         for(ScheduleItem scheduleItem : season.getSchedule()){
-            if(isPlayoffWeek(scheduleItem)
+            if(isValidPlayoffWeek(scheduleItem, season)
                     && scheduleItem.getHome() != null
                     && scheduleItem.getAway() != null){
                 matchups.add(new Matchup(scheduleItem, seasonId));
@@ -591,7 +591,9 @@ public class Espn {
                 scheduleItem.getMatchupPeriodId() < getWeek(season);
     }
 
-    private Boolean isPlayoffWeek(ScheduleItem scheduleItem){
-        return scheduleItem.getPlayoffTierType().equals("WINNERS_BRACKET");
+    private Boolean isValidPlayoffWeek(ScheduleItem scheduleItem, Season season){
+        return scheduleItem.getPlayoffTierType().equals("WINNERS_BRACKET") &&
+                (getCurrentSeasonId() != season.getSeasonId() ||
+                        scheduleItem.getMatchupPeriodId() < getWeek(season));
     }
 }
