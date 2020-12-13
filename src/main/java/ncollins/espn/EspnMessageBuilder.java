@@ -384,9 +384,9 @@ public class EspnMessageBuilder {
                 );
             } else {
                 Record.Overall overallLoser = new Record().new Overall();
-                overallLoser.setWins(1);
-                overallLoser.setLosses(0);
-                overallLoser.setPercentage(1.0);
+                overallLoser.setWins(0);
+                overallLoser.setLosses(1);
+                overallLoser.setPercentage(0.0);
 
                 memberOverallMap.put(memberLoser, overallLoser);
             }
