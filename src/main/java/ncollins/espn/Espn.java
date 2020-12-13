@@ -197,6 +197,21 @@ public class Espn {
         return scores;
     }
 
+    public List<Score> getPlayoffScoresAllTime(){
+        ArrayList<Score> scores = new ArrayList();
+
+        Map<Integer, Season> seasonMap = getSeasons();
+        for(Season s : seasonMap.values()){
+            for(ScheduleItem si : s.getSchedule()){
+                if(isPlayoffWeek(si) && si.getHome() != null && si.getAway() != null){
+                    scores.add(new Score(si.getHome(), si.getAway(), si.getMatchupPeriodId(), s.getSeasonId()));
+                    scores.add(new Score(si.getAway(), si.getHome(), si.getMatchupPeriodId(), s.getSeasonId()));
+                }
+            }
+        }
+        return scores;
+    }
+
     public List<Matchup> getMatchups(Integer scoringPeriodId, Integer seasonId){
         List<Matchup> matchups = new ArrayList();
 
@@ -234,11 +249,36 @@ public class Espn {
         return matchups;
     }
 
+    public List<Matchup> getPlayoffMatchups(Integer seasonId){
+        List<Matchup> matchups = new ArrayList();
+
+        Season season = getSeason(seasonId);
+        for(ScheduleItem scheduleItem : season.getSchedule()){
+            if(isPlayoffWeek(scheduleItem)
+                    && scheduleItem.getHome() != null
+                    && scheduleItem.getAway() != null){
+                matchups.add(new Matchup(scheduleItem, seasonId));
+            }
+        }
+
+        return matchups;
+    }
+
     public List<Matchup> getMatchupsAllTime(boolean includePlayoffs, boolean includeTies){
         ArrayList<Matchup> matchups = new ArrayList();
 
         for(Integer seasonId : getSeasons().keySet()){
             matchups.addAll(getMatchups(seasonId, includePlayoffs, includeTies));
+        }
+
+        return matchups;
+    }
+
+    public List<Matchup> getPlayoffMatchupsAllTime(){
+        ArrayList<Matchup> matchups = new ArrayList();
+
+        for(Integer seasonId : getSeasons().keySet()){
+            matchups.addAll(getPlayoffMatchups(seasonId));
         }
 
         return matchups;
@@ -549,5 +589,9 @@ public class Espn {
     private Boolean isValidWeek(Boolean includePlayoffs, ScheduleItem scheduleItem, Season season){
         return (includePlayoffs || scheduleItem.getPlayoffTierType().equals("NONE")) &&
                 scheduleItem.getMatchupPeriodId() < getWeek(season);
+    }
+
+    private Boolean isPlayoffWeek(ScheduleItem scheduleItem){
+        return scheduleItem.getPlayoffTierType().equals("WINNERS_BRACKET");
     }
 }

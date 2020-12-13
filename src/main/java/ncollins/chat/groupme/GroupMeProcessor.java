@@ -151,6 +151,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
             } else {
                 getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessageCurrentYear());
             }
+        } else if(text.matches("playoff standings(\\sever|)$")){
+            getEspnBot().sendMessage(espnMessageBuilder.buildPlayoffStandingsMessage());
         // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
         } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -269,6 +271,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show [TOTAL] blowouts -- biggest wins\\n" +
                 getMainBot().getBotKeyword() + " show [TOTAL] heartbreaks -- closest losses\\n" +
                 getMainBot().getBotKeyword() + " show standings {ever|YEAR|} -- standings\\n" +
+                getMainBot().getBotKeyword() + " show playoff standings {ever|} -- playoff standings\\n" +
                 getMainBot().getBotKeyword() + " show matchups [TEAM1] [TEAM2] -- matchup stats between two teams\\n" +
                 getMainBot().getBotKeyword() + " show pf winners -- list of most pf per week\\n" +
                 getMainBot().getBotKeyword() + " show jujus -- all time jujus\\n" +

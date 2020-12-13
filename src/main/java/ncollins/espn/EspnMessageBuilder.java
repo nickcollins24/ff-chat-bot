@@ -336,6 +336,82 @@ public class EspnMessageBuilder {
         return sb.toString();
     }
 
+    /**
+     * Builds message that displays playoff standings ever
+     */
+    public String buildPlayoffStandingsMessage(){
+        List<Matchup> matchups = espn.getPlayoffMatchupsAllTime();
+        Map<Member, Record.Overall> memberOverallMap = new HashMap();
+        List<OwnerToOverall> recordsByOwner = new ArrayList();
+
+        for(Matchup m : matchups){
+            ScheduleItem scheduleItem = m.getScheduleItem();
+            Member memberWinner;
+            Member memberLoser;
+
+            if(m.getScheduleItem().getWinner().equalsIgnoreCase("HOME")){
+                memberWinner = espn.getMemberByTeamId(scheduleItem.getHome().getTeamId(), m.getSeasonId());
+                memberLoser = espn.getMemberByTeamId(scheduleItem.getAway().getTeamId(), m.getSeasonId());
+            } else {
+                memberWinner = espn.getMemberByTeamId(scheduleItem.getAway().getTeamId(), m.getSeasonId());
+                memberLoser = espn.getMemberByTeamId(scheduleItem.getHome().getTeamId(), m.getSeasonId());
+            }
+
+            // update winner info
+            if(memberOverallMap.containsKey(memberWinner)){
+                memberOverallMap.get(memberWinner).setWins(
+                        memberOverallMap.get(memberWinner).getWins() + 1);
+                memberOverallMap.get(memberWinner).setPercentage(
+                        (double) memberOverallMap.get(memberWinner).getWins() /
+                                (memberOverallMap.get(memberWinner).getWins() + memberOverallMap.get(memberWinner).getLosses())
+                );
+            } else {
+                Record.Overall overallWinner = new Record().new Overall();
+                overallWinner.setWins(1);
+                overallWinner.setLosses(0);
+                overallWinner.setPercentage(1.0);
+
+                memberOverallMap.put(memberWinner, overallWinner);
+            }
+
+            // update loser info
+            if(memberOverallMap.containsKey(memberLoser)){
+                memberOverallMap.get(memberLoser).setLosses(
+                        memberOverallMap.get(memberLoser).getLosses() + 1);
+                memberOverallMap.get(memberLoser).setPercentage(
+                        (double) memberOverallMap.get(memberLoser).getWins() /
+                                (memberOverallMap.get(memberLoser).getWins() + memberOverallMap.get(memberLoser).getLosses())
+                );
+            } else {
+                Record.Overall overallLoser = new Record().new Overall();
+                overallLoser.setWins(1);
+                overallLoser.setLosses(0);
+                overallLoser.setPercentage(1.0);
+
+                memberOverallMap.put(memberLoser, overallLoser);
+            }
+
+        }
+
+        for(Map.Entry<Member, Record.Overall> e : memberOverallMap.entrySet()){
+            String ownerName = e.getKey().getFirtName() + " " + e.getKey().getLastName();
+            OwnerToOverall ownerToOverall = new OwnerToOverall(e.getKey().getId(), ownerName, e.getValue());
+            recordsByOwner.add(ownerToOverall);
+        }
+        recordsByOwner.sort(new SortOverallByPercentage(Order.DESC));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("All-Time Playoff Standings:\\n");
+        for(int i=0; i < recordsByOwner.size(); i++){
+            sb.append(recordsByOwner.get(i).getOwnerName() + " ")
+                    .append(recordsByOwner.get(i).getOverall().getWins() + "-" + recordsByOwner.get(i).getOverall().getLosses() + " ")
+                    .append(String.format("%.3f", recordsByOwner.get(i).getOverall().getPercentage()) + "\\n");
+        }
+        sb.append("\\n\\nNote: Standings do not include Consolation or Sacko Brackets.");
+
+        return sb.toString();
+    }
+
     /***
      *  Builds message that displays the best/worst records by a team this year
      */
