@@ -407,7 +407,7 @@ public class EspnMessageBuilder {
                     .append(recordsByOwner.get(i).getOverall().getWins() + "-" + recordsByOwner.get(i).getOverall().getLosses() + " ")
                     .append(String.format("%.3f", recordsByOwner.get(i).getOverall().getPercentage()) + "\\n");
         }
-        sb.append("\\n\\nNote: Standings do not include Consolation or Sacko Brackets.");
+        sb.append("\\nNote: Standings do not include Consolation or Sacko Brackets.");
 
         return sb.toString();
     }

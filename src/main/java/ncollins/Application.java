@@ -42,11 +42,11 @@ public class Application {
         new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
 
         // start schedulers
-        new MunndayScheduler(mainBot, gifGenerator).start();  // Monday
-        new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
-        new LineupReminderScheduler(mainBot).start();   // Thursday
-        new GuyDayScheduler(mainBot, gifGenerator).start(); // Friday
+        new MunndayScheduler(mainBot, gifGenerator).start();                // Monday
+//      new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
+//      new LineupReminderScheduler(mainBot).start();                       // Thursday
+//      new GuyDayScheduler(mainBot, gifGenerator).start(); // Friday
         new EspnTransactionScheduler(espnBot, espn).start();
-        new GameDayScheduler(mainBot, espn).start();    // Sunday
+//      new GameDayScheduler(mainBot, espn).start();                        // Sunday
     }
 }
