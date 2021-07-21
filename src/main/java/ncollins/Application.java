@@ -8,6 +8,7 @@ import ncollins.espn.Espn;
 import ncollins.espn.EspnDataLoader;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
+import ncollins.gif.GiphyGenerator;
 import ncollins.gif.TenorGenerator;
 import ncollins.schedulers.*;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +33,7 @@ public class Application {
         // init bots
         GroupMeBot mainBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, MAIN_BOT_ID, MAIN_BOT_NAME, GROUP_ID, USER_ID);
         GroupMeBot espnBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, ESPN_BOT_ID, ESPN_BOT_NAME, GROUP_ID, USER_ID);
-        GifGenerator gifGenerator = new TenorGenerator();
+        GifGenerator gifGenerator = new GiphyGenerator();
         PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
         Espn espn = new Espn(new EspnDataLoader());
         EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(espn);
