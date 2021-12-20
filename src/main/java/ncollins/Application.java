@@ -45,7 +45,7 @@ public class Application {
         // start schedulers
         new MunndayScheduler(mainBot, gifGenerator).start();                // Monday
         new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
-        new LineupReminderScheduler(mainBot).start();                       // Thursday
+        // new LineupReminderScheduler(mainBot).start();                    // Thursday
         new GameDayScheduler(mainBot, espn).start();                        // Sunday
         new EspnTransactionScheduler(espnBot, espn).start();
     }
