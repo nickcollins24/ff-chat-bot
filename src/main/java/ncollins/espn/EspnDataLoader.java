@@ -11,6 +11,9 @@ import ncollins.model.espn.Season;
 import ncollins.model.espn.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.net.*;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -20,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class EspnDataLoader {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -31,9 +35,10 @@ public class EspnDataLoader {
     private Gson gson;
     private long currentSeasonLastUpdate;
 
-    public EspnDataLoader() {
+    @Autowired
+    public EspnDataLoader(EspnHttpClient client) {
         this.gson = new Gson();
-        this.client = new EspnHttpClient();
+        this.client = client;
         this.league = loadLeague();
     }
 

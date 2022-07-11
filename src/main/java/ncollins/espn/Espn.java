@@ -4,12 +4,16 @@ import ncollins.espn.comparators.*;
 import ncollins.model.Order;
 import ncollins.model.espn.*;
 import ncollins.model.espn.Record;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component
 public class Espn {
     private EspnDataLoader loader;
 
+    @Autowired
     public Espn(EspnDataLoader loader) {
         this.loader = loader;
     }

@@ -1,15 +1,16 @@
 package ncollins;
 
-import ncollins.chat.groupme.GroupMeBot;
-import ncollins.chat.groupme.GroupMeListener;
-import ncollins.chat.groupme.GroupMeProcessor;
+import ncollins.chat.groupme.*;
 import ncollins.data.PinCollection;
 import ncollins.espn.Espn;
 import ncollins.espn.EspnDataLoader;
+import ncollins.espn.EspnHttpClient;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.gif.GifGenerator;
 import ncollins.gif.GiphyGenerator;
-import ncollins.gif.TenorGenerator;
+import ncollins.helpers.StringHelpers;
+import ncollins.magiceightball.MagicAnswerGenerator;
+import ncollins.salt.SaltGenerator;
 import ncollins.schedulers.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,36 +18,39 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
-        String GROUP_ID =               System.getenv("GROUP_ME_GROUP_ID");
-        String USER_ID =                System.getenv("GROUP_ME_USER_ID");
-        String GROUP_ME_ACCESS_TOKEN =  System.getenv("GROUP_ME_ACCESS_TOKEN");
-        String MAIN_BOT_ID =            System.getenv("MAIN_BOT_ID");
-        String MAIN_BOT_NAME =          System.getenv("MAIN_BOT_NAME");
-        String ESPN_BOT_ID =            System.getenv("ESPN_BOT_ID");
-        String ESPN_BOT_NAME =          System.getenv("ESPN_BOT_NAME");
-        // these only get set when testing locally, dont set these if running in GCP
-        String GCP_PROJECT_ID =         System.getenv("GCP_PROJECT_ID");
-        String GCP_KEY =                System.getenv("GCP_KEY");
+        String CHAT_LISTENER_ENABLED =          System.getenv("CHAT_LISTENER_ENABLED");
+        String MUNNDAY_SCHEDULER_ENABLED =      System.getenv("MUNNDAY_SCHEDULER_ENABLED");
+        String ROUNDUP_SCHEDULER_ENABLED =      System.getenv("ROUNDUP_SCHEDULER_ENABLED");
+        String REMINDER_SCHEDULER_ENABLED =     System.getenv("REMINDER_SCHEDULER_ENABLED");
+        String GAMEDAY_SCHEDULER_ENABLED =      System.getenv("GAMEDAY_SCHEDULER_ENABLED");
+        String TRANSACTION_SCHEDULER_ENABLED =  System.getenv("TRANSACTION_SCHEDULER_ENABLED");
 
         SpringApplication.run(Application.class, args);
 
-        // init bots
-        GroupMeBot mainBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, MAIN_BOT_ID, MAIN_BOT_NAME, GROUP_ID, USER_ID);
-        GroupMeBot espnBot = new GroupMeBot(GROUP_ME_ACCESS_TOKEN, ESPN_BOT_ID, ESPN_BOT_NAME, GROUP_ID, USER_ID);
+        // init message processor and bots
         GifGenerator gifGenerator = new GiphyGenerator();
-        PinCollection pinCollection = new PinCollection(GCP_PROJECT_ID, GCP_KEY);
-        Espn espn = new Espn(new EspnDataLoader());
+        MainGroupMeBot mainBot = new MainGroupMeBot(gifGenerator);
+
+        Espn espn = new Espn(new EspnDataLoader(new EspnHttpClient()));
         EspnMessageBuilder espnMessageBuilder = new EspnMessageBuilder(espn);
-        GroupMeProcessor processor = new GroupMeProcessor(mainBot, espnBot, pinCollection, espnMessageBuilder, gifGenerator);
+        EspnGroupMeBot espnBot = new EspnGroupMeBot(espnMessageBuilder, gifGenerator);
 
         // start listening for group me messages
-        new GroupMeListener(processor, GROUP_ME_ACCESS_TOKEN).listen();
+        if(StringHelpers.isTrue(CHAT_LISTENER_ENABLED)) {
+            GroupMeProcessor processor = new GroupMeProcessor(
+                    mainBot,
+                    espnBot,
+                    new SaltGenerator(),
+                    new MagicAnswerGenerator(),
+                    new PinCollection());
+            new GroupMeListener(processor).listen();
+        }
 
         // start schedulers
-        new MunndayScheduler(mainBot, gifGenerator).start();                // Monday
-        // new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();    // Tuesday
-        // new LineupReminderScheduler(mainBot).start();                    // Thursday
-        new GameDayScheduler(mainBot, espn).start();                        // Sunday
-        // new EspnTransactionScheduler(espnBot, espn).start();
+        if(StringHelpers.isTrue(MUNNDAY_SCHEDULER_ENABLED)) new MunndayScheduler(mainBot, gifGenerator).start();               // Monday
+        if(StringHelpers.isTrue(ROUNDUP_SCHEDULER_ENABLED)) new WeeklyRoundupScheduler(mainBot, espnMessageBuilder).start();   // Tuesday
+        if(StringHelpers.isTrue(REMINDER_SCHEDULER_ENABLED)) new LineupReminderScheduler(mainBot).start();                     // Thursday
+        if(StringHelpers.isTrue(GAMEDAY_SCHEDULER_ENABLED)) new GameDayScheduler(mainBot, espn).start();                       // Sunday
+        if(StringHelpers.isTrue(TRANSACTION_SCHEDULER_ENABLED)) new EspnTransactionScheduler(espnBot, espn).start();
     }
 }

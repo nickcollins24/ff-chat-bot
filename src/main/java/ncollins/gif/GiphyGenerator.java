@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,6 +15,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Primary
+@Component
 public class GiphyGenerator implements GifGenerator{
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GIPHY_KEY = System.getenv("GIPHY_KEY");

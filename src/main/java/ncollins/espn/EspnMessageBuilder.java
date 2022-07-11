@@ -4,15 +4,20 @@ import ncollins.espn.comparators.SortOverallByPercentage;
 import ncollins.model.Order;
 import ncollins.model.chat.Emojis;
 import ncollins.model.espn.*;
+import ncollins.model.espn.Record;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class EspnMessageBuilder {
     private Espn espn;
 
+    @Autowired
     public EspnMessageBuilder(Espn espn){
         this.espn = espn;
     }

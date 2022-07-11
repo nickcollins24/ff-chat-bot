@@ -3,8 +3,10 @@ package ncollins.gif;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import jdk.jfr.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,9 +15,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Component
 public class TenorGenerator implements GifGenerator{
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String TENOR_KEY = "W157AV87YE91"; //System.getenv("TENOR_KEY");
+    private static final String TENOR_KEY = System.getenv("TENOR_KEY");
     private static final String TENOR_ENDPOINT = "https://api.tenor.com/v1";
 
     private HttpClient client;

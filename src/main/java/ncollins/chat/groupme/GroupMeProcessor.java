@@ -2,68 +2,74 @@ package ncollins.chat.groupme;
 
 import ncollins.chat.ChatBotProcessor;
 import ncollins.data.PinCollection;
-import ncollins.gif.GifGenerator;
 import ncollins.model.Order;
-import ncollins.model.chat.ChatResponse;
-import ncollins.model.chat.Emojis;
-import ncollins.model.chat.ImagePayload;
-import ncollins.model.chat.Pin;
+import ncollins.model.chat.*;
 import ncollins.model.espn.Outcome;
-import ncollins.espn.EspnMessageBuilder;
 import ncollins.magiceightball.MagicAnswerGenerator;
 import ncollins.model.espn.Position;
 import ncollins.salt.SaltGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.regex.Matcher;
 
+@Component
 public class GroupMeProcessor implements ChatBotProcessor {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private GroupMeBot mainBot;
-    private GroupMeBot espnBot;
-    private EspnMessageBuilder espnMessageBuilder;
-    private GifGenerator gifGenerator;
-    private SaltGenerator saltGenerator = new SaltGenerator();
-    private MagicAnswerGenerator answerGenerator = new MagicAnswerGenerator();
+    private MainGroupMeBot mainBot;
+    private EspnGroupMeBot espnBot;
+    private SaltGenerator saltGenerator;
+    private MagicAnswerGenerator answerGenerator;
     private PinCollection pinCollection;
 
-    public GroupMeProcessor(GroupMeBot mainBot, GroupMeBot espnBot, PinCollection pinCollection,
-                            EspnMessageBuilder espnMessageBuilder, GifGenerator gifGenerator){
+    @Autowired
+    public GroupMeProcessor(MainGroupMeBot mainBot,
+                            EspnGroupMeBot espnBot,
+                            SaltGenerator saltGenerator,
+                            MagicAnswerGenerator answerGenerator,
+                            PinCollection pinCollection){
         this.mainBot = mainBot;
         this.espnBot = espnBot;
+        this.saltGenerator = saltGenerator;
+        this.answerGenerator = answerGenerator;
         this.pinCollection = pinCollection;
-        this.espnMessageBuilder = espnMessageBuilder;
-        this.gifGenerator = gifGenerator;
     }
 
-    public GroupMeBot getMainBot(){
+    public MainGroupMeBot getMainBot(){
         return mainBot;
     }
 
-    private GroupMeBot getEspnBot(){
+    private EspnGroupMeBot getEspnBot(){
         return espnBot;
     }
 
     @Override
-    public void processResponse(String fromUser, String text, ChatResponse.Attachment[] attachments, long currentTime) {
-        logger.info("Incoming message: " + text);
+    public void processResponse(Subject subject, long currentTime) {
+        logger.info("Incoming message: " + subject.getText());
 
-        text = text.toLowerCase();
+        //send to bot for processing if message was created by a user (not bot) in the required group
+        if(subject.getGroupId().equals(getMainBot().getBotGroupId()) && subject.getSenderType().equals("user")){
+            String fromUser = subject.getName();
+            String text = subject.getText().trim().toLowerCase();
 
-        if(text.contains("@here"))
-            getMainBot().sendMessageWithMention("@here " + Emojis.EYES_LEFT + Emojis.FINGER_UP, new int[]{0,5});
-        if(text.startsWith("#pin ") || text.endsWith(" #pin") || text.contains(" #pin ")){
-            String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
-                    .replaceAll("#pin", "");
+            if(text.contains("@here"))
+                getMainBot().sendMessageWithMention("@here " + Emojis.EYES_LEFT + Emojis.FINGER_UP, new int[]{0,5});
+            if(text.startsWith("#pin ") || text.endsWith(" #pin") || text.contains(" #pin ")){
+                String textEdited = text.replaceAll("\n", Matcher.quoteReplacement("\\n"))
+                        .replaceAll("#pin", "");
 
-            pinCollection.addPin(new Pin(textEdited, fromUser, currentTime));
+                pinCollection.addPin(new Pin(textEdited, fromUser, currentTime));
+            }
+
+            if(text.startsWith(getMainBot().getBotKeyword()))
+                processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
+            else processEasterEggResponse(text);
+        } else {
+            logger.info("Skipping bot message: " + subject.getText());
         }
-
-        if(text.startsWith(getMainBot().getBotKeyword()))
-            processBotResponse(text.replace(getMainBot().getBotKeyword(), "").trim());
-        else processEasterEggResponse(text);
     }
 
     private void processBotResponse(String text){
@@ -72,7 +78,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.matches("^help$"))
             getMainBot().sendMessage(buildShowCommandsMessage());
         else if(text.startsWith("gif "))
-            getMainBot().sendMessage(buildGifMessage(text.replace("gif","").trim()));
+            getMainBot().sendMessage(getMainBot().getGifGenerator().search(text.replace("gif","").trim()));
         else if(text.startsWith("salt "))
             getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
         else if(text.equals("show pins")){
@@ -105,14 +111,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
             // history
             if(text.contains("ever")){
-                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, false));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildScoresMessage(order, total, false));
             // specified season
             } else if(!yearStr.isEmpty()){
                 Integer seasonId = Integer.parseInt(yearStr);
-                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessage(order, total, null, seasonId,false));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildScoresMessage(order, total, null, seasonId,false));
             // current season
             } else {
-                getEspnBot().sendMessage(espnMessageBuilder.buildScoresMessageCurrentYear(order, total,false));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildScoresMessageCurrentYear(order, total,false));
             }
         // {top|bottom} [TOTAL] records {ever|YEAR|}
         } else if(text.matches("(top|bottom) \\d* ?records(\\sever|\\s\\d+|)$")){
@@ -127,14 +133,14 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
             // history
             if(text.contains("ever")){
-                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessage(order, total));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildRecordsMessage(order, total));
             // specified season
             } else if(!yearStr.isEmpty()){
                 Integer seasonId = Integer.parseInt(yearStr);
-                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessage(order, total, seasonId));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildRecordsMessage(order, total, seasonId));
             // current season
             } else {
-                getEspnBot().sendMessage(espnMessageBuilder.buildRecordsMessageCurrentYear(order, total));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildRecordsMessageCurrentYear(order, total));
             }
         // standings {ever|YEAR|}
         } else if(text.matches("standings(\\sever|\\s\\d+|)$")){
@@ -142,17 +148,17 @@ public class GroupMeProcessor implements ChatBotProcessor {
 
             // history
             if(text.contains("ever")){
-                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage());
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildStandingsMessage());
             // specified season
             } else if(!yearStr.isEmpty()){
                 Integer seasonId = Integer.parseInt(yearStr);
-                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessage(seasonId));
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildStandingsMessage(seasonId));
             // current season
             } else {
-                getEspnBot().sendMessage(espnMessageBuilder.buildStandingsMessageCurrentYear());
+                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildStandingsMessageCurrentYear());
             }
         } else if(text.matches("playoff standings(\\sever|)$")){
-            getEspnBot().sendMessage(espnMessageBuilder.buildPlayoffStandingsMessage());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildPlayoffStandingsMessage());
         // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
         } else if(text.matches("(top|bottom) \\d* ?([a-zA-Z]+|players)$")) {
             Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -169,7 +175,7 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 return;
             }
 
-            getEspnBot().sendMessage(espnMessageBuilder.buildPlayersMessageByCurrentWeek(order, total, position));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildPlayersMessageByCurrentWeek(order, total, position));
         // {top|bottom} [TOTAL] {pf|wins|losses} through [WEEK]
 //        } else if(text.matches("(top|bottom)(\\s\\d)* (pf|wins|losses) through \\d+$")) {
 //            Order order = text.startsWith("top") ? Order.DESC : Order.ASC;
@@ -184,52 +190,52 @@ public class GroupMeProcessor implements ChatBotProcessor {
 //            int week = Integer.parseInt(weekStr);
 //
 //            if(outcome == null){
-//                getEspnBot().sendMessage(espnMessageBuilder.buildPointsThroughMessage(order, total, week));
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildPointsThroughMessage(order, total, week));
 //            } else {
-//                getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeThroughMessage(order, outcome, total, week));
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildOutcomeThroughMessage(order, outcome, total, week));
 //            }
 
         // top [TOTAL] pf streaks
         } else if(text.matches("top(\\s\\d)* pf streaks$")) {
             String totalStr = text.replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildPointsStreakMessage(total));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildPointsStreakMessage(total));
         // [TOTAL] {win|loss} streaks
         } else if(text.matches("\\d* ?(win|loss) streaks$")) {
             Outcome outcome = text.contains(" win ") ? Outcome.WIN : Outcome.LOSS;
             String totalStr = text.replaceAll("\\D+", "");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildOutcomeStreakMessage(outcome, total));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildOutcomeStreakMessage(outcome, total));
         // [TOTAL] blowouts
         } else if(text.matches("(^|\\d+\\s)blowouts$")){
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildBlowoutsMessage(total));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildBlowoutsMessage(total));
         // [TOTAL] heartbreaks
         } else if(text.matches("(^|\\d+\\s)heartbreaks$")){
             String totalStr = text.replaceAll("\\D+","");
             int total = totalStr.isEmpty() ? 10 : Integer.parseInt(totalStr);
-            getEspnBot().sendMessage(espnMessageBuilder.buildHeartbreaksMessage(total));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildHeartbreaksMessage(total));
         // matchups [TEAM1] [TEAM2]
         } else if(text.matches("matchups \\S+ \\S+$")) {
             String[] teams = text.split("\\s");
-            getEspnBot().sendMessage(espnMessageBuilder.buildMatchupsMessage(teams[1], teams[2]));
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildMatchupsMessage(teams[1], teams[2]));
         // sackos ever
         } else if(text.equals("sackos")){
-            getEspnBot().sendMessage(espnMessageBuilder.buildSackosMessage());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildSackosMessage());
         // champs ever
         } else if(text.equals("champs")){
-            getEspnBot().sendMessage(espnMessageBuilder.buildChampsMessage());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildChampsMessage());
 
         // pf winners
         } else if(text.equals("pf winners")){
-            getEspnBot().sendMessage(espnMessageBuilder.buildWeeklyPfWinners());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildWeeklyPfWinners());
         // jujus
         } else if(text.equals("jujus"))
-            getEspnBot().sendMessage(espnMessageBuilder.buildJujusMessage());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildJujusMessage());
         // salties
         else if(text.equals("salties"))
-            getEspnBot().sendMessage(espnMessageBuilder.buildSaltiesMessage());
+            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildSaltiesMessage());
     }
 
     private void processEasterEggResponse(String text){
@@ -238,15 +244,15 @@ public class GroupMeProcessor implements ChatBotProcessor {
         else if(text.equals("same"))
             getMainBot().sendMessage("https://media1.tenor.com/images/7c981c036a7ac041e66b0c87b42542f2/tenor.gif");
         else if(text.contains("gattaca"))
-            getMainBot().sendMessage(gifGenerator.search("rafi gattaca"));
+            getMainBot().sendMessage(getMainBot().getGifGenerator().search("rafi gattaca"));
         else if(text.matches(".+ de[a]?d$"))
             getMainBot().sendMessage("", new ImagePayload("https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview"));
         else if(text.contains("woof"))
-            getMainBot().sendMessage(gifGenerator.search("corgi"));
+            getMainBot().sendMessage(getMainBot().getGifGenerator().search("corgi"));
         else if(text.contains("olivia munn"))
-            getMainBot().sendMessage(gifGenerator.search("olivia munn"));
+            getMainBot().sendMessage(getMainBot().getGifGenerator().search("olivia munn"));
         else if(text.contains("boobs"))
-            getMainBot().sendMessage(gifGenerator.search("boobs"));
+            getMainBot().sendMessage(getMainBot().getGifGenerator().search("boobs"));
         else if(!text.contains(".com") && text.matches(".*6[.+*x/-]?9.*"))
             getMainBot().sendMessage("https://media.giphy.com/media/5xtDaruonEVJXvedMXu/giphy.gif");
     }
@@ -280,10 +286,6 @@ public class GroupMeProcessor implements ChatBotProcessor {
                 getMainBot().getBotKeyword() + " show salties -- all time salties\\n" +
                 getMainBot().getBotKeyword() + " show champs -- all time champions\\n" +
                 getMainBot().getBotKeyword() + " show sackos -- all time sackos";
-    }
-
-    private String buildGifMessage(String query){
-        return gifGenerator.search(query);
     }
 
     private String buildSaltMessage(String recipient) {

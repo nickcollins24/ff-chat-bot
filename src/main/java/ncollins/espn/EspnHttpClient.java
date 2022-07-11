@@ -1,5 +1,7 @@
 package ncollins.espn;
 
+import org.springframework.stereotype.Component;
+
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -7,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Component
 public class EspnHttpClient {
     private static final String ESPN_S2_COOKIE = System.getenv("ESPN_S2_COOKIE");
 

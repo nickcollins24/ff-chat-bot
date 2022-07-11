@@ -3,9 +3,11 @@ package ncollins.salt;
 import ncollins.salt.words.Adjectives;
 import ncollins.salt.words.Nouns;
 import ncollins.salt.words.Verbs;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+@Component
 public class SaltGenerator {
     private String[] nouns;
     private String[] verbs;

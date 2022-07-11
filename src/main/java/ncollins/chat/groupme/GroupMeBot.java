@@ -3,11 +3,13 @@ package ncollins.chat.groupme;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import ncollins.chat.ChatBot;
+import ncollins.gif.GifGenerator;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
 import ncollins.model.chat.PollPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -28,17 +30,25 @@ public class GroupMeBot implements ChatBot {
     private String botKeyword;
     private String groupId;
     private String userId;
-    private HttpClient client;
+    private HttpClient client = HttpClient.newHttpClient();
+    private GifGenerator gifGenerator;
 
-    public GroupMeBot(String accessToken, String botId, String botName, String groupId, String userId){
+    public GroupMeBot(GifGenerator gifGenerator,
+                      String accessToken,
+                      String botId,
+                      String botName,
+                      String groupId,
+                      String userId){
+        this.gifGenerator = gifGenerator;
         this.accessToken = accessToken;
         this.botId = botId;
         this.botName = botName;
         this.botKeyword = "@" + botName;
         this.groupId = groupId;
         this.userId = userId;
-        this.client = HttpClient.newHttpClient();
     }
+
+    public GifGenerator getGifGenerator(){ return gifGenerator; }
 
     public String getBotGroupId() {
         return groupId;

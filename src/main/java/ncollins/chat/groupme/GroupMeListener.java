@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import ncollins.chat.ChatBotListener;
 import ncollins.model.chat.ChatResponse;
+import ncollins.model.chat.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -21,15 +22,13 @@ public class GroupMeListener implements ChatBotListener {
 
     private static final String HTTPS_GROUP_ME_URL = "https://push.groupme.com/faye";
     private static final String WSS_GROUP_ME_URL = "wss://push.groupme.com/faye";
+    private static final String GROUP_ME_ACCESS_TOKEN = System.getenv("GROUP_ME_ACCESS_TOKEN");
 
     private GroupMeProcessor processor;
-    private HttpClient client;
-    private String accessToken;
+    private HttpClient client = HttpClient.newHttpClient();
 
-    public GroupMeListener(GroupMeProcessor processor, String accessToken){
-        this.accessToken = accessToken;
+    public GroupMeListener(GroupMeProcessor processor){
         this.processor = processor;
-        this.client = HttpClient.newHttpClient();
     }
 
     @Override
@@ -57,7 +56,7 @@ public class GroupMeListener implements ChatBotListener {
                 "\"subscription\": \"/user/" + processor.getMainBot().getBotUserId() + "\"," +
                 "\"id\": \"2\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + accessToken + "\"," +
+                "\"access_token\": \"" + GROUP_ME_ACCESS_TOKEN + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -69,7 +68,7 @@ public class GroupMeListener implements ChatBotListener {
                 "\"subscription\": \"/group/" + processor.getMainBot().getBotGroupId() + "\"," +
                 "\"id\": \"3\"," +
                 "\"ext\": {" +
-                "\"access_token\": \"" + accessToken + "\"," +
+                "\"access_token\": \"" + GROUP_ME_ACCESS_TOKEN + "\"," +
                 "\"timestamp\": " + System.currentTimeMillis() + "}}";
 
         buildGroupMeHttpRequestAndSend(payload);
@@ -129,16 +128,9 @@ public class GroupMeListener implements ChatBotListener {
 
             try {
                 ChatResponse r = gson.fromJson(jsonArray.get(0), ChatResponse.class);
-                ChatResponse.Subject subject = r.getData().getSubject();
+                Subject subject = r.getData().getSubject();
 
-                //send to bot for processing if message was created by a user (not bot) in the required group
-                if(subject.getGroupId().equals(processor.getMainBot().getBotGroupId()) && subject.getSenderType().equals("user")){
-                    String fromUser = subject.getName();
-                    String text = subject.getText().trim();
-                    ChatResponse.Attachment[] attachments = subject.getAttachments();
-
-                    processor.processResponse(fromUser, text, attachments, System.currentTimeMillis());
-                }
+                processor.processResponse(subject, System.currentTimeMillis());
             } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
             } catch(Exception e){
