@@ -30,6 +30,7 @@ public class WeeklyRoundupScheduler implements Scheduler {
     public WeeklyRoundupScheduler(GroupMeBot bot, EspnMessageBuilder espnMessageBuilder){
         this.bot = bot;
         this.espnMessageBuilder = espnMessageBuilder;
+        start();
     }
 
     public void start(){

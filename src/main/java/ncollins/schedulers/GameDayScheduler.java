@@ -33,6 +33,7 @@ public class GameDayScheduler implements Scheduler {
     public GameDayScheduler(GroupMeBot bot, Espn espn){
         this.bot = bot;
         this.espn = espn;
+        start();
     }
 
     public void start() {

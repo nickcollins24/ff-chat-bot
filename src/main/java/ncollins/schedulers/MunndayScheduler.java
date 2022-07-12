@@ -31,6 +31,7 @@ public class MunndayScheduler implements Scheduler {
     public MunndayScheduler(GroupMeBot bot, GifGenerator gifGenerator){
         this.gifGenerator = gifGenerator;
         this.bot = bot;
+        start();
     }
 
     public void start() {

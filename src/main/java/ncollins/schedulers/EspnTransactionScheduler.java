@@ -35,6 +35,7 @@ public class EspnTransactionScheduler implements Scheduler {
     public EspnTransactionScheduler(GroupMeBot bot, Espn espn){
         this.bot = bot;
         this.espn = espn;
+        start();
     }
 
     public void start(){

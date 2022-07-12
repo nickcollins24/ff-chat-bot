@@ -27,6 +27,7 @@ public class LineupReminderScheduler implements Scheduler {
 
     public LineupReminderScheduler(GroupMeBot bot){
         this.bot = bot;
+        start();
     }
 
     public void start(){
