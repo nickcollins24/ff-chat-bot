@@ -1,9 +1,11 @@
 package ncollins.schedulers;
 
 import ncollins.chat.groupme.GroupMeBot;
+import ncollins.chat.groupme.MainGroupMeBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -18,14 +20,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Scheduled every Thursday @ 10AM PST
  */
+@Component
 @ConditionalOnProperty(value = "REMINDER_SCHEDULER_ENABLED",
                        havingValue = "true")
 public class LineupReminderScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private GroupMeBot bot;
+    private MainGroupMeBot bot;
 
-    public LineupReminderScheduler(GroupMeBot bot){
+    public LineupReminderScheduler(MainGroupMeBot bot){
         this.bot = bot;
         start();
     }

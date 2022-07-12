@@ -1,10 +1,12 @@
 package ncollins.schedulers;
 
 import ncollins.chat.groupme.GroupMeBot;
+import ncollins.chat.groupme.MainGroupMeBot;
 import ncollins.espn.EspnMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -19,15 +21,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * Scheduled every Tuesday @ 10AM PST
  */
+@Component
 @ConditionalOnProperty(value = "ROUNDUP_SCHEDULER_ENABLED",
                        havingValue = "true")
 public class WeeklyRoundupScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private GroupMeBot bot;
+    private MainGroupMeBot bot;
     private EspnMessageBuilder espnMessageBuilder;
 
-    public WeeklyRoundupScheduler(GroupMeBot bot, EspnMessageBuilder espnMessageBuilder){
+    public WeeklyRoundupScheduler(MainGroupMeBot bot, EspnMessageBuilder espnMessageBuilder){
         this.bot = bot;
         this.espnMessageBuilder = espnMessageBuilder;
         start();

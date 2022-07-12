@@ -1,5 +1,6 @@
 package ncollins.schedulers;
 
+import ncollins.chat.groupme.EspnGroupMeBot;
 import ncollins.chat.groupme.GroupMeBot;
 import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
@@ -8,6 +9,7 @@ import ncollins.model.espn.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -22,17 +24,18 @@ import java.util.concurrent.TimeUnit;
 /**
  * Scheduled that checks for ESPN Transactions every 60 seconds
  */
+@Component
 @ConditionalOnProperty(value = "TRANSACTION_SCHEDULER_ENABLED",
                        havingValue = "true")
 public class EspnTransactionScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private GroupMeBot bot;
+    private EspnGroupMeBot bot;
     private Espn espn;
     private static final String TRADE_POLL_TITLE = "Do you approve of this trade?" + Emojis.FINGER_UP +
             "Majority veto nullifies this agreed upon transaction.";
 
-    public EspnTransactionScheduler(GroupMeBot bot, Espn espn){
+    public EspnTransactionScheduler(EspnGroupMeBot bot, Espn espn){
         this.bot = bot;
         this.espn = espn;
         start();
