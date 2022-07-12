@@ -9,6 +9,9 @@ import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,6 +20,9 @@ import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletionStage;
 
+@Component
+@ConditionalOnProperty(value = "CHAT_LISTENER_ENABLED",
+                       havingValue = "true")
 public class GroupMeListener implements ChatBotListener {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -29,6 +35,7 @@ public class GroupMeListener implements ChatBotListener {
 
     public GroupMeListener(GroupMeProcessor processor){
         this.processor = processor;
+        listen();
     }
 
     @Override

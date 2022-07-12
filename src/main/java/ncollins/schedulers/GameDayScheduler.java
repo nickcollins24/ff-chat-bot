@@ -4,6 +4,10 @@ import ncollins.chat.groupme.GroupMeBot;
 import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
 import ncollins.model.espn.*;
+import ncollins.model.espn.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -15,7 +19,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Scheduled every Sunday @ 10AM PST
+ */
+@ConditionalOnProperty(value = "GAMEDAY_SCHEDULER_ENABLED",
+                       havingValue = "true")
 public class GameDayScheduler implements Scheduler {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private GroupMeBot bot;
     private Espn espn;
 
@@ -32,6 +43,8 @@ public class GameDayScheduler implements Scheduler {
                 LocalDate.now(TimeZone.getTimeZone("PST").toZoneId()).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).atTime(10,0), ChronoUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(() -> sendGameDayMessage(), startTime, TimeUnit.DAYS.toMinutes(7), TimeUnit.MINUTES);
+
+        logger.info("GameDayScheduler enabled.");
     }
 
     private void sendGameDayMessage(){

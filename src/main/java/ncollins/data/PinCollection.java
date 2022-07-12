@@ -4,7 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.*;
 import ncollins.model.chat.Pin;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-@Component
+@Repository
 public class PinCollection {
     // these only get set when testing locally, dont set these if running in GCP
     String GCP_PROJECT_ID =                 System.getenv("GCP_PROJECT_ID");

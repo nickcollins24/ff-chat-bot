@@ -5,6 +5,9 @@ import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
 import ncollins.model.chat.PollPayload;
 import ncollins.model.espn.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -16,7 +19,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Scheduled that checks for ESPN Transactions every 60 seconds
+ */
+@ConditionalOnProperty(value = "TRANSACTION_SCHEDULER_ENABLED",
+                       havingValue = "true")
 public class EspnTransactionScheduler implements Scheduler {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private GroupMeBot bot;
     private Espn espn;
     private static final String TRADE_POLL_TITLE = "Do you approve of this trade?" + Emojis.FINGER_UP +
@@ -31,6 +41,8 @@ public class EspnTransactionScheduler implements Scheduler {
         // schedule task every 30 seconds
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> checkForTransaction(), 0, 60, TimeUnit.SECONDS);
+
+        logger.info("EspnTransactionScheduler enabled.");
     }
 
     private void checkForTransaction(){

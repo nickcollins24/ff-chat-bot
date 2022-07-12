@@ -16,12 +16,10 @@ import java.util.List;
 @RequestMapping("espn")
 public class EspnController {
     private Espn espn;
-    private EspnMessageBuilder espnMessageBuilder;
 
     @Autowired
-    public EspnController(Espn espn, EspnMessageBuilder espnMessageBuilder){
+    public EspnController(Espn espn){
         this.espn = espn;
-        this.espnMessageBuilder = espnMessageBuilder;
     }
 
     @GetMapping("scores/playoffs")
@@ -32,10 +30,5 @@ public class EspnController {
     @GetMapping("matchups/playoffs")
     public List<Matchup> getPlayoffMatchups() {
         return espn.getPlayoffMatchupsAllTime();
-    }
-
-    @GetMapping("message/standings/playoffs")
-    public String getPlayoffMatchupsMessage(){
-        return espnMessageBuilder.buildPlayoffStandingsMessage();
     }
 }

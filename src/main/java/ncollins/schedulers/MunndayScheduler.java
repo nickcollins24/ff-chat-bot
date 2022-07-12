@@ -3,6 +3,9 @@ package ncollins.schedulers;
 import ncollins.chat.groupme.GroupMeBot;
 import ncollins.gif.GifGenerator;
 import ncollins.model.chat.Emojis;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -14,7 +17,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Scheduled every Monday @ 10AM PST
+ */
+@ConditionalOnProperty(value = "MUNNDAY_SCHEDULER_ENABLED",
+                       havingValue = "true")
 public class MunndayScheduler implements Scheduler {
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private GifGenerator gifGenerator;
     private GroupMeBot bot;
 
@@ -36,5 +46,7 @@ public class MunndayScheduler implements Scheduler {
                 LocalDate.now(TimeZone.getTimeZone("PST").toZoneId()).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)).atTime(10,0), ChronoUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(task, startTime, TimeUnit.DAYS.toMinutes(7), TimeUnit.MINUTES);
+
+        logger.info("MunndayScheduler enabled.");
     }
 }
