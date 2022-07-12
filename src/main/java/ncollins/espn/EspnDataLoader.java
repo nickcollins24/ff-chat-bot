@@ -12,8 +12,7 @@ import ncollins.model.espn.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import org.springframework.stereotype.Repository;
 import java.net.*;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -23,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Repository
 public class EspnDataLoader {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
