@@ -12,12 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 @Component
 public class GroupMeProcessor implements ChatBotProcessor {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String DRAFT_DAY = System.getenv("DRAFT_DAY");
+    private static final String NFL_KICKOFF = System.getenv("NFL_KICKOFF");
 
     private MainGroupMeBot mainBot;
     private EspnGroupMeBot espnBot;
@@ -81,6 +88,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage(getMainBot().getGifGenerator().search(text.replace("gif","").trim()));
         else if(text.startsWith("salt "))
             getMainBot().sendMessage(buildSaltMessage(text.replace("salt","").trim()));
+        else if(text.equals("show countdown"))
+            getMainBot().sendMessage(buildCountdown());
         else if(text.equals("show pins")){
             if(pinCollection.getPins().isEmpty())
                 getMainBot().sendMessage("add #pin to any message to pin it");
@@ -305,5 +314,37 @@ public class GroupMeProcessor implements ChatBotProcessor {
         }
 
         return sb.toString();
+    }
+
+    private String buildCountdown(){
+        try {
+            StringBuilder sb = new StringBuilder();
+
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("PST"));
+
+            final long millisTilDraft = dateFormat.parse(DRAFT_DAY).getTime() - System.currentTimeMillis();
+            final long millisTilSeasonStart = dateFormat.parse(NFL_KICKOFF).getTime() - System.currentTimeMillis();
+
+            final String countdownToDraft = String.format("%02dd %02dh %02dm %02ds",
+                    TimeUnit.MILLISECONDS.toDays(millisTilDraft),
+                    TimeUnit.MILLISECONDS.toHours(millisTilDraft) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(millisTilDraft)),
+                    TimeUnit.MILLISECONDS.toMinutes(millisTilDraft) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisTilDraft)),
+                    TimeUnit.MILLISECONDS.toSeconds(millisTilDraft) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisTilDraft)));
+
+            final String countdownToNflSeasonStart = String.format("%02dd %02dh %02dm %02ds",
+                    TimeUnit.MILLISECONDS.toDays(millisTilSeasonStart),
+                    TimeUnit.MILLISECONDS.toHours(millisTilSeasonStart) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(millisTilSeasonStart)),
+                    TimeUnit.MILLISECONDS.toMinutes(millisTilSeasonStart) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisTilSeasonStart)),
+                    TimeUnit.MILLISECONDS.toSeconds(millisTilSeasonStart) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisTilSeasonStart)));
+
+            sb.append("COUNTDOWN " + Emojis.HOUR_GLASS + "\\n");
+            sb.append("Draft Day: " + countdownToDraft + "\\n");
+            sb.append("NFL Season: " + countdownToNflSeasonStart);
+
+            return sb.toString();
+        } catch (ParseException e) {
+            return "Provided dates are not formatted correctly.";
+        }
     }
 }

@@ -17,4 +17,5 @@ public final class Emojis {
     public static final String MONEY_BAG =      "\uD83D\uDCB0"; //💰
     public static final String RED_SIREN =      "\uD83D\uDEA8"; //🚨
     public static final String PARTY_SMILEY =   "\uD83E\uDD73"; //🥳
+    public static final String HOUR_GLASS =     "\u231B";       //⏳
 }

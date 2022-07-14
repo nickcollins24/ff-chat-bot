@@ -20,37 +20,43 @@ public class PinCollection {
     String GCP_KEY =                        System.getenv("GCP_KEY");
     private CollectionReference collection;
 
-    public PinCollection() {
-        try {
-            GoogleCredentials credentials;
-            String collection;
+    public PinCollection() {}
 
-            // implies we are running in GCP
-            if(GCP_KEY == null){
-                credentials = GoogleCredentials.getApplicationDefault();
-                collection = "pin";
-            // implies we are running locally
-            } else {
-                InputStream serviceAccount = new ByteArrayInputStream(GCP_KEY.getBytes());
-                credentials = GoogleCredentials.fromStream(serviceAccount);
-                collection = "integ-pin";
+    private CollectionReference getCollection(){
+        if(collection == null){
+            try {
+                GoogleCredentials credentials;
+                String pinCollection;
+
+                // implies we are running in GCP
+                if(GCP_KEY == null){
+                    credentials = GoogleCredentials.getApplicationDefault();
+                    pinCollection = "pin";
+                    // implies we are running locally
+                } else {
+                    InputStream serviceAccount = new ByteArrayInputStream(GCP_KEY.getBytes());
+                    credentials = GoogleCredentials.fromStream(serviceAccount);
+                    pinCollection = "integ-pin";
+                }
+
+                FirestoreOptions firestoreOptions =
+                        FirestoreOptions.getDefaultInstance().toBuilder()
+                                .setProjectId(GCP_PROJECT_ID)
+                                .setCredentials(credentials)
+                                .build();
+                Firestore db = firestoreOptions.getService();
+                this.collection = db.collection(pinCollection);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            FirestoreOptions firestoreOptions =
-                    FirestoreOptions.getDefaultInstance().toBuilder()
-                            .setProjectId(GCP_PROJECT_ID)
-                            .setCredentials(credentials)
-                            .build();
-            Firestore db = firestoreOptions.getService();
-            this.collection = db.collection(collection);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        return collection;
     }
 
     public List<Pin> getPins(){
         List<Pin> pins = new ArrayList();
-        ApiFuture<QuerySnapshot> query = collection.get();
+        ApiFuture<QuerySnapshot> query = getCollection().get();
         QuerySnapshot querySnapshot = null;
 
         try {
@@ -67,14 +73,14 @@ public class PinCollection {
     }
 
     public void addPin(Pin pin){
-        collection.add(pin);
+        getCollection().add(pin);
     }
 
     public void deletePin(int index){
         try {
-            ApiFuture<QuerySnapshot> query = collection.get();
+            ApiFuture<QuerySnapshot> query = getCollection().get();
             QueryDocumentSnapshot document = query.get().getDocuments().get(index);
-            collection.document(document.getId()).delete();
+            getCollection().document(document.getId()).delete();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
