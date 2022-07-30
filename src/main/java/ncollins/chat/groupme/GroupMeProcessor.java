@@ -262,6 +262,8 @@ public class GroupMeProcessor implements ChatBotProcessor {
             getMainBot().sendMessage(getMainBot().getGifGenerator().search("olivia munn"));
         else if(text.contains("boobs"))
             getMainBot().sendMessage(getMainBot().getGifGenerator().search("boobs"));
+        else if(text.matches("^.*(hue[ ]*hue)+.*$"))
+            getMainBot().sendMessage("https://c.tenor.com/CPmS55KDu60AAAAC/reptile-lol.gif");
         else if(!text.contains(".com") && text.matches(".*6[.+*x/-]?9.*"))
             getMainBot().sendMessage("https://media.giphy.com/media/5xtDaruonEVJXvedMXu/giphy.gif");
     }
