@@ -3,58 +3,47 @@ package ncollins.gif;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import jdk.jfr.Category;
+import ncollins.clients.RetryableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Primary
 @Component
 public class TenorGenerator implements GifGenerator{
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String TENOR_KEY = System.getenv("TENOR_KEY");
     private static final String TENOR_ENDPOINT = "https://api.tenor.com/v1";
 
-    private HttpClient client;
+    private RetryableHttpClient client;
 
-    public TenorGenerator(){
-        this.client = HttpClient.newHttpClient();
+    @Autowired
+    public TenorGenerator(RetryableHttpClient retryableHttpClient){
+        this.client = retryableHttpClient;
     }
 
     @Override
     public String search(String query){
         String queryNoSpaces = query.replaceAll(" ", "+");
-        URI giphyUrl = URI.create(TENOR_ENDPOINT + "/search?key=" + TENOR_KEY + "&q=" + queryNoSpaces + "&media_filter=minimal&limit=40");
+        URI giphyUrl = URI.create(
+                String.format("%s/search?key=%s&q=%s&media_filter=minimal&limit=40", TENOR_ENDPOINT, TENOR_KEY, queryNoSpaces));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(giphyUrl)
-                .GET()
-                .build();
+        ResponseEntity<String> response = client.get(giphyUrl);
+        JsonObject jsonObject = new JsonParser().parse(response.getBody()).getAsJsonObject();
+        JsonArray jsonArray = jsonObject.getAsJsonArray("results");
 
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            JsonObject jsonObject = new JsonParser().parse(response.body()).getAsJsonObject();
-            JsonArray jsonArray = jsonObject.getAsJsonArray("results");
-
-            if(jsonArray.size() == 0) {
-                return "i couldn't find a gif for that...";
-            }
-
-            return jsonArray.get(ThreadLocalRandom.current().nextInt(0,jsonArray.size())).getAsJsonObject().
-                    getAsJsonArray("media").get(0).getAsJsonObject().
-                    getAsJsonObject("gif").
-                    get("url").getAsString();
-        } catch (IOException | InterruptedException e) {
-            logger.error("Exception while getting gif for query (" + query + "): " + e);
+        if(jsonArray.size() == 0) {
+            return "i couldn't find a gif for that...";
         }
 
-        logger.error("Failed to get gif for query: " + query);
-        return "i couldn't find a gif for that...";
+        return jsonArray.get(ThreadLocalRandom.current().nextInt(0,jsonArray.size())).getAsJsonObject().
+                getAsJsonArray("media").get(0).getAsJsonObject().
+                getAsJsonObject("gif").
+                get("url").getAsString();
     }
 }

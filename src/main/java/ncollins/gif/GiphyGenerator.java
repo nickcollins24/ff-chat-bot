@@ -3,89 +3,64 @@ package ncollins.gif;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import ncollins.clients.RetryableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Primary
 @Component
-public class GiphyGenerator implements GifGenerator{
+public class GiphyGenerator implements GifGenerator {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GIPHY_KEY = System.getenv("GIPHY_KEY");
     private static final String GIPHY_RATING = System.getenv("GIPHY_RATING");
     private static final String GIPHY_ENDPOINT = "https://api.giphy.com/v1/gifs";
 
-    private HttpClient client;
+    private RetryableHttpClient client;
 
-    public GiphyGenerator(){
-        this.client = HttpClient.newHttpClient();
+    @Autowired
+    public GiphyGenerator(RetryableHttpClient retryableHttpClient){
+        this.client = retryableHttpClient;
     }
 
     public String translate(String query){
         String queryNoSpaces = query.replaceAll(" ", "+");
-        URI giphyUrl = URI.create(GIPHY_ENDPOINT + "/translate?api_key=" + GIPHY_KEY + "&s=" + queryNoSpaces + "&rating=" + GIPHY_RATING);
+        URI giphyUrl = URI.create(
+                String.format("%s/translate?api_key=%s&s=%s&rating=%s", GIPHY_ENDPOINT, GIPHY_KEY, queryNoSpaces, GIPHY_RATING));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(giphyUrl)
-                .GET()
-                .build();
-
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            JsonObject jsonObject = new JsonParser().parse(response.body()).getAsJsonObject();
-            if(jsonObject.get("data").isJsonArray()) {
-                return "i couldn't find a gif for that...";
-            }
-
-            return jsonObject.get("data").getAsJsonObject().
-                    get("images").getAsJsonObject().
-                    get("fixed_height").getAsJsonObject().
-                    get("url").getAsString();
-        } catch (IOException | InterruptedException e) {
-            logger.error("Exception while getting gif for query (" + query + "): " + e);
+        ResponseEntity<String> response = client.get(giphyUrl);
+        JsonObject jsonObject = new JsonParser().parse(response.getBody()).getAsJsonObject();
+        if(jsonObject.get("data").isJsonArray()) {
+            return "i couldn't find a gif for that...";
         }
 
-        logger.error("Failed to get gif for query: " + query);
-        return "i couldn't find a gif for that...";
+        return jsonObject.get("data").getAsJsonObject().
+                get("images").getAsJsonObject().
+                get("fixed_height").getAsJsonObject().
+                get("url").getAsString();
     }
 
     @Override
     public String search(String query){
         String queryNoSpaces = query.replaceAll(" ", "+");
-        URI giphyUrl = URI.create(GIPHY_ENDPOINT + "/search?api_key=" + GIPHY_KEY + "&q=" + queryNoSpaces + "&rating=" + GIPHY_RATING + "&limit=40");
+        URI giphyUrl = URI.create(
+                String.format("%s/search?api_key=%s&q=%s&rating=%s&limit=40", GIPHY_ENDPOINT, GIPHY_KEY, queryNoSpaces, GIPHY_RATING));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(giphyUrl)
-                .GET()
-                .build();
+        ResponseEntity<String> response = client.get(giphyUrl);
+        JsonObject jsonObject = new JsonParser().parse(response.getBody()).getAsJsonObject();
+        JsonArray jsonArray = jsonObject.getAsJsonArray("data");
 
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            JsonObject jsonObject = new JsonParser().parse(response.body()).getAsJsonObject();
-            JsonArray jsonArray = jsonObject.getAsJsonArray("data");
-
-            if(jsonArray.size() == 0) {
-                return "i couldn't find a gif for that...";
-            }
-
-            return jsonArray.get(ThreadLocalRandom.current().nextInt(0,jsonArray.size())).getAsJsonObject().
-                    getAsJsonObject("images").
-                    getAsJsonObject("fixed_height").
-                    get("url").getAsString();
-        } catch (IOException | InterruptedException e) {
-            logger.error("Exception while getting gif for query (" + query + "): " + e);
+        if(jsonArray.size() == 0) {
+            return "i couldn't find a gif for that...";
         }
 
-        logger.error("Failed to get gif for query: " + query);
-        return "i couldn't find a gif for that...";
+        return jsonArray.get(ThreadLocalRandom.current().nextInt(0,jsonArray.size())).getAsJsonObject().
+                getAsJsonObject("images").
+                getAsJsonObject("fixed_height").
+                get("url").getAsString();
     }
 }
