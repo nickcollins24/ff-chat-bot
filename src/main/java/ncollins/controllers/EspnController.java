@@ -3,15 +3,10 @@ package ncollins.controllers;
 import ncollins.espn.Espn;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.model.Order;
-import ncollins.model.espn.Matchup;
-import ncollins.model.espn.Member;
-import ncollins.model.espn.Player;
-import ncollins.model.espn.Score;
+import ncollins.model.espn.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -49,5 +44,11 @@ public class EspnController {
     @GetMapping("gameday")
     public String getGamedayMessage() {
         return messageBuilder.buildGamedayMessage();
+    }
+
+    @GetMapping("trades")
+    public List<Transaction> getTrades(@RequestParam Integer seasonId, @RequestParam Integer lastSeconds){
+        return espn.getTransactions(seasonId, System.currentTimeMillis()-(lastSeconds*1000), System.currentTimeMillis(),
+                List.of(TransactionType.TRADE_ACCEPTED.getValue()));
     }
 }

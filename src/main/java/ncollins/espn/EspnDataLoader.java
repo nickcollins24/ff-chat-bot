@@ -270,7 +270,7 @@ public class EspnDataLoader {
                 + seasonId + "/segments/0/leagues/"
                 + LEAGUE_ID + "/communication/?view=kona_league_communication";
 
-        String dateRangeFilter = fromDate != null || toDate != null ?
+        String dateRangeFilter = fromDate == null || toDate == null ?
                 "" :
                 "\"filterDateRange\":{\"value\":" + fromDate + ",\"additionalValue\":" + toDate + "},";
 

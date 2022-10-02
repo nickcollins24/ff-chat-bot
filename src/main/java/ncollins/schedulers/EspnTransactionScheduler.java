@@ -42,7 +42,7 @@ public class EspnTransactionScheduler implements Scheduler {
     }
 
     public void start(){
-        // schedule task every 30 seconds
+        // schedule task every 60 seconds
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> checkForTransaction(), 0, 60, TimeUnit.SECONDS);
 
@@ -50,7 +50,7 @@ public class EspnTransactionScheduler implements Scheduler {
     }
 
     private void checkForTransaction(){
-        // get transactions over the last 30 seconds (30000 ms)
+        // get transactions over the last 60 seconds (60000 ms)
         List<Transaction> transactions = espn.getTransactions(
                 espn.getCurrentSeasonId(),
                 System.currentTimeMillis()-60000, System.currentTimeMillis(),
