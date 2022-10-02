@@ -9,6 +9,7 @@ public class Season {
     private int                 scoringPeriodId;
     private int                 seasonId;
     private List<Team>          teams;
+    private List<Trade>         trades;
 
     // GET
     public int getScoringPeriodId() { return scoringPeriodId; }
@@ -17,6 +18,7 @@ public class Season {
     public List<Team> getTeams() { return teams; }
     public List<Member> getMembers() { return members; }
     public List<ScheduleItem> getSchedule() { return schedule; }
+    public List<Trade> getTrades() { return trades; }
 
     // SET
     public void setScoringPeriodId(int scoringPeriodId) { this.scoringPeriodId = scoringPeriodId; }
@@ -25,4 +27,5 @@ public class Season {
     public void setMembers(List<Member> members) { this.members = members; }
     public void setSchedule(List<ScheduleItem> schedule) { this.schedule = schedule; }
     public void setTeams(List<Team> teams) { this.teams = teams; }
+    public void setTrades(List<Trade> trades) { this.trades = trades; }
 }

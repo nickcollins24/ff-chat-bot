@@ -27,11 +27,20 @@ public class Member {
 
         Member m = (Member) o;
         return m.getId().equals(id) ||
+                m.getDisplayName().equals(displayName) ||
                 (m.firstName + m.lastName).equals(firstName + lastName);
     }
 
     @Override
+    public String toString(){
+        return this.getId() + ", " + this.getDisplayName() + ", " + this.getFirtName() + " " + this.getLastName();
+    }
+
+    /**
+     * Note: this currently breaks hashmap implementation.
+     */
+    @Override
     public int hashCode() {
-        return Objects.hash(firstName, lastName);
+        return Objects.hash(id);
     }
 }

@@ -341,6 +341,75 @@ public class EspnMessageBuilder {
         return sb.toString();
     }
 
+    /***
+     *  Builds message that displays trades in current year
+     */
+    public String buildTradesMessageCurrentYear(){
+        return buildTradesMessage(espn.getCurrentSeasonId());
+    }
+
+    /**
+     * TODO: add this functionality
+     * Builds message that displays trades all-time
+     */
+    public String buildTradesMessage(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("All-Time Trades:\\n");
+
+        return sb.toString();
+    }
+
+    /**
+     * TODO: add this functionality
+     * Builds message that displays trades in a given year
+     */
+    public String buildTradesMessage(Integer seasonId){
+        StringBuilder sb = new StringBuilder();
+        sb.append(seasonId + " Trades:\\n");
+
+        return sb.toString();
+    }
+
+    /***
+     *  Builds message that displays trades in current year
+     */
+    public String buildTradeCountMessageCurrentYear(){
+        return buildTradeCountMessage(espn.getCurrentSeasonId());
+    }
+
+    /**
+     * TODO: add this functionality
+     * Builds message that displays trades all-time
+     */
+    public String buildTradeCountMessage(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("All-Time Trade Counts:\\n");
+
+        return sb.toString();
+    }
+
+    /**
+     * TODO: add this functionality
+     * Builds message that displays trades in a given year
+     */
+    public String buildTradeCountMessage(Integer seasonId){
+        StringBuilder sb = new StringBuilder();
+        sb.append(seasonId + " Trade Counts:\\n");
+
+        return sb.toString();
+    }
+
+    /**
+     * TODO: add this functionality
+     * Builds message that displays the most common trade partners
+     */
+    public String buildTradeBaesMessage(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("All-Time Trade Baes:\\n");
+
+        return sb.toString();
+    }
+
     /**
      * Builds message that displays playoff standings ever
      */
@@ -688,6 +757,24 @@ public class EspnMessageBuilder {
                         .append(String.format("%.1f", salty.getPointsAgainst()) + ")\\n");
             }
         }
+
+        return sb.toString();
+    }
+
+    public String buildGamedayMessage(){
+        List<Matchup> matchups = espn.getMatchups(espn.getCurrentScoringPeriodId(), espn.getCurrentSeasonId());
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Its GameDay! Heres whats on tap " + Emojis.BEER_MUG + " " + Emojis.FOOTBALL + "\\n\\n");
+        for(Matchup matchup : matchups){
+            Member m0 = espn.getMemberByTeamId(matchup.getScheduleItem().getHome().getTeamId());
+            Member m1 = espn.getMemberByTeamId(matchup.getScheduleItem().getAway().getTeamId());
+            Map<Member, Record> recordBetween = espn.getRecordBetween(m0,m1);
+
+            sb.append(m0.getFirtName() + " " + m0.getLastName() + " (" + recordBetween.get(m0).getOverall().getWins() + ") vs. " +
+                    m1.getFirtName() + " " + m1.getLastName() + " (" + recordBetween.get(m1).getOverall().getWins() + ")\\n");
+        }
+        sb.append("\\n(x) = career wins vs. opponent");
 
         return sb.toString();
     }

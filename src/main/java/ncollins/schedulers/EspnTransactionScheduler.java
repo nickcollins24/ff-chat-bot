@@ -51,7 +51,9 @@ public class EspnTransactionScheduler implements Scheduler {
 
     private void checkForTransaction(){
         // get transactions over the last 30 seconds (30000 ms)
-        List<Transaction> transactions = espn.getTransactions(System.currentTimeMillis()-60000, System.currentTimeMillis(),
+        List<Transaction> transactions = espn.getTransactions(
+                espn.getCurrentSeasonId(),
+                System.currentTimeMillis()-60000, System.currentTimeMillis(),
                 List.of(TransactionType.TRADE_ACCEPTED.getValue()));
 
         if(transactions == null){

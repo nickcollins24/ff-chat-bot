@@ -1,11 +1,7 @@
 package ncollins.schedulers;
 
-import ncollins.chat.groupme.GroupMeBot;
 import ncollins.chat.groupme.MainGroupMeBot;
-import ncollins.espn.Espn;
-import ncollins.model.chat.Emojis;
-import ncollins.model.espn.*;
-import ncollins.model.espn.Record;
+import ncollins.espn.EspnMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,11 +27,11 @@ public class GameDayScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private MainGroupMeBot bot;
-    private Espn espn;
+    private EspnMessageBuilder espnMessageBuilder;
 
-    public GameDayScheduler(MainGroupMeBot bot, Espn espn){
+    public GameDayScheduler(MainGroupMeBot bot, EspnMessageBuilder espnMessageBuilder){
         this.bot = bot;
-        this.espn = espn;
+        this.espnMessageBuilder = espnMessageBuilder;
         start();
     }
 
@@ -52,20 +48,6 @@ public class GameDayScheduler implements Scheduler {
     }
 
     private void sendGameDayMessage(){
-        List<Matchup> matchups = espn.getMatchups(espn.getCurrentScoringPeriodId(), espn.getCurrentSeasonId());
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Its GameDay! Heres whats on tap " + Emojis.BEER_MUG + " " + Emojis.FOOTBALL + "\\n\\n");
-        for(Matchup matchup : matchups){
-            Member m0 = espn.getMemberByTeamId(matchup.getScheduleItem().getHome().getTeamId());
-            Member m1 = espn.getMemberByTeamId(matchup.getScheduleItem().getAway().getTeamId());
-            Map<Member, Record> recordBetween = espn.getRecordBetween(m0,m1);
-
-            sb.append(m0.getFirtName() + " " + m0.getLastName() + " (" + recordBetween.get(m0).getOverall().getWins() + ") vs. " +
-                      m1.getFirtName() + " " + m1.getLastName() + " (" + recordBetween.get(m1).getOverall().getWins() + ")\\n");
-        }
-        sb.append("\\n(x) = career wins vs. opponent");
-
-        bot.sendMessage(sb.toString());
+        bot.sendMessage(espnMessageBuilder.buildGamedayMessage());
     }
 }

@@ -166,6 +166,40 @@ public class GroupMeProcessor implements ChatBotProcessor {
             } else {
                 getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildStandingsMessageCurrentYear());
             }
+//        // trades {ever|YEAR|}
+//        } else if(text.matches("trades(\\sever|\\s\\d+|)$")){
+//            String yearStr = text.replaceAll("\\D+", "");
+//
+//            // history
+//            if(text.contains("ever")){
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradesMessage());
+//            // specified season
+//            } else if(!yearStr.isEmpty()){
+//                Integer seasonId = Integer.parseInt(yearStr);
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradesMessage(seasonId));
+//            // current season
+//            } else {
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradesMessageCurrentYear());
+//            }
+//        // trade count {ever|YEAR|}
+//        } else if(text.matches("trade count(\\sever|\\s\\d+|)$")){
+//            String yearStr = text.replaceAll("\\D+", "");
+//
+//            // history
+//            if(text.contains("ever")){
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradeCountMessage());
+//            // specified season
+//            } else if(!yearStr.isEmpty()){
+//                Integer seasonId = Integer.parseInt(yearStr);
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradeCountMessage(seasonId));
+//            // current season
+//            } else {
+//                getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradeCountMessageCurrentYear());
+//            }
+//        // trade baes {ever|}
+//        } else if(text.matches("trade baes(\\sever|)$")){
+//            getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildTradeBaesMessage());
+//        // playoff standings {ever|}
         } else if(text.matches("playoff standings(\\sever|)$")){
             getEspnBot().sendMessage(getEspnBot().getMessageBuilder().buildPlayoffStandingsMessage());
         // {top|bottom} [TOTAL] [POSITION|players] {WEEK|}
