@@ -11,7 +11,8 @@ public enum TransactionType {
     TRADE_VETOED(186),
     TRADE_PROCESSED(187),
     TRADE_PROPOSED(190),
-    TRADE_ACCEPTED(224);
+    TRADE_ACCEPTED(224),
+    TRADE_BLOCK_ADDED(252);
 
     private final int value;
 

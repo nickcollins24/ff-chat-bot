@@ -276,7 +276,7 @@ public class EspnDataLoader {
 
         String filter = "{\"topics\":" +
                 "{\"filterType\":" +
-                "{\"value\":[\"ACTIVITY_TRANSACTIONS\"]}," +
+                "{\"value\":[\"ACTIVITY_TRANSACTIONS\",\"ACTIVITY_SETTINGS\"]}," +
                 "\"offset\":0," +
                 "\"sortMessageDate\":{\"sortPriority\":1,\"sortAsc\":false}," +
                 "\"sortFor\":{\"sortPriority\":2,\"sortAsc\":false}," +

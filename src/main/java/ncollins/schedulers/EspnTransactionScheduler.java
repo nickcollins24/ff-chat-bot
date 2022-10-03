@@ -1,7 +1,6 @@
 package ncollins.schedulers;
 
 import ncollins.chat.groupme.EspnGroupMeBot;
-import ncollins.chat.groupme.GroupMeBot;
 import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
 import ncollins.model.chat.PollPayload;
@@ -11,11 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,43 +48,20 @@ public class EspnTransactionScheduler implements Scheduler {
         List<Transaction> transactions = espn.getTransactions(
                 espn.getCurrentSeasonId(),
                 System.currentTimeMillis()-60000, System.currentTimeMillis(),
-                List.of(TransactionType.TRADE_ACCEPTED.getValue()));
+                List.of(TransactionType.TRADE_ACCEPTED.getValue(), TransactionType.TRADE_BLOCK_ADDED.getValue()));
 
         if(transactions == null){
             return;
         }
 
         for(Transaction t : transactions){
-//            if(isTrade(t)){
+            if(isTrade(t)){
                 processTrade(t);
-//            } else if(isWaiverAdd(t)){
-//                processWaiverAdd(t);
-//            }
+            } else if(isTradeBlockAdd(t)){
+                processTradeBlockAdd(t);
+            }
         }
     }
-
-//    private void processWaiverAdd(Transaction t){
-//        Player playerAdded = null;
-//        Player playerDropped = null;
-//        for(int i=0; i < t.getMessages().length; i++){
-//            Transaction.Message m = t.getMessages()[i];
-//            if(m.getMessageTypeId().equals(TransactionType.ADD_WAIVER.getValue())){
-//                playerAdded = espn.getPlayer(m.getTargetId());
-//            } else if(m.getMessageTypeId().equals(TransactionType.DROP_WAIVER.getValue())){
-//                playerDropped = espn.getPlayer(m.getTargetId());
-//            }
-//        }
-//
-//        StringBuilder sb = new StringBuilder();
-//        if(playerAdded != null){
-//            sb.append("Added: " + playerAdded.getFullName() + " (" + espn.getPositionById(playerAdded.getDefaultPositionId()) + ")\\n");
-//        }
-//        if(playerDropped != null){
-//            sb.append("Dropped: " + playerDropped.getFullName() + " (" + espn.getPositionById(playerDropped.getDefaultPositionId()) + ")");
-//        }
-//
-//        bot.sendMessage(sb.toString());
-//    }
 
     private void processTrade(Transaction t){
         Map<Integer, List<Player>> teamPlayersMap = new HashMap();
@@ -119,18 +90,36 @@ public class EspnTransactionScheduler implements Scheduler {
         sendTradePoll(team0, team1, playersToTeam0, playersToTeam1);
     }
 
-//    private Boolean isTrade(Transaction t){
-//        return t != null
-//                && t.getMessages().length > 0
-//                && t.getMessages()[0].getMessageTypeId().equals(TransactionType.TRADE_ACCEPTED.getValue());
-//    }
-//
-//    private Boolean isWaiverAdd(Transaction t){
-//        return t != null
-//                && t.getMessages().length > 0
-//                && (t.getMessages()[0].getMessageTypeId().equals(TransactionType.ADD_WAIVER.getValue())
-//                    || t.getMessages()[0].getMessageTypeId().equals(TransactionType.DROP_WAIVER.getValue()));
-//    }
+    private void processTradeBlockAdd(Transaction t){
+        Integer playerId = t.getMessages()[0].getForId();
+        Integer teamId = t.getMessages()[0].getTargetId();
+        String memberId = t.getMessages()[0].getAuthor();
+
+        Player player = espn.getPlayer(playerId);
+        String playerPosition = espn.getPositionById(player.getDefaultPositionId());
+        Team team = espn.getTeamById(teamId);
+        Member member = espn.getMemberByOwnerId(memberId);
+
+        //send breaking news message
+        bot.sendMessage("TRADE BLOCK ALERT " + Emojis.EYES_LEFT + " \\n\\n" +
+                "Disgruntled " + playerPosition + " " + player.getFullName() + " has requested a trade from " +
+                team.getLocation() + " " + team.getNickname() + ", citing growing frustration with team owner " + member.getFirtName() + " " + member.getLastName() + ".\\n\\n" +
+                "The two sides will work together to find a new home for " + player.getLastName() + " over the coming days.");
+    }
+
+    private Boolean isTrade(Transaction t){
+        return isTransactionType(t, TransactionType.TRADE_ACCEPTED.getValue());
+    }
+
+    private Boolean isTradeBlockAdd(Transaction t){
+        return isTransactionType(t, TransactionType.TRADE_BLOCK_ADDED.getValue());
+    }
+
+    private Boolean isTransactionType(Transaction t, int typeId){
+        return t != null
+                && t.getMessages().length > 0
+                && t.getMessages()[0].getMessageTypeId().equals(typeId);
+    }
 
     private void sendTradePoll(Team team0, Team team1, List<Player> playersToTeam0, List<Player> playersToTeam1){
         StringBuilder sb0 = new StringBuilder();

@@ -1,5 +1,7 @@
 package ncollins.model.espn;
 
+import com.google.gson.annotations.SerializedName;
+
 //    {
 //        "author": "{3F579493-D60E-4AAD-9794-93D60E6AAD34}",
 //        "date": 1567960327011,
@@ -53,6 +55,8 @@ public class Transaction {
         private Integer targetId;
         private Integer from;
         private Integer to;
+        @SerializedName("for")
+        private Integer forId;
 
         public String getAuthor() {
             return author;
@@ -92,6 +96,14 @@ public class Transaction {
 
         public void setTo(Integer to) {
             this.to = to;
+        }
+
+        public Integer getForId() {
+            return forId;
+        }
+
+        public void setForId(Integer forId) {
+            this.forId = forId;
         }
     }
 }
