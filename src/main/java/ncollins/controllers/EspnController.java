@@ -47,6 +47,11 @@ public class EspnController {
         return messageBuilder.buildGamedayMessage();
     }
 
+    @GetMapping("message/matchups/{teamA}/{teamB}")
+    public String getMatchupsBetweenMessage(@PathVariable String teamA, @PathVariable String teamB){
+        return messageBuilder.buildMatchupsMessage(teamA, teamB);
+    }
+
     @GetMapping("trades")
     public List<Transaction> getTrades(@RequestParam Integer seasonId, @RequestParam Integer lastSeconds){
         return espn.getTransactions(seasonId, System.currentTimeMillis()-(lastSeconds*1000), System.currentTimeMillis(),

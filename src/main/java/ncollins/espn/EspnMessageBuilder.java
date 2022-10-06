@@ -162,19 +162,17 @@ public class EspnMessageBuilder {
     /***
      *  Builds message that displays matchup history between two teams
      */
-    public String buildMatchupsMessage(String team0, String team1){
-        Member m0 = espn.getMemberByTeamAbbrev(team0);
-        Team t0 = espn.getTeamByAbbrev(team0);
-        Member m1 = espn.getMemberByTeamAbbrev(team1);
-        Team t1 = espn.getTeamByAbbrev(team1);
+    public String buildMatchupsMessage(String teamAbbrev0, String teamAbbrev1){
+        Member m0 = espn.getMemberByTeamAbbrev(teamAbbrev0);
+        Member m1 = espn.getMemberByTeamAbbrev(teamAbbrev1);
 
-        if(m0 == null || m1 == null || t0 == null || t1 == null){
+        if(m0 == null || m1 == null){
             return "Team(s) don't exist.";
         }
 
-        Map<Integer, String> teamMap = new HashMap();
-        teamMap.put(t0.getId(), team0.toUpperCase());
-        teamMap.put(t1.getId(), team1.toUpperCase());
+        Map<String, String> memberMap = new HashMap();
+        memberMap.put(m0.getId(), teamAbbrev0.toUpperCase());
+        memberMap.put(m1.getId(), teamAbbrev1.toUpperCase());
 
         List<Matchup> matchups = espn.getMatchupsBetweenSorted(Order.DESC, m0, m1);
 
@@ -184,63 +182,60 @@ public class EspnMessageBuilder {
 
         Double t0Points = 0.0;
         Double t1Points = 0.0;
-
         int t0Wins = 0;
         int t0Losses = 0;
         int t0Ties = 0;
+
+        StringBuilder sbMatchup = new StringBuilder();
         for(Matchup m : matchups){
-            if(teamMap.get(m.getScheduleItem().getHome().getTeamId()).equalsIgnoreCase(team0)){
-                t0Points += m.getScheduleItem().getHome().getTotalPoints();
-                t1Points += m.getScheduleItem().getAway().getTotalPoints();
+            String winnerStr;
+            String loserStr;
+            ScheduleItem.Home homeTeam = m.getScheduleItem().getHome();
+            ScheduleItem.Away awayTeam = m.getScheduleItem().getAway();
+            String homeMemberId = espn.getMemberByTeamId(homeTeam.getTeamId(), m.getSeasonId()).getId();
+            String awayMemberId = espn.getMemberByTeamId(awayTeam.getTeamId(), m.getSeasonId()).getId();
+            Boolean isHomeTeamMember0 = memberMap.get(homeMemberId).equalsIgnoreCase(teamAbbrev0);
 
-                if(m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()){
+            // tally points
+            t0Points += isHomeTeamMember0 ? homeTeam.getTotalPoints() : awayTeam.getTotalPoints();
+            t1Points += isHomeTeamMember0 ? awayTeam.getTotalPoints() : homeTeam.getTotalPoints();
+
+            // Home Team wins
+            if(homeTeam.getTotalPoints() > awayTeam.getTotalPoints()){
+                winnerStr = memberMap.get(homeMemberId) + " " + String.format("%.2f", homeTeam.getTotalPoints());
+                loserStr = String.format("%.2f", awayTeam.getTotalPoints()) + " " + memberMap.get(awayMemberId);
+
+                if(isHomeTeamMember0) {
                     t0Wins++;
-                } else if(m.getScheduleItem().getAway().getTotalPoints() > m.getScheduleItem().getHome().getTotalPoints()){
+                } else t0Losses++;
+            // Away Team wins
+            } else if(awayTeam.getTotalPoints() > homeTeam.getTotalPoints()){
+                winnerStr = memberMap.get(awayMemberId) + " " + String.format("%.2f", awayTeam.getTotalPoints());
+                loserStr = String.format("%.2f", homeTeam.getTotalPoints()) + " " + memberMap.get(homeMemberId);
+
+                if(isHomeTeamMember0) {
                     t0Losses++;
-                } else {
-                    t0Ties++;
-                }
+                } else t0Wins++;
+            // Teams tie
             } else {
-                t1Points += m.getScheduleItem().getHome().getTotalPoints();
-                t0Points += m.getScheduleItem().getAway().getTotalPoints();
+                winnerStr = memberMap.get(awayMemberId) + " " + String.format("%.2f", awayTeam.getTotalPoints());
+                loserStr = String.format("%.2f", homeTeam.getTotalPoints()) + " " + memberMap.get(homeMemberId);
 
-                if(m.getScheduleItem().getAway().getTotalPoints() > m.getScheduleItem().getHome().getTotalPoints()){
-                    t0Wins++;
-                } else if(m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()){
-                    t0Losses++;
-                } else {
-                    t0Ties++;
-                }
+                t0Ties++;
             }
+
+            sbMatchup.append(winnerStr + " - " + loserStr + " -- " + m.getSeasonId() + "(" + m.getScheduleItem().getMatchupPeriodId() + ")\\n");
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("-- " + m0.getFirtName() + " " + m0.getLastName() + " (" + team0.toUpperCase() + ") vs. " + m1.getFirtName() + " " + m1.getLastName() + " (" + team1.toUpperCase() + ") --\\n\\n");
+        sb.append("-- " + m0.getFirtName() + " " + m0.getLastName() + " (" + teamAbbrev0.toUpperCase() + ") vs. " + m1.getFirtName() + " " + m1.getLastName() + " (" + teamAbbrev1.toUpperCase() + ") --\\n\\n");
 
         sb.append("Record:\\n");
-        sb.append(team0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + String.format("%.2f", t0Points) + " (" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
-          .append(team1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + String.format("%.2f", t1Points) + " (" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
+        sb.append(teamAbbrev0.toUpperCase() + ": " + t0Wins + "-" + t0Losses + "-" + t0Ties + " " + String.format("%.2f", t0Points) + " (" + String.format("%.2f", t0Points/matchups.size()) + "/g)\\n")
+          .append(teamAbbrev1.toUpperCase() + ": " + t0Losses + "-" + t0Wins + "-" + t0Ties + " " + String.format("%.2f", t1Points) + " (" + String.format("%.2f", t1Points/matchups.size()) + "/g)\\n\\n");
 
         sb.append("Matchups:\\n");
-        for(int i=0; i < matchups.size(); i++){
-            String winner;
-            String loser;
-            if(matchups.get(i).getScheduleItem().getHome().getTotalPoints() >
-                    matchups.get(i).getScheduleItem().getAway().getTotalPoints()){
-                winner = teamMap.get(matchups.get(i).getScheduleItem().getHome().getTeamId()) + " " +
-                        String.format("%.2f", matchups.get(i).getScheduleItem().getHome().getTotalPoints());
-                loser = String.format("%.2f", matchups.get(i).getScheduleItem().getAway().getTotalPoints())+ " " +
-                        teamMap.get(matchups.get(i).getScheduleItem().getAway().getTeamId());
-            } else {
-                winner = teamMap.get(matchups.get(i).getScheduleItem().getAway().getTeamId()) + " " +
-                        String.format("%.2f", matchups.get(i).getScheduleItem().getAway().getTotalPoints());
-                loser = String.format("%.2f", matchups.get(i).getScheduleItem().getHome().getTotalPoints())+ " " +
-                        teamMap.get(matchups.get(i).getScheduleItem().getHome().getTeamId());
-            }
-
-            sb.append(winner + " - " + loser + " -- ")
-              .append(matchups.get(i).getSeasonId() + "(" + matchups.get(i).getScheduleItem().getMatchupPeriodId() + ")\\n");
-        }
+        sb.append(sbMatchup);
 
         return sb.toString();
     }
