@@ -46,6 +46,10 @@ public class Espn {
         return loader.getTrades(seasonId, fromDate, toDate);
     }
 
+    public List<Trade> getTrades(Integer seasonId){
+        return loader.getTrades(seasonId);
+    }
+
     public Player getPlayer(Integer playerId){
         return loader.getPlayer(playerId);
     }
@@ -298,8 +302,8 @@ public class Espn {
 
         for(Matchup matchup : allMatchups){
             if(matchup.getScheduleItem().getHome() != null && matchup.getScheduleItem().getAway() != null) {
-                Member homeMember = getMemberByTeamId(matchup.getScheduleItem().getHome().getTeamId(), matchup.getSeasonId());
-                Member awayMember = getMemberByTeamId(matchup.getScheduleItem().getAway().getTeamId(), matchup.getSeasonId());
+                Member homeMember = loader.getMemberByTeamId(matchup.getScheduleItem().getHome().getTeamId(), matchup.getSeasonId());
+                Member awayMember = loader.getMemberByTeamId(matchup.getScheduleItem().getAway().getTeamId(), matchup.getSeasonId());
 
                 if ((homeMember.equals(m0) && awayMember.equals(m1)) ||
                         (homeMember.equals(m1) && awayMember.equals(m0))) {
@@ -331,8 +335,8 @@ public class Espn {
         memberMap.put(m1, r1);
 
         for (Matchup m : matchups) {
-            Member homeMember = getMemberByTeamId(m.getScheduleItem().getHome().getTeamId(), m.getSeasonId());
-            Member awayMember = getMemberByTeamId(m.getScheduleItem().getAway().getTeamId(), m.getSeasonId());
+            Member homeMember = loader.getMemberByTeamId(m.getScheduleItem().getHome().getTeamId(), m.getSeasonId());
+            Member awayMember = loader.getMemberByTeamId(m.getScheduleItem().getAway().getTeamId(), m.getSeasonId());
 
             // home team won
             if (m.getScheduleItem().getHome().getTotalPoints() > m.getScheduleItem().getAway().getTotalPoints()) {
@@ -491,69 +495,10 @@ public class Espn {
         return position;
     }
 
-    public Team getTeamByAbbrev(String abbrev){
-        return getTeamByAbbrev(abbrev, getCurrentSeasonId());
-    }
-
-    public Team getTeamByAbbrev(String abbrev, Integer seasonId){
-        for(Team t : getTeams(seasonId)){
-            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
-                return t;
-            }
-        }
-
-        return null;
-    }
-
-    public Member getMemberByTeamAbbrev(String abbrev){
-        return getMemberByTeamAbbrev(abbrev, getCurrentSeasonId());
-    }
-
-    public Member getMemberByTeamAbbrev(String abbrev, Integer seasonId){
-        for(Team t : getTeams(seasonId)){
-            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
-                return getMemberByTeamId(t.getId(), seasonId);
-            }
-        }
-
-        return null;
-    }
-
-    public Member getMemberByTeamId(Integer teamId){
-        return getMemberByTeamId(teamId, this.getCurrentSeasonId());
-    }
-
-    public Member getMemberByTeamId(Integer teamId, Integer seasonId){
-        if(teamId == null){
-            return null;
-        }
-
-        Team team = getTeam(teamId, seasonId);
-
-        for(Member member : getSeason(seasonId).getMembers()){
-            if(member.getId().equals(team.getPrimaryOwner())){
-                return member;
-            }
-        }
-
-        return null;
-    }
-
     public OwnerToOverall getRecordWithOwner(List<OwnerToOverall> ownerToOverall, String ownerId, String ownerName){
         for(OwnerToOverall o : ownerToOverall){
             if(o.getOwnerId().equals(ownerId) || o.getOwnerName().equals(ownerName)){
                 return o;
-            }
-        }
-
-        return null;
-    }
-
-    private Team getTeam(Integer teamId, Integer seasonId){
-        for(Team team : getSeason(seasonId).getTeams()){
-            if(team.getId() == teamId){
-                team.setSeasonId(seasonId);
-                return team;
             }
         }
 
@@ -577,5 +522,21 @@ public class Espn {
         return scheduleItem.getPlayoffTierType().equals("WINNERS_BRACKET") &&
                 (getCurrentSeasonId() != season.getSeasonId() ||
                         scheduleItem.getMatchupPeriodId() < getWeek(season));
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev){
+        return loader.getMemberByTeamAbbrev(abbrev, getCurrentSeasonId());
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev, Integer seasonId){
+        return loader.getMemberByTeamAbbrev(abbrev, seasonId);
+    }
+
+    public Member getMemberByTeamId(Integer teamId){
+        return loader.getMemberByTeamId(teamId, this.getCurrentSeasonId());
+    }
+
+    public Member getMemberByTeamId(Integer teamId, Integer seasonId){
+        return loader.getMemberByTeamId(teamId, seasonId);
     }
 }

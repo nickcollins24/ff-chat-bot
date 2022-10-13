@@ -53,9 +53,10 @@ public class EspnController {
     }
 
     @GetMapping("trades")
-    public List<Transaction> getTrades(@RequestParam Integer seasonId, @RequestParam Integer lastSeconds){
-        return espn.getTransactions(seasonId, System.currentTimeMillis()-(lastSeconds*1000), System.currentTimeMillis(),
-                List.of(TransactionType.TRADE_ACCEPTED.getValue()));
+    public List<Trade> getTrades(@RequestParam Integer seasonId, @RequestParam(required = false) Integer lastSeconds){
+        if(lastSeconds != null)
+            return espn.getTrades(seasonId, System.currentTimeMillis()-(lastSeconds*1000), System.currentTimeMillis());
+        else return espn.getTrades(seasonId);
     }
 
     @GetMapping("transactions")

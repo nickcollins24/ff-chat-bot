@@ -177,6 +177,10 @@ public class EspnDataLoader {
         }
     }
 
+    public List<Trade> getTrades(Integer seasonId){
+        return getTrades(seasonId, null, null);
+    }
+
     public List<Trade> getTrades(Integer seasonId, Long fromDate, Long toDate){
         try{
             List<Trade> trades = new ArrayList();
@@ -184,7 +188,7 @@ public class EspnDataLoader {
             JsonArray topics = gson.fromJson(response.body(), JsonObject.class).getAsJsonArray("topics");
 
             for(JsonElement t : topics){
-                trades.add(buildTrade(gson.fromJson(t, Transaction.class)));
+                trades.add(buildTrade(gson.fromJson(t, Transaction.class), seasonId));
             }
 
             return trades;
@@ -194,31 +198,33 @@ public class EspnDataLoader {
         }
     }
 
-    private Trade buildTrade(Transaction t){
-        Map<Integer, List<Player>> teamPlayersMap = new HashMap();
+    private Trade buildTrade(Transaction t, Integer seasonId){
+        Map<Member, List<Player>> memberPlayersMap = new HashMap();
 
-        for(int i=0; i < t.getMessages().length; i++){
-            Integer toTeamId = t.getMessages()[i].getTo();
-            Integer playerId = t.getMessages()[i].getTargetId();
+        for(Transaction.Message m : t.getMessages()){
+            Integer toTeamId = m.getTo();
+            Integer playerId = m.getTargetId();
 
             if(toTeamId > 0){
-                if(teamPlayersMap.containsKey(toTeamId)){
-                    teamPlayersMap.get(toTeamId).add(getPlayer(playerId));
+                Member toMember = getMemberByTeamId(toTeamId, seasonId);
+
+                if(memberPlayersMap.containsKey(toMember)){
+                    memberPlayersMap.get(toMember).add(getPlayer(playerId));
                 } else {
                     List<Player> players = new ArrayList();
                     players.add(getPlayer(playerId));
-                    teamPlayersMap.put(toTeamId, players);
+                    memberPlayersMap.put(toMember, players);
                 }
             }
         }
 
-        List<Integer> teamIds = new ArrayList(teamPlayersMap.keySet());
-        Team team0 = getTeamById(teamIds.get(0));
-        Team team1 = getTeamById(teamIds.get(1));
-        List<Player> playersToTeam0 = teamPlayersMap.get(teamIds.get(0));
-        List<Player> playersToTeam1 = teamPlayersMap.get(teamIds.get(1));
+        List<Member> members = new ArrayList(memberPlayersMap.keySet());
+        Member member0 = members.get(0);
+        Member member1 = members.get(1);
+        List<Player> playersToTeam0 = memberPlayersMap.get(member0);
+        List<Player> playersToTeam1 = memberPlayersMap.get(member1);
 
-        return new Trade(team0, team1, playersToTeam0, playersToTeam1);
+        return new Trade(member0, member1, playersToTeam0, playersToTeam1);
     }
 
 
@@ -236,6 +242,65 @@ public class EspnDataLoader {
         for(Team t : getTeams(getCurrentSeasonId())){
             if(t.getId() == id){
                 return t;
+            }
+        }
+
+        return null;
+    }
+
+    public Team getTeamByAbbrev(String abbrev){
+        return getTeamByAbbrev(abbrev, getCurrentSeasonId());
+    }
+
+    public Team getTeamByAbbrev(String abbrev, Integer seasonId){
+        for(Team t : getTeams(seasonId)){
+            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev){
+        return getMemberByTeamAbbrev(abbrev, getCurrentSeasonId());
+    }
+
+    public Member getMemberByTeamAbbrev(String abbrev, Integer seasonId){
+        for(Team t : getTeams(seasonId)){
+            if(t.getAbbrev().equalsIgnoreCase(abbrev)){
+                return getMemberByTeamId(t.getId(), seasonId);
+            }
+        }
+
+        return null;
+    }
+
+    public Member getMemberByTeamId(Integer teamId){
+        return getMemberByTeamId(teamId, this.getCurrentSeasonId());
+    }
+
+    public Member getMemberByTeamId(Integer teamId, Integer seasonId){
+        if(teamId == null){
+            return null;
+        }
+
+        Team team = getTeam(teamId, seasonId);
+
+        for(Member member : getSeason(seasonId).getMembers()){
+            if(member.getId().equals(team.getPrimaryOwner())){
+                return member;
+            }
+        }
+
+        return null;
+    }
+
+    public Team getTeam(Integer teamId, Integer seasonId){
+        for(Team team : getSeason(seasonId).getTeams()){
+            if(team.getId() == teamId){
+                team.setSeasonId(seasonId);
+                return team;
             }
         }
 
