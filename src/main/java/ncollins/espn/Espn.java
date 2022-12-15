@@ -50,6 +50,35 @@ public class Espn {
         return loader.getTrades(seasonId);
     }
 
+    public Integer getTradeCount(Integer seasonId){
+        return loader.getTrades(seasonId).size();
+    }
+
+    public List<Player> getTradeBlock(){
+        List<Player> players = new ArrayList();
+
+        List<Team> teams = loader.getSeason(getCurrentSeasonId()).getTeams();
+        for(Team team : teams){
+            System.out.println(team);
+            System.out.println(team.getTradeBlock());
+            System.out.println(team.getTradeBlock().getPlayers());
+            Map<String, String> playerIdToStatus = team.getTradeBlock().getPlayers();
+
+            if(playerIdToStatus != null) {
+                for(Map.Entry<String, String> entry : playerIdToStatus.entrySet()){
+                    if(entry.getValue().equals("ON_THE_BLOCK")){
+                        Player player = getPlayer(Integer.valueOf(entry.getKey()));
+
+                        System.out.println("Adding " + player.getFullName());
+                        players.add(player);
+                    }
+                }
+            }
+        }
+
+        return players;
+    }
+
     public Player getPlayer(Integer playerId){
         return loader.getPlayer(playerId);
     }

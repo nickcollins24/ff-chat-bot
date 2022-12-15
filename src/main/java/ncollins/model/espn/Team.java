@@ -1,6 +1,7 @@
 package ncollins.model.espn;
 
 import java.util.List;
+import java.util.Map;
 
 public class Team {
     private String                  abbrev;
@@ -65,18 +66,20 @@ public class Team {
     public void setRankCalculatedFinal(int rankCalculatedFinal) { this.rankCalculatedFinal = rankCalculatedFinal; }
     public void setRankFinal(int rankFinal) { this.rankFinal = rankFinal; }
     public void setRecord(Record recordObject) { this.record = recordObject; }
-    public void setTradeBlock(TradeBlock tradeBlockObject) { this.tradeBlock = tradeBlockObject; }
+    public void setTradeBlock(TradeBlock tradeBlock) { this.tradeBlock = tradeBlock; }
     public void setTransactionCounter(TransactionCounter transactionCounterObject) { this.transactionCounter = transactionCounterObject; }
     public void setWaiverRank(int waiverRank) { this.waiverRank = waiverRank; }
     public void setOwners(List<String> owners) { this.owners = owners; }
     public void setSeasonId(int seasonId) { this.seasonId = seasonId; }
 
-    private class TradeBlock {
-        // Getter Methods
-        // Setter Methods
+    public class TradeBlock {
+        private Map<String, String> players;
+
+        public Map<String, String> getPlayers(){ return players; }
+        public void setPlayers(Map<String, String> players){ this.players = players; }
     }
 
-    private class TransactionCounter {
+    public class TransactionCounter {
         private Double acquisitionBudgetSpent;
         private Double acquisitions;
         private Double drops;

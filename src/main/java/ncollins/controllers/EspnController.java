@@ -52,11 +52,26 @@ public class EspnController {
         return messageBuilder.buildMatchupsMessage(teamA, teamB);
     }
 
+    @GetMapping("message/trades")
+    public String getTradesMessage(@RequestParam Integer seasonId){
+        return messageBuilder.buildTradesMessage(seasonId);
+    }
+
     @GetMapping("trades")
     public List<Trade> getTrades(@RequestParam Integer seasonId, @RequestParam(required = false) Integer lastSeconds){
         if(lastSeconds != null)
             return espn.getTrades(seasonId, System.currentTimeMillis()-(lastSeconds*1000), System.currentTimeMillis());
         else return espn.getTrades(seasonId);
+    }
+
+    @GetMapping("tradeCount")
+    public Integer getTradeCount(@RequestParam Integer seasonId){
+        return espn.getTradeCount(seasonId);
+    }
+
+    @GetMapping("tradeBlock")
+    public List<Player> getTradeBlock(){
+        return espn.getTradeBlock();
     }
 
     @GetMapping("transactions")

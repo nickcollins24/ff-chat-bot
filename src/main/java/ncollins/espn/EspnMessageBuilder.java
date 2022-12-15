@@ -1,6 +1,7 @@
 package ncollins.espn;
 
 import ncollins.espn.comparators.SortOverallByPercentage;
+import ncollins.helpers.ListHelpers;
 import ncollins.model.Order;
 import ncollins.model.chat.Emojis;
 import ncollins.model.espn.*;
@@ -344,25 +345,62 @@ public class EspnMessageBuilder {
     }
 
     /**
-     * TODO: add this functionality
-     * Builds message that displays trades all-time
+     * Builds message that displays trades in a given year
      */
-    public String buildTradesMessage(){
+    public String buildTradesMessage(Integer seasonId){
+        List<Trade> trades = espn.getTrades(seasonId);
         StringBuilder sb = new StringBuilder();
-        sb.append("All-Time Trades:\\n");
+
+        if(trades.isEmpty()){
+            return "No trades conducted in " + seasonId + ".";
+        }
+
+        List<Player> allTradedPlayers = getPlayersFromTrades(trades);
+        Map<Integer, List<Player>> mostFrequentPlayersMap = ListHelpers.mostCommon(allTradedPlayers);
+
+        sb.append("—— " + trades.size() + " Total Trades in " + seasonId + "——\\n");
+        sb.append("Note: FAAB data not included.\\n\\n");
+        sb.append("Total Trades: " + trades.size() + "\\n");
+        sb.append("Most Frequently Traded Player(s): ");
+
+        Integer maxFrequency = mostFrequentPlayersMap.keySet().toArray(new Integer[0])[0];
+        if(maxFrequency <= 1){
+            sb.append("No players traded more than once.\\n\\n");
+        } else {
+            List<Player> mostFrequentPlayers = mostFrequentPlayersMap.get(maxFrequency);
+            for(Player p : mostFrequentPlayers){
+                sb.append(p.getFullName() + "(" + espn.getPositionById(p.getDefaultPositionId()) + ") ");
+            }
+            sb.append("[" + maxFrequency + " times]\\n\\n");
+        }
+
+        for(Trade t : trades){
+            sb.append("—\\n");
+            sb.append(t.getMember0().getFirtName() + " " + t.getMember0().getLastName() + " received: ");
+            for(Player p : t.getPlayersToMember0()){
+                sb.append(p.getFullName() + "(" + espn.getPositionById(p.getDefaultPositionId()) + ") ");
+            }
+            sb.append("\\n");
+
+            sb.append(t.getMember1().getFirtName() + " " + t.getMember1().getLastName() + " received: ");
+            for(Player p : t.getPlayersToMember1()){
+                sb.append(p.getFullName() + "(" + espn.getPositionById(p.getDefaultPositionId()) + ") ");
+            }
+            sb.append("\\n");
+        }
 
         return sb.toString();
     }
 
-    /**
-     * TODO: add this functionality
-     * Builds message that displays trades in a given year
-     */
-    public String buildTradesMessage(Integer seasonId){
-        StringBuilder sb = new StringBuilder();
-        sb.append(seasonId + " Trades:\\n");
+    private List<Player> getPlayersFromTrades(List<Trade> trades){
+        List<Player> players = new ArrayList();
 
-        return sb.toString();
+        for(Trade t : trades){
+            players.addAll(t.getPlayersToMember0());
+            players.addAll(t.getPlayersToMember1());
+        }
+
+        return players;
     }
 
     /***

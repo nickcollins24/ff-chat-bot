@@ -156,4 +156,25 @@ public class Player {
     public void setUniverseId(Integer universeId) {
         this.universeId = universeId;
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + id.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        // If the object is compared with itself then return true
+        if (o == this) return true;
+
+        // Check if o is an instance of Player or not
+        if (!(o instanceof Player)) return false;
+
+        // typecast o to Player so that we can compare data members
+        Player p = (Player) o;
+
+        return this.id.equals(p.getId());
+    }
 }
