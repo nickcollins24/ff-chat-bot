@@ -1,10 +1,11 @@
-package ncollins.chat.groupme;
+package ncollins.chat.bots.groupme;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import ncollins.chat.ChatBotListener;
+import ncollins.chat.processors.GroupMeProcessor;
 import ncollins.model.chat.ChatResponse;
 import ncollins.model.chat.Subject;
 import org.slf4j.Logger;
@@ -135,7 +136,7 @@ public class GroupMeListener implements ChatBotListener {
                 ChatResponse r = gson.fromJson(jsonArray.get(0), ChatResponse.class);
                 Subject subject = r.getData().getSubject();
 
-                processor.processResponse(subject, System.currentTimeMillis());
+                processor.processResponse(subject);
             } catch(JsonSyntaxException | NullPointerException e) {
                 //do nothing
             } catch(Exception e){

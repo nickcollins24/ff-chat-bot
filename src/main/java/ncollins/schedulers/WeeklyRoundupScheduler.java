@@ -1,7 +1,6 @@
 package ncollins.schedulers;
 
-import ncollins.chat.groupme.GroupMeBot;
-import ncollins.chat.groupme.MainGroupMeBot;
+import ncollins.chat.bots.groupme.MainGroupMeBot;
 import ncollins.espn.EspnMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

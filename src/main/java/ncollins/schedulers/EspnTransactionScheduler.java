@@ -1,6 +1,6 @@
 package ncollins.schedulers;
 
-import ncollins.chat.groupme.EspnGroupMeBot;
+import ncollins.chat.bots.groupme.EspnGroupMeBot;
 import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
 import ncollins.model.chat.PollPayload;

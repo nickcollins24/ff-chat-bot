@@ -1,8 +1,7 @@
-package ncollins.chat.groupme;
+package ncollins.chat.bots.groupme;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import ncollins.chat.ChatBot;
 import ncollins.gif.GifGenerator;
 import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
@@ -18,7 +17,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupMeBot implements ChatBot {
+public class GroupMeBot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GROUP_ME_BOT_URL = "https://api.groupme.com/v3/bots/post";
     private static final String GROUP_ME_POLL_URL = "https://api.groupme.com/v3/poll";
@@ -66,12 +65,10 @@ public class GroupMeBot implements ChatBot {
         return botName;
     }
 
-    @Override
     public void sendMessage(String text, ImagePayload payload){
         sendMessage(text, payload.toString());
     }
 
-    @Override
     public void sendMessage(String text, MentionPayload payload){
         sendMessage(text, payload.toString());
     }

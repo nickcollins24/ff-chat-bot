@@ -1,7 +1,6 @@
 package ncollins.schedulers;
 
-import ncollins.chat.groupme.GroupMeBot;
-import ncollins.chat.groupme.MainGroupMeBot;
+import ncollins.chat.bots.groupme.MainGroupMeBot;
 import ncollins.gif.GifGenerator;
 import ncollins.model.chat.Emojis;
 import org.slf4j.Logger;

@@ -421,17 +421,20 @@ public class Espn {
         for(Season season : seasonMap.values()){
             //only iterate completed seasons
             if(season.getSeasonId() != getCurrentSeasonId()) {
-                Team champ = null;
-
-                //find lowest ranked team for each season
+                //find #1 ranked team for each season
                 for (Team team : season.getTeams()) {
-                    if (champ == null || team.getRankCalculatedFinal() < champ.getRankCalculatedFinal()) {
-                        champ = team;
+                    if(team.getRankCalculatedFinal() == 1){
+                        Team champ = team;
+                        champ.setSeasonId(season.getSeasonId());
+                        champs.add(champ);
+                    }
+                    //HACK for 2022 co-champs
+                    if(season.getSeasonId() == 2022 && team.getRankCalculatedFinal() == 2){
+                        Team champ = team;
+                        champ.setSeasonId(season.getSeasonId());
+                        champs.add(champ);
                     }
                 }
-
-                champ.setSeasonId(season.getSeasonId());
-                champs.add(champ);
             }
         }
 
