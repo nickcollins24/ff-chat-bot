@@ -41,8 +41,8 @@ public class MunndayScheduler implements Scheduler {
 
     public void start() {
         Runnable task = () -> {
-            bot.sendMessage("Happy Munnday " + Emojis.PARTY_SMILEY);
-            bot.sendImage(gifGenerator.search("olivia munn"));
+            bot.sendImage("Happy Munnday " + Emojis.PARTY_SMILEY,
+                    gifGenerator.search("olivia munn"));
         };
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);

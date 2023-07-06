@@ -36,7 +36,10 @@ public class GroupMeBot extends Bot {
     }
 
     @Override
-    public void sendImage(String imageUrl) { sendMessage(imageUrl); }
+    public void sendImage(String text, String imageUrl) {
+        sendMessage(text);
+        sendMessage(imageUrl);
+    }
 
     /**
      * Send message to group from this bot that mentions(@) all users in the group.

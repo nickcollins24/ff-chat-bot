@@ -57,7 +57,7 @@ public abstract class Bot {
 
     public abstract void sendMessage(String text);
 
-    public abstract void sendImage(String imageUrl);
+    public abstract void sendImage(String text, String imageUrl);
 
     /**
      * Splits message into chunks, ensuring that no chunk exceeds MAX_MESSAGE_LENGTH characters.

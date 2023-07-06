@@ -1,6 +1,7 @@
 package ncollins.chat.bots.slack;
 
 import ncollins.chat.bots.Bot;
+import ncollins.helpers.StringHelpers;
 import ncollins.model.chat.ProcessResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,11 @@ public class SlackBot extends Bot {
         setBotMention("<@" + botId + ">");
     }
 
+    @Override
+    public void sendMessage(String text){
+        sendMessage(text, getChatId(), "");
+    }
+
     public void sendMessage(ProcessResult result, String channelId, String threadId){
         if(result.getText().isEmpty()) return;
 
@@ -34,16 +40,6 @@ public class SlackBot extends Bot {
             case IMAGE: sendImage(result.getText(), channelId, threadId);
         }
 
-    }
-
-    @Override
-    public void sendMessage(String text){
-        sendMessage(text, getChatId(), "");
-    }
-
-    @Override
-    public void sendImage(String imageUrl){
-        sendImage(imageUrl, getChatId(), "");
     }
 
     /**
@@ -82,16 +78,36 @@ public class SlackBot extends Bot {
         }
     }
 
+    @Override
+    public void sendImage(String text, String imageUrl){
+        sendImage(text, imageUrl, getChatId(), "");
+    }
+
+    private void sendImage(String imageUrl, String channelId, String threadId) {
+        sendImage("", imageUrl, channelId, threadId);
+    }
+
     /**
      * Send imager to group from this bot.
      */
-    private void sendImage(String imageUrl, String channelId, String threadId) {
+    private void sendImage(String text, String imageUrl, String channelId, String threadId) {
         logger.info("Bot(id: " + getBotId() + ") " + "response length: " + imageUrl.toCharArray().length);
+
+        String textBlock = "";
+        if(text != null && !text.isEmpty()){
+            textBlock = "{" +
+                    "\"type\": \"section\"," +
+                    "\"text\": {" +
+                    "\"type\": \"plain_text\", \"text\": \"" + text + "\"" +
+                    "}" +
+            "},";
+        }
 
         String payload = "{" +
                 "\"channel\": \"" + channelId + "\"," +
                 "\"thread_ts\": \"" + threadId + "\"," +
                 "\"blocks\":" + "[" +
+                    textBlock +
                     "{" +
                         "\"type\": \"image\"," +
                         "\"image_url\": \"" + imageUrl + "\"," +
