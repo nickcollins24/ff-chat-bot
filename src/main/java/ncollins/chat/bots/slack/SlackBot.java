@@ -1,5 +1,6 @@
 package ncollins.chat.bots.slack;
 
+import ncollins.chat.bots.Bot;
 import ncollins.model.chat.ProcessResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,45 +10,20 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
-public class SlackBot {
+public class SlackBot extends Bot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String SLACK_BOT_URL = "https://slack.com/api/chat.postMessage";
     private static final int MAX_MESSAGE_LENGTH = 40000;
 
-    private String authToken;
-    private String botId;
-    private String botName;
-    private String botKeyword;
-    private String botMention;
     private HttpClient client = HttpClient.newHttpClient();
 
     public SlackBot(String authToken,
                     String botId,
                     String botName){
-        this.authToken = authToken;
-        this.botId = botId;
-        this.botName = botName;
-        this.botKeyword = "@" + botName;
-        this.botMention = "<@" + botId + ">";
-    }
-
-    public String getBotUserId() {
-        return botId;
-    }
-
-    public String getBotKeyword() {
-        return botKeyword;
-    }
-
-    public String getBotMention(){
-        return botMention;
-    }
-
-    public String getBotName(){
-        return botName;
+        super(authToken, botId, botName);
+        setBotMention("<@" + botId + ">");
     }
 
     public void sendMessage(ProcessResult result, String channelId, String threadId){
@@ -60,6 +36,16 @@ public class SlackBot {
 
     }
 
+    @Override
+    public void sendMessage(String text){
+        sendMessage(text, getChatId(), "");
+    }
+
+    @Override
+    public void sendImage(String imageUrl){
+        sendImage(imageUrl, getChatId(), "");
+    }
+
     /**
      * Send message to group from this bot.
      *
@@ -70,19 +56,19 @@ public class SlackBot {
         text = text.replaceAll("(?<![\\\\])\"","\\\\\"");
 
         // split text into chunks of length <= MAX_MESSAGE_LENGTH and send each chunk separately
-        List<String> texts = splitMessage(text);
+        List<String> texts = splitMessage(text, MAX_MESSAGE_LENGTH);
         for(String t : texts){
-            logger.info("Bot(id: " + botId + ") " + "response length: " + t.toCharArray().length);
+            logger.info("Bot(id: " + getBotId() + ") " + "response length: " + t.toCharArray().length);
 
             String payload = "{" +
                     "\"channel\": \"" + channelId + "\"," +
                     "\"thread_ts\": \"" + threadId + "\"," +
-                    "\"text\": \"" + text + "\"}";
+                    "\"text\": \"" + t + "\"}";
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(SLACK_BOT_URL))
                     .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + authToken)
+                    .header("Authorization", "Bearer " + getAuthToken())
                     .POST(HttpRequest.BodyPublishers.ofString(payload))
                     .build();
 
@@ -100,7 +86,7 @@ public class SlackBot {
      * Send imager to group from this bot.
      */
     private void sendImage(String imageUrl, String channelId, String threadId) {
-        logger.info("Bot(id: " + botId + ") " + "response length: " + imageUrl.toCharArray().length);
+        logger.info("Bot(id: " + getBotId() + ") " + "response length: " + imageUrl.toCharArray().length);
 
         String payload = "{" +
                 "\"channel\": \"" + channelId + "\"," +
@@ -116,7 +102,7 @@ public class SlackBot {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(SLACK_BOT_URL))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + getAuthToken())
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
 
@@ -127,29 +113,5 @@ public class SlackBot {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Splits message into chunks, ensuring that no chunk exceeds MAX_MESSAGE_LENGTH characters.
-     * This is to avoid exceeding GroupMe's character limit, which results in a failed send.
-     * @param text
-     * @return
-     */
-    private List<String> splitMessage(String text){
-        List<String> messages = new ArrayList();
-
-        if(text.toCharArray().length <= MAX_MESSAGE_LENGTH){
-            messages.add(text);
-            return messages;
-        }
-
-        while(text.toCharArray().length > MAX_MESSAGE_LENGTH){
-            int index = text.lastIndexOf("\\n", MAX_MESSAGE_LENGTH);
-            messages.add(text.substring(0, index+2));
-            text = text.substring(index+2);
-        }
-        messages.add(text);
-
-        return messages;
     }
 }

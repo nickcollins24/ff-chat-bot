@@ -39,7 +39,7 @@ public class GroupMeProcessor {
         logger.info("Incoming message: " + subject.getText());
 
         //send to bot for processing if message was created by a user (not bot) in the required group
-        if(subject.getGroupId().equals(mainBot.getBotGroupId()) && subject.getSenderType().equals("user")){
+        if(subject.getGroupId().equals(mainBot.getChatId()) && subject.getSenderType().equals("user")){
             String fromUser = subject.getName();
             String text = subject.getText().trim().toLowerCase();
 

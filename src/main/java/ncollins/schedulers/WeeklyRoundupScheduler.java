@@ -1,9 +1,11 @@
 package ncollins.schedulers;
 
+import ncollins.chat.bots.Bot;
 import ncollins.chat.bots.groupme.MainGroupMeBot;
 import ncollins.espn.EspnMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +28,12 @@ import java.util.concurrent.TimeUnit;
 public class WeeklyRoundupScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private MainGroupMeBot bot;
+    private Bot bot;
+    @Autowired
     private EspnMessageBuilder espnMessageBuilder;
 
-    public WeeklyRoundupScheduler(MainGroupMeBot bot, EspnMessageBuilder espnMessageBuilder){
+    public WeeklyRoundupScheduler(Bot bot){
         this.bot = bot;
-        this.espnMessageBuilder = espnMessageBuilder;
         start();
     }
 

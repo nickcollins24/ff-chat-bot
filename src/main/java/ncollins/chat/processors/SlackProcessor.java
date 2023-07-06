@@ -37,8 +37,8 @@ public class SlackProcessor {
         // send to bot for processing if message was created by a user (not bot)
         if(payload.getEvent().getUser() != null &&
                 payload.getEvent().getText() != null &&
-                !payload.getEvent().getUser().equals(mainBot.getBotUserId()) &&
-                !payload.getEvent().getUser().equals(espnBot.getBotUserId())){
+                !payload.getEvent().getUser().equals(mainBot.getBotId()) &&
+                !payload.getEvent().getUser().equals(espnBot.getBotId())){
             String text = payload.getEvent().getText().trim().toLowerCase();
             String channelId = payload.getEvent().getChannel();
             String threadId = payload.getEvent().getThreadTs();
@@ -47,7 +47,6 @@ public class SlackProcessor {
             if(text.startsWith(mainBot.getBotMention().toLowerCase())) {
                 logger.info("text: " + text);
                 String textNoKeyword = text.replace(mainBot.getBotMention().toLowerCase(), "").trim();
-                logger.info("text with keyword removed: " + textNoKeyword);
 
                 // espnbot
                 if(textNoKeyword.startsWith("show ")) {

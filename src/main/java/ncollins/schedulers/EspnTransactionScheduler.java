@@ -1,12 +1,12 @@
 package ncollins.schedulers;
 
-import ncollins.chat.bots.groupme.EspnGroupMeBot;
+import ncollins.chat.bots.Bot;
 import ncollins.espn.Espn;
 import ncollins.model.chat.Emojis;
-import ncollins.model.chat.PollPayload;
 import ncollins.model.espn.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +24,11 @@ import java.util.concurrent.TimeUnit;
 public class EspnTransactionScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private EspnGroupMeBot bot;
-    private Espn espn;
-    private static final String TRADE_POLL_TITLE = "Do you approve of this trade?" + Emojis.FINGER_UP +
-            "Majority veto nullifies this agreed upon transaction.";
+    private Bot bot;
+    @Autowired private Espn espn;
 
-    public EspnTransactionScheduler(EspnGroupMeBot bot, Espn espn){
+    public EspnTransactionScheduler(Bot bot){
         this.bot = bot;
-        this.espn = espn;
         start();
     }
 
@@ -87,7 +84,7 @@ public class EspnTransactionScheduler implements Scheduler {
         List<Player> playersToTeam0 = teamPlayersMap.get(teamIds.get(0));
         List<Player> playersToTeam1 = teamPlayersMap.get(teamIds.get(1));
 
-        sendTradePoll(team0, team1, playersToTeam0, playersToTeam1);
+        sendTradeMessage(team0, team1, playersToTeam0, playersToTeam1);
     }
 
     private void processTradeBlockAdd(Transaction t){
@@ -121,7 +118,7 @@ public class EspnTransactionScheduler implements Scheduler {
                 && t.getMessages()[0].getMessageTypeId().equals(typeId);
     }
 
-    private void sendTradePoll(Team team0, Team team1, List<Player> playersToTeam0, List<Player> playersToTeam1){
+    private void sendTradeMessage(Team team0, Team team1, List<Player> playersToTeam0, List<Player> playersToTeam1){
         StringBuilder sb0 = new StringBuilder();
         for(Player p : playersToTeam0){
             sb0.append(p.getFullName() + "\\n");
@@ -139,10 +136,5 @@ public class EspnTransactionScheduler implements Scheduler {
                 "have agreed on a trade, multiple sauces tell " + bot.getBotName() + ". Here are the details...\\n\\n" +
                 team0.getAbbrev() + " receives:\\n" + sb0.toString() + "\\n" +
                 team1.getAbbrev() + " receives:\\n" + sb1.toString());
-
-        //send trade approval poll message that expires after 1 hour
-        long expiration = (System.currentTimeMillis() + 60 * 60000)/1000; // measured in seconds
-        PollPayload payload = new PollPayload(TRADE_POLL_TITLE, new String[]{"Approve", "Veto"}, expiration);
-        bot.sendPollMessage(payload);
     }
 }

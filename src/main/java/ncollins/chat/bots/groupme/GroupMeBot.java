@@ -2,6 +2,7 @@ package ncollins.chat.bots.groupme;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import ncollins.chat.bots.Bot;
 import ncollins.model.chat.MentionPayload;
 import ncollins.model.chat.PollPayload;
 import org.slf4j.Logger;
@@ -12,48 +13,30 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
-public class GroupMeBot {
+public class GroupMeBot extends Bot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String GROUP_ME_BOT_URL = "https://api.groupme.com/v3/bots/post";
     private static final String GROUP_ME_POLL_URL = "https://api.groupme.com/v3/poll";
     private static final int MAX_MESSAGE_LENGTH = 1000;
 
-    private String accessToken;
-    private String botId;
-    private String botName;
-    private String botKeyword;
-    private String groupId;
     private HttpClient client = HttpClient.newHttpClient();
 
     public GroupMeBot(String accessToken,
                       String botId,
                       String botName,
                       String groupId){
-        this.accessToken = accessToken;
-        this.botId = botId;
-        this.botName = botName;
-        this.botKeyword = "@" + botName;
-        this.groupId = groupId;
+        super(accessToken, botId, botName, groupId);
     }
 
-    public String getBotGroupId() {
-        return groupId;
-    }
-
-    public String getBotKeyword() {
-        return botKeyword;
-    }
-
-    public String getBotName() {
-        return botName;
-    }
-
+    @Override
     public void sendMessage(String text){
         sendMessage(text, "[]");
     }
+
+    @Override
+    public void sendImage(String imageUrl) { sendMessage(imageUrl); }
 
     /**
      * Send message to group from this bot that mentions(@) all users in the group.
@@ -65,9 +48,9 @@ public class GroupMeBot {
         sendMessage(text, buildMentionAllPayload(loci).toString());
     }
 
-    public void sendPollMessage(PollPayload payload){
+    public void sendPoll(PollPayload payload){
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(GROUP_ME_POLL_URL + "/" + this.getBotGroupId() + "?token=" + this.accessToken))
+                .uri(URI.create(GROUP_ME_POLL_URL + "/" + getChatId() + "?token=" + getAuthToken()))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
                 .build();
@@ -89,12 +72,12 @@ public class GroupMeBot {
         text = text.replaceAll("(?<![\\\\])\"","\\\\\"");
 
         // split text into chunks of length <= MAX_MESSAGE_LENGTH and send each chunk separately
-        List<String> texts = splitMessage(text);
+        List<String> texts = splitMessage(text, MAX_MESSAGE_LENGTH);
         for(String t : texts){
-            logger.info(botName + " response length: " + t.toCharArray().length);
+            logger.info(getBotName() + " response length: " + t.toCharArray().length);
 
             String payload = "{" +
-                    "\"bot_id\": \"" + botId + "\"," +
+                    "\"bot_id\": \"" + getBotId() + "\"," +
                     "\"text\": \"" + t + "\"," +
                     "\"attachments\": " + attachmentPayload + "}";
 
@@ -114,33 +97,9 @@ public class GroupMeBot {
         }
     }
 
-    /**
-     * Splits message into chunks, ensuring that no chunk exceeds MAX_MESSAGE_LENGTH characters.
-     * This is to avoid exceeding GroupMe's character limit, which results in a failed send.
-     * @param text
-     * @return
-     */
-    private List<String> splitMessage(String text){
-        List<String> messages = new ArrayList();
-
-        if(text.toCharArray().length <= MAX_MESSAGE_LENGTH){
-            messages.add(text);
-            return messages;
-        }
-
-        while(text.toCharArray().length > MAX_MESSAGE_LENGTH){
-            int index = text.lastIndexOf("\\n", MAX_MESSAGE_LENGTH);
-            messages.add(text.substring(0, index+2));
-            text = text.substring(index+2);
-        }
-        messages.add(text);
-
-        return messages;
-    }
-
     private MentionPayload buildMentionAllPayload(int[] loci){
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.groupme.com/v3/groups/" + this.getBotGroupId() + "?token=" + this.accessToken))
+                .uri(URI.create("https://api.groupme.com/v3/groups/" + getChatId() + "?token=" + getAuthToken()))
                 .header("Content-Type", "application/json")
                 .GET()
                 .build();

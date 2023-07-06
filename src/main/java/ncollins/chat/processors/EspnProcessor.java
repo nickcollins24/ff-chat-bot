@@ -1,6 +1,5 @@
 package ncollins.chat.processors;
 
-import ncollins.chat.bots.groupme.EspnGroupMeBot;
 import ncollins.espn.EspnMessageBuilder;
 import ncollins.model.Order;
 import ncollins.model.chat.ProcessResult;

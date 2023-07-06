@@ -1,10 +1,11 @@
 package ncollins.schedulers;
 
-import ncollins.chat.bots.groupme.MainGroupMeBot;
+import ncollins.chat.bots.Bot;
 import ncollins.gif.GifGenerator;
 import ncollins.model.chat.Emojis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -27,11 +28,11 @@ import java.util.concurrent.TimeUnit;
 public class MunndayScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private MainGroupMeBot bot;
+    private Bot bot;
+    @Autowired
     private GifGenerator gifGenerator;
 
-    public MunndayScheduler(MainGroupMeBot bot, GifGenerator gifGenerator){
-        this.gifGenerator = gifGenerator;
+    public MunndayScheduler(Bot bot){
         this.bot = bot;
         start();
     }
@@ -39,7 +40,7 @@ public class MunndayScheduler implements Scheduler {
     public void start() {
         Runnable task = () -> {
             bot.sendMessage("Happy Munnday " + Emojis.PARTY_SMILEY);
-            bot.sendMessage(gifGenerator.search("olivia munn sexy"));
+            bot.sendImage(gifGenerator.search("olivia munn"));
         };
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
