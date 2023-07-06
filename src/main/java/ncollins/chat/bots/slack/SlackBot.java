@@ -129,18 +129,6 @@ public class SlackBot {
         }
     }
 
-//    {
-//        "channel": "C05EBSXBGCB",
-//            "thread_ts": "",
-//            "blocks": [
-//        {
-//            "type": "image",
-//                "image_url": "https://i.groupme.com/498x278.gif.f652fb0c235746b3984a5a4a1a7fbedb.preview",
-//                "alt_text": "image/gif"
-//        }
-//    ]
-//    }
-
     /**
      * Splits message into chunks, ensuring that no chunk exceeds MAX_MESSAGE_LENGTH characters.
      * This is to avoid exceeding GroupMe's character limit, which results in a failed send.

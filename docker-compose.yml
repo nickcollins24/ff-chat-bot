@@ -3,7 +3,6 @@ version: '3'
 services:
   botclig-local:
     environment:
-      CHAT_LISTENER_ENABLED: "false"
       DRAFT_DAY: "2023-08-26"
       ESPN_BOT_ID: "3c8ddb8049e2dde64232d7fcd6"
       ESPN_BOT_NAME: "espneck"
@@ -20,11 +19,12 @@ services:
       MAIN_BOT_NAME: "botclig"
       MUNNDAY_SCHEDULER_ENABLED: "false"
       NFL_KICKOFF: "2023-09-07"
-      TENOR_KEY: "W157AV87YE91"
-      SLACK_MAIN_AUTH_TOKEN: "[CHANGE_ME]"
-      SLACK_MAIN_BOT_ID: "U05EG3R4V8R"
       SLACK_ESPN_AUTH_TOKEN: "[CHANGE_ME]"
       SLACK_ESPN_BOT_ID: "U05FG9RP6H3"
+      SLACK_MAIN_AUTH_TOKEN: "[CHANGE_ME]"
+      SLACK_MAIN_BOT_ID: "U05EG3R4V8R"
+      TENOR_KEY: "W157AV87YE91"
+
     build:
       context: .
       dockerfile: Dockerfile

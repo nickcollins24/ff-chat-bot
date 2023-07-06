@@ -2,8 +2,6 @@ package ncollins.chat.bots.groupme;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import ncollins.gif.GifGenerator;
-import ncollins.model.chat.ImagePayload;
 import ncollins.model.chat.MentionPayload;
 import ncollins.model.chat.PollPayload;
 import org.slf4j.Logger;
@@ -28,33 +26,21 @@ public class GroupMeBot {
     private String botName;
     private String botKeyword;
     private String groupId;
-    private String userId;
     private HttpClient client = HttpClient.newHttpClient();
-    private GifGenerator gifGenerator;
 
-    public GroupMeBot(GifGenerator gifGenerator,
-                      String accessToken,
+    public GroupMeBot(String accessToken,
                       String botId,
                       String botName,
-                      String groupId,
-                      String userId){
-        this.gifGenerator = gifGenerator;
+                      String groupId){
         this.accessToken = accessToken;
         this.botId = botId;
         this.botName = botName;
         this.botKeyword = "@" + botName;
         this.groupId = groupId;
-        this.userId = userId;
     }
-
-    public GifGenerator getGifGenerator(){ return gifGenerator; }
 
     public String getBotGroupId() {
         return groupId;
-    }
-
-    public String getBotUserId() {
-        return userId;
     }
 
     public String getBotKeyword() {
@@ -63,14 +49,6 @@ public class GroupMeBot {
 
     public String getBotName() {
         return botName;
-    }
-
-    public void sendMessage(String text, ImagePayload payload){
-        sendMessage(text, payload.toString());
-    }
-
-    public void sendMessage(String text, MentionPayload payload){
-        sendMessage(text, payload.toString());
     }
 
     public void sendMessage(String text){
