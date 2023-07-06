@@ -2,10 +2,11 @@ package ncollins.schedulers;
 
 import ncollins.chat.bots.Bot;
 import ncollins.gif.GifGenerator;
+import ncollins.helpers.BotFactory;
+import ncollins.model.chat.BotType;
 import ncollins.model.chat.Emojis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -27,13 +28,14 @@ import java.util.concurrent.TimeUnit;
                        havingValue = "true")
 public class MunndayScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String MUNNDAY_CHAT_ID = System.getenv("SLACK_MUNNDAY_CHAT_ID");
 
     private Bot bot;
-    @Autowired
     private GifGenerator gifGenerator;
 
-    public MunndayScheduler(Bot bot){
-        this.bot = bot;
+    public MunndayScheduler(GifGenerator gifGenerator){
+        this.bot = BotFactory.buildBot(BotType.MAIN, MUNNDAY_CHAT_ID);
+        this.gifGenerator = gifGenerator;
         start();
     }
 

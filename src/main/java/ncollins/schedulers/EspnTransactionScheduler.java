@@ -2,11 +2,12 @@ package ncollins.schedulers;
 
 import ncollins.chat.bots.Bot;
 import ncollins.espn.Espn;
+import ncollins.helpers.BotFactory;
+import ncollins.model.chat.BotType;
 import ncollins.model.chat.Emojis;
 import ncollins.model.espn.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +24,14 @@ import java.util.concurrent.TimeUnit;
                        havingValue = "true")
 public class EspnTransactionScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String ESPN_TRANSACTION_CHAT_ID = System.getenv("SLACK_ESPN_TRANSACTION_CHAT_ID");
 
     private Bot bot;
-    @Autowired private Espn espn;
+    private Espn espn;
 
-    public EspnTransactionScheduler(Bot bot){
-        this.bot = bot;
+    public EspnTransactionScheduler(Espn espn){
+        this.bot = BotFactory.buildBot(BotType.ESPN, ESPN_TRANSACTION_CHAT_ID);
+        this.espn = espn;
         start();
     }
 

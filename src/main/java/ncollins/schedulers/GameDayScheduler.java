@@ -2,9 +2,10 @@ package ncollins.schedulers;
 
 import ncollins.chat.bots.Bot;
 import ncollins.espn.EspnMessageBuilder;
+import ncollins.helpers.BotFactory;
+import ncollins.model.chat.BotType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -26,13 +27,14 @@ import java.util.concurrent.TimeUnit;
                        havingValue = "true")
 public class GameDayScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String GAMEDAY_CHAT_ID = System.getenv("SLACK_GAMEDAY_CHAT_ID");
 
     private Bot bot;
-    @Autowired
     private EspnMessageBuilder espnMessageBuilder;
 
-    public GameDayScheduler(Bot bot){
-        this.bot = bot;
+    public GameDayScheduler(EspnMessageBuilder espnMessageBuilder){
+        this.bot = BotFactory.buildBot(BotType.ESPN, GAMEDAY_CHAT_ID);
+        this.espnMessageBuilder = espnMessageBuilder;
         start();
     }
 

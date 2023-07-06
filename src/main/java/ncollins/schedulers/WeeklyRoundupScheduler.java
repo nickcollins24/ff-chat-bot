@@ -1,8 +1,9 @@
 package ncollins.schedulers;
 
 import ncollins.chat.bots.Bot;
-import ncollins.chat.bots.groupme.MainGroupMeBot;
 import ncollins.espn.EspnMessageBuilder;
+import ncollins.helpers.BotFactory;
+import ncollins.model.chat.BotType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,15 @@ import java.util.concurrent.TimeUnit;
                        havingValue = "true")
 public class WeeklyRoundupScheduler implements Scheduler {
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String ROUNDUP_CHAT_ID = System.getenv("SLACK_ROUNDUP_CHAT_ID");
 
     private Bot bot;
     @Autowired
     private EspnMessageBuilder espnMessageBuilder;
 
-    public WeeklyRoundupScheduler(Bot bot){
-        this.bot = bot;
+    public WeeklyRoundupScheduler(EspnMessageBuilder espnMessageBuilder){
+        this.bot = BotFactory.buildBot(BotType.ESPN, ROUNDUP_CHAT_ID);
+        this.espnMessageBuilder = espnMessageBuilder;
         start();
     }
 
