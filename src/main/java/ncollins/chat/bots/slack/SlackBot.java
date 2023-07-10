@@ -1,8 +1,12 @@
 package ncollins.chat.bots.slack;
 
+import com.google.gson.Gson;
 import ncollins.chat.bots.Bot;
 import ncollins.helpers.StringHelpers;
 import ncollins.model.chat.ProcessResult;
+import ncollins.model.chat.slack.MessageResponse;
+import ncollins.model.chat.slack.ReactionType;
+import ncollins.model.espn.Season;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +19,13 @@ import java.util.List;
 
 public class SlackBot extends Bot {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static final String SLACK_BOT_URL = "https://slack.com/api/chat.postMessage";
+    private static final String SLACK_BOT_POST_MESSAGE_URL = "https://slack.com/api/chat.postMessage";
+    private static final String SLACK_BOT_GET_MESSAGE_URL = "https://slack.com/api/conversations.history";
+    private static final String SLACK_BOT_GET_MESSAGE_IN_THREAD_URL = "https://slack.com/api/conversations.replies";
     private static final int MAX_MESSAGE_LENGTH = 40000;
 
     private HttpClient client = HttpClient.newHttpClient();
+    private Gson gson = new Gson();
 
     public SlackBot(String authToken,
                     String botId,
@@ -62,7 +69,7 @@ public class SlackBot extends Bot {
                     "\"text\": \"" + t + "\"}";
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(SLACK_BOT_URL))
+                    .uri(URI.create(SLACK_BOT_POST_MESSAGE_URL))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + getAuthToken())
                     .POST(HttpRequest.BodyPublishers.ofString(payload))
@@ -116,7 +123,7 @@ public class SlackBot extends Bot {
                 "]}";
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(SLACK_BOT_URL))
+                .uri(URI.create(SLACK_BOT_POST_MESSAGE_URL))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getAuthToken())
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
@@ -128,6 +135,58 @@ public class SlackBot extends Bot {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private MessageResponse getMessage(boolean inThread, String messageId, String channelId){
+        String uri = inThread ?
+                SLACK_BOT_GET_MESSAGE_IN_THREAD_URL + "?" +
+                        "channel=" + channelId + "&ts=" + messageId + "&inclusive=true&limit=1" :
+                SLACK_BOT_GET_MESSAGE_URL + "?" +
+                "channel=" + channelId + "&latest=" + messageId + "&inclusive=true&limit=1";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(uri))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + getAuthToken())
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return gson.fromJson(response.body(), MessageResponse.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void mockMessage(String messageId, String channelId, String threadId){
+        // get message
+        MessageResponse messageResponse = getMessage(false, messageId, channelId);
+
+        // message is a reply, retrieve in thread
+        if(messageResponse.getMessages().length > 0 &&
+                !messageResponse.getMessages()[0].getTs().equals(messageId)){
+            messageResponse = getMessage(true, messageId, channelId);
+        }
+
+        // mock message
+        if(messageResponse != null &&
+                messageResponse.getMessages() != null &&
+                messageResponse.getMessages().length > 0 &&
+                messageResponse.getMessages()[0].getTs().equals(messageId)){
+
+
+            String messageFormatted = messageResponse.getMessages()[0].getText().replaceAll("<@.*>","");
+            String mockedMessage =
+                    StringHelpers.mockString(messageFormatted) +
+                            " :" + ReactionType.MOCK.toString().toLowerCase() + ":";
+
+            sendMessage(mockedMessage, channelId, threadId);
         }
     }
 }

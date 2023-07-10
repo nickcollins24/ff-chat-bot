@@ -1,7 +1,6 @@
 package ncollins.model.chat.slack;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import ncollins.model.chat.slack.events.Message;
 
 /**
  * {
@@ -40,7 +39,7 @@ public class SlackEventPayload {
     private String teamId;
     @JsonProperty("api_app_id")
     private String apiAppId;
-    private Message event;
+    private Event event;
     @JsonProperty("event_context")
     private String eventContext;
     @JsonProperty("event_id")
@@ -87,11 +86,11 @@ public class SlackEventPayload {
         this.apiAppId = apiAppId;
     }
 
-    public Message getEvent() {
+    public Event getEvent() {
         return event;
     }
 
-    public void setEvent(Message event) {
+    public void setEvent(Event event) {
         this.event = event;
     }
 

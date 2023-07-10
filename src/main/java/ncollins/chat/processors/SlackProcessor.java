@@ -2,7 +2,9 @@ package ncollins.chat.processors;
 
 import ncollins.chat.bots.slack.EspnSlackBot;
 import ncollins.chat.bots.slack.MainSlackBot;
+import ncollins.model.chat.slack.ReactionType;
 import ncollins.model.chat.slack.SlackEventPayload;
+import ncollins.model.chat.slack.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +34,56 @@ public class SlackProcessor {
     }
 
     public void processResponse(SlackEventPayload payload) {
-        logger.info("Incoming message: " + payload.getEvent().getText());
+        logger.info("Incoming slack payload: " + payload);
 
+        try {
+            switch(EventType.valueOf(payload.getEvent().getType().toUpperCase())){
+                case REACTION_ADDED: {
+                    processReaction(payload);
+                    break;
+                }
+                case MESSAGE: {
+                    processMessage(payload);
+                    break;
+                }
+                default: logger.info("Skipping slack payload: " + payload.getEventId());
+            }
+        } catch(IllegalArgumentException e){
+            logger.info("Slack event type not recognized. Skipping payload: " + payload.getEventId());
+        }
+    }
+
+    private void processReaction(SlackEventPayload payload){
+        /**
+         * send to bot for processing if reaction was:
+         * 1. added by a user (not bot)
+         * 2. added to a message
+         */
+        if(payload.getEvent().getUser() != null &&
+                payload.getEvent().getReaction() != null &&
+                payload.getEvent().getItem().getType().equals("message") &&
+                !payload.getEvent().getUser().equals(mainBot.getBotId()) &&
+                !payload.getEvent().getUser().equals(espnBot.getBotId())){
+
+            try {
+                ReactionType reactionType = ReactionType.valueOf(payload.getEvent().getReaction().toUpperCase());
+
+                switch(reactionType){
+                    case MOCK:
+                    case SPONGEBOB_MOCK: {
+                        mainBot.mockMessage(
+                                payload.getEvent().getItem().getTs(), payload.getEvent().getItem().getChannel(), payload.getEvent().getItem().getTs());
+                        break;
+                    }
+                    default: logger.info("Skipping slack reaction: " + reactionType);
+                }
+            } catch(IllegalArgumentException e){
+                logger.info("Slack reaction not recognized. Skipping reaction: " + payload.getEvent().getReaction());
+            }
+        }
+    }
+
+    private void processMessage(SlackEventPayload payload){
         // send to bot for processing if message was created by a user (not bot)
         if(payload.getEvent().getUser() != null &&
                 payload.getEvent().getText() != null &&
@@ -55,7 +105,7 @@ public class SlackProcessor {
                             espnProcessor.processResponse(textNoKeyword.replace("show", "").trim()),
                             channelId,
                             threadId);
-                // mainbot
+                    // mainbot
                 } else {
                     logger.info("processing main bot request...");
                     mainBot.sendMessage(

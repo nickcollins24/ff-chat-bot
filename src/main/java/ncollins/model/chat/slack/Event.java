@@ -1,8 +1,10 @@
-package ncollins.model.chat.slack.events;
+package ncollins.model.chat.slack;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /***
+ *      Supports the following event types: reaction_added, message.
+ *
  * 		"client_msg_id": "ad3f6428-82cd-4755-9810-8d7b5acaf99a",
  * 		"type": "message",
  * 		"text": "Hulloooo Jan :wave:",
@@ -29,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 		"event_ts": "1688007583.410659",
  * 		"channel_type": "channel"
  */
-public class Message {
+public class Event {
     @JsonProperty("client_msg_id")
     private String clientMsgId;
     private String type;
@@ -46,6 +48,10 @@ public class Message {
     private String eventTs;
     @JsonProperty("channel_type")
     private String channelType;
+    private String reaction;
+    @JsonProperty("item_user")
+    private String itemUser;
+    private Item item;
 
     public String getClientMsgId() {
         return clientMsgId;
@@ -135,6 +141,30 @@ public class Message {
         this.channelType = channelType;
     }
 
+    public String getReaction() {
+        return reaction;
+    }
+
+    public void setReaction(String reaction) {
+        this.reaction = reaction;
+    }
+
+    public String getItemUser() {
+        return itemUser;
+    }
+
+    public void setItemUser(String itemUser) {
+        this.itemUser = itemUser;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
     @Override
     public String toString(){
         return "{" +
@@ -148,7 +178,10 @@ public class Message {
                     "parent_user_id: " + this.parentUserId + ", " +
                     "channel: " + this.channel + ", " +
                     "event_ts: " + this.eventTs + ", " +
-                    "channel_type: " + this.channelType +
+                    "channel_type: " + this.channelType + ", " +
+                    "item: " + this.item + ", " +
+                    "item_user: " + this.itemUser + ", " +
+                    "reaction: " + this.reaction +
                 "}";
     }
 }
