@@ -99,7 +99,7 @@ public class SlackProcessor {
                                     userToHug.getProfile().getDisplayName();
 
                             mainBot.sendMessage(
-                                    hugGenerator.giveHug(userName) + " :" + ReactionType.HUGS + ":",
+                                    hugGenerator.giveHug(userName) + " :" + ReactionType.HUGS.toString().toLowerCase() + ":",
                                     event.getItem().getChannel(), event.getItem().getTs());
                         }
                         break;
