@@ -54,7 +54,7 @@ public class SlackBot extends Bot {
      *
      * Note: max char[] length of message is 1000
      */
-    private void sendMessage(String text, String channelId, String threadId) {
+    public void sendMessage(String text, String channelId, String threadId) {
         // replace ["] with [\"], otherwise message doesnt send.
         text = text.replaceAll("(?<![\\\\])\"","\\\\\"");
 
