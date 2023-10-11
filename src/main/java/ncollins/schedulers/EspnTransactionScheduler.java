@@ -103,7 +103,7 @@ public class EspnTransactionScheduler implements Scheduler {
         //send breaking news message
         bot.sendMessage("TRADE BLOCK ALERT " + Emojis.EYES_LEFT + " \\n\\n" +
                 "Disgruntled " + playerPosition + " " + player.getFullName() + " has requested a trade from " +
-                team.getLocation() + " " + team.getNickname() + ", citing growing frustration with team owner " + member.getFirtName() + " " + member.getLastName() + ".\\n\\n" +
+                team.getName() + ", citing growing frustration with team owner " + member.getFirtName() + " " + member.getLastName() + ".\\n\\n" +
                 "The two sides will work together to find a new home for " + player.getLastName() + " over the coming days.");
     }
 
@@ -134,8 +134,8 @@ public class EspnTransactionScheduler implements Scheduler {
 
         //send breaking news message
         bot.sendMessage(Emojis.RED_SIREN + " BREAKING NEWS " + Emojis.RED_SIREN + " \\n\\n" +
-                team0.getLocation() + " " + team0.getNickname() + " (" + team0.getAbbrev() + ") and " +
-                team1.getLocation() + " " + team1.getNickname() + " (" + team1.getAbbrev() + ") " +
+                team0.getName() + " (" + team0.getAbbrev() + ") and " +
+                team1.getName() + " (" + team1.getAbbrev() + ") " +
                 "have agreed on a trade, multiple sauces tell " + bot.getBotName() + ". Here are the details...\\n\\n" +
                 team0.getAbbrev() + " receives:\\n" + sb0.toString() + "\\n" +
                 team1.getAbbrev() + " receives:\\n" + sb1.toString());

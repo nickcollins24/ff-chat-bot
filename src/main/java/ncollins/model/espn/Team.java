@@ -12,6 +12,7 @@ public class Team {
     private String                  logo;
     private String                  logoType;
     private String                  nickname;
+    private String                  name;
     private List<String>            owners;
     private int                     playoffSeed;
     private Double                  points;
@@ -35,6 +36,7 @@ public class Team {
     public String getLogo() { return logo; }
     public String getLogoType() { return logoType; }
     public String getNickname() { return nickname; }
+    public String getName() { return name; }
     public int getPlayoffSeed() { return playoffSeed; }
     public Double getPoints() { return points; }
     public Double getPointsAdjusted() { return pointsAdjusted; }
@@ -58,6 +60,7 @@ public class Team {
     public void setLogo(String logo) { this.logo = logo; }
     public void setLogoType(String logoType) { this.logoType = logoType; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    public void setName(String name) { this.name = name; }
     public void setPlayoffSeed(int playoffSeed) { this.playoffSeed = playoffSeed; }
     public void setPoints(Double points) { this.points = points; }
     public void setPointsAdjusted(Double pointsAdjusted) { this.pointsAdjusted = pointsAdjusted; }
